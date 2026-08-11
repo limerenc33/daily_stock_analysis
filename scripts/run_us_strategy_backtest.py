@@ -70,7 +70,63 @@ def _download_stooq(ticker: str, *, start: date, end: date):
     )
     with urlopen(request, timeout=30) as response:
         payload = response.read().decode("utf-8", "ignore")
+    if payload.lstrip().startswith("<"):
+        raise RuntimeError("Stooq returned HTML instead of daily-bar CSV")
+    if not payload.lstrip().lower().startswith("date,"):
+        raise RuntimeError("Stooq returned an invalid daily-bar CSV header")
     return normalize_price_history(pd.read_csv(StringIO(payload)))
+
+
+def _cache_metadata_path(path: Path) -> Path:
+    return path.with_suffix(".metadata.json")
+
+
+def _cached_provider(path: Path, *, ticker: str, history) -> str:
+    metadata_path = _cache_metadata_path(path)
+    if not metadata_path.is_file():
+        return "unknown"
+    try:
+        metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError, TypeError):
+        return "unknown"
+    if not isinstance(metadata, dict):
+        return "unknown"
+    if (
+        metadata.get("schema_version") != 1
+        or metadata.get("ticker") != ticker
+        or metadata.get("row_count") != len(history)
+        or metadata.get("first_date") != str(history.iloc[0]["date"])[:10]
+        or metadata.get("last_date") != str(history.iloc[-1]["date"])[:10]
+    ):
+        return "unknown"
+    provider = str(metadata.get("provider") or "").strip().lower()
+    return provider or "unknown"
+
+
+def _write_history_cache(
+    path: Path,
+    history,
+    *,
+    ticker: str,
+    provider: str,
+    start: date,
+    end: date,
+) -> None:
+    history.to_csv(path, index=False)
+    metadata = {
+        "schema_version": 1,
+        "ticker": ticker,
+        "provider": provider,
+        "requested_start": start.isoformat(),
+        "requested_end": end.isoformat(),
+        "first_date": str(history.iloc[0]["date"])[:10],
+        "last_date": str(history.iloc[-1]["date"])[:10],
+        "row_count": len(history),
+    }
+    _cache_metadata_path(path).write_text(
+        json.dumps(metadata, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
 
 
 def _download_or_cache(
@@ -92,7 +148,7 @@ def _download_or_cache(
             end=end,
             earliest_available=earliest_available,
         ):
-            return cached, "cache"
+            return cached, f"cache:{_cached_provider(path, ticker=ticker, history=cached)}"
 
     errors = []
     if source in {"auto", "yfinance"}:
@@ -110,7 +166,14 @@ def _download_or_cache(
             )
             history = normalize_price_history(raw)
             if not history.empty:
-                history.to_csv(path, index=False)
+                _write_history_cache(
+                    path,
+                    history,
+                    ticker=ticker,
+                    provider="yfinance",
+                    start=start,
+                    end=end,
+                )
                 return history, "yfinance"
         except Exception as exc:
             errors.append(f"yfinance: {exc}")
@@ -118,7 +181,14 @@ def _download_or_cache(
         try:
             history = _download_stooq(ticker, start=start, end=end)
             if not history.empty:
-                history.to_csv(path, index=False)
+                _write_history_cache(
+                    path,
+                    history,
+                    ticker=ticker,
+                    provider="stooq",
+                    start=start,
+                    end=end,
+                )
                 return history, "stooq"
         except Exception as exc:
             errors.append(f"stooq: {exc}")

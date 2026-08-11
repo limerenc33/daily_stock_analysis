@@ -1,4 +1,6 @@
 from datetime import date
+from io import BytesIO
+import json
 
 import pandas as pd
 import pytest
@@ -11,6 +13,7 @@ from src.services.screening.us_backtest import (
     normalize_price_history,
     simulate_trade,
 )
+from scripts import run_us_strategy_backtest as backtest_cli
 from scripts.run_us_strategy_backtest import cache_covers_window, required_history_start
 
 
@@ -53,6 +56,60 @@ def test_history_download_window_and_cache_require_warmup_coverage():
         start=required_history_start(requested_start, 140),
         end=requested_end,
     )
+
+
+def test_cached_history_preserves_original_provider(tmp_path):
+    path = tmp_path / "TEST.csv"
+    history = _trend_history(points=5)
+    backtest_cli._write_history_cache(
+        path,
+        history,
+        ticker="TEST",
+        provider="yfinance",
+        start=date(2020, 1, 1),
+        end=date(2020, 1, 7),
+    )
+    metadata = json.loads(path.with_suffix(".metadata.json").read_text(encoding="utf-8"))
+
+    cached, source = backtest_cli._download_or_cache(
+        "TEST",
+        start=date(2020, 1, 1),
+        end=date(2020, 1, 7),
+        cache_dir=tmp_path,
+        source="auto",
+    )
+
+    assert len(cached) == 5
+    assert source == "cache:yfinance"
+    assert metadata["requested_start"] == "2020-01-01"
+    assert metadata["requested_end"] == "2020-01-07"
+    assert metadata["row_count"] == 5
+
+    metadata["row_count"] = 99
+    path.with_suffix(".metadata.json").write_text(json.dumps(metadata), encoding="utf-8")
+    _, untrusted_source = backtest_cli._download_or_cache(
+        "TEST",
+        start=date(2020, 1, 1),
+        end=date(2020, 1, 7),
+        cache_dir=tmp_path,
+        source="auto",
+    )
+    assert untrusted_source == "cache:unknown"
+
+
+def test_stooq_html_challenge_is_not_parsed_as_price_data(monkeypatch):
+    monkeypatch.setattr(
+        backtest_cli,
+        "urlopen",
+        lambda *_args, **_kwargs: BytesIO(b"<html><body>verification required</body></html>"),
+    )
+
+    with pytest.raises(RuntimeError, match="HTML instead of daily-bar CSV"):
+        backtest_cli._download_stooq(
+            "TEST",
+            start=date(2020, 1, 1),
+            end=date(2020, 1, 7),
+        )
 
 
 def test_normalize_price_history_supports_yfinance_price_ticker_columns():
