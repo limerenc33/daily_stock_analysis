@@ -3,7 +3,7 @@
   "strategy": "us_quality_momentum",
   "research_status": "not_validated",
   "created_at": "2026-08-11T03:12:22.409161+00:00",
-  "updated_at": "2026-08-11T03:12:48.742347+00:00",
+  "updated_at": "2026-08-11T03:44:47.648652+00:00",
   "config": {
     "strategy_name": "us_quality_momentum",
     "top_k": 5,
@@ -276,28 +276,14 @@
   "last_events": {
     "large_cap_22": [
       {
-        "type": "signal",
-        "signal_date": "2026-08-10",
-        "codes": [
-          "LLY",
-          "AVGO",
-          "XOM",
-          "JNJ",
-          "JPM"
-        ]
+        "type": "no_change",
+        "market_date": "2026-08-10"
       }
     ],
     "diversified_60": [
       {
-        "type": "signal",
-        "signal_date": "2026-08-10",
-        "codes": [
-          "LLY",
-          "CSCO",
-          "XOM",
-          "AVGO",
-          "JNJ"
-        ]
+        "type": "no_change",
+        "market_date": "2026-08-10"
       }
     ]
   }
