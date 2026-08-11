@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- 每条独立一行追加到本段末尾，无需分类标题，合并时冲突最小 -->
 - [改进] AIHubMix 注册与引流链接统一使用 inferera.com，改善中国大陆网络直连体验。
 - [修复] 美股回测缓存记录原始行情提供方，并在 Stooq 返回网页验证内容时明确拒绝，避免错误数据源归因和 CSV 误解析。
+- [新功能] 新增 GitHub Pages 美股模拟交易只读看板，并在每日模拟任务成功后同步最新账本。
 
 ## [3.30.0] - 2026-08-09
 

@@ -165,3 +165,16 @@ def test_paper_trading_workflow_persists_state_and_publishes_daily_report():
     assert "continue-on-error: true" in rendered
     assert "actions/upload-artifact@v6" in rendered
     assert "actions/github-script@v8" in rendered
+
+
+def test_paper_trading_dashboard_deploys_after_successful_daily_run():
+    workflow_path = Path(".github/workflows/deploy-paper-trading-pages.yml")
+    workflow = yaml.safe_load(workflow_path.read_text(encoding="utf-8"))
+    triggers = workflow.get(True, workflow.get("on"))
+    rendered = workflow_path.read_text(encoding="utf-8")
+
+    assert triggers["workflow_run"]["workflows"] == ["US Paper Trading Daily"]
+    assert workflow["permissions"] == {"contents": "read", "pages": "write", "id-token": "write"}
+    assert "paper-trading-state" in rendered
+    assert "VITE_PAPER_TRADING_DASHBOARD: 'true'" in rendered
+    assert "actions/deploy-pages@v4" in rendered

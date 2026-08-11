@@ -1,5 +1,5 @@
 import type React from 'react';
-import { lazy, useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter as Router, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { ApiErrorAlert, Shell } from './components/common';
 import {
@@ -23,6 +23,8 @@ const DecisionSignalsPage = lazy(() => import('./pages/DecisionSignalsPage'));
 const AlertsPage = lazy(() => import('./pages/AlertsPage'));
 const TokenUsagePage = lazy(() => import('./pages/TokenUsagePage'));
 const StockScreeningPage = lazy(() => import('./pages/StockScreeningPage'));
+const PaperTradingDashboardPage = lazy(() => import('./pages/PaperTradingDashboardPage'));
+const staticPaperTradingDashboard = import.meta.env.VITE_PAPER_TRADING_DASHBOARD === 'true';
 
 const AppContent: React.FC = () => {
   const location = useLocation();
@@ -95,6 +97,14 @@ const AppContent: React.FC = () => {
 };
 
 const App: React.FC = () => {
+  if (staticPaperTradingDashboard) {
+    return (
+      <Suspense fallback={<PageLoadingFallback />}>
+        <PaperTradingDashboardPage />
+      </Suspense>
+    );
+  }
+
   return (
     <UiLanguageProvider>
       <Router>

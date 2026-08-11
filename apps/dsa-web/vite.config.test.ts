@@ -2,7 +2,16 @@
 
 import { describe, expect, it } from 'vitest'
 
-import { resolveAppRevision } from './vite.config'
+import { resolveAppRevision, resolveBasePath } from './vite.config'
+
+describe('resolveBasePath', () => {
+  it('normalizes GitHub Pages repository paths', () => {
+    expect(resolveBasePath()).toBe('/')
+    expect(resolveBasePath('/')).toBe('/')
+    expect(resolveBasePath('daily_stock_analysis')).toBe('/daily_stock_analysis/')
+    expect(resolveBasePath('/daily_stock_analysis/')).toBe('/daily_stock_analysis/')
+  })
+})
 
 describe('resolveAppRevision', () => {
   it('prefers the explicitly injected release revision', () => {

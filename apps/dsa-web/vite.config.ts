@@ -14,6 +14,14 @@ const packageJson = JSON.parse(
 const buildTime = new Date().toISOString()
 const placeholderVersion = '0.0.0'
 
+export const resolveBasePath = (value?: string) => {
+  const normalized = value?.trim()
+  if (!normalized || normalized === '/') {
+    return '/'
+  }
+  return `/${normalized.replace(/^\/+|\/+$/g, '')}/`
+}
+
 const buildInputFiles = [
   'package.json',
   'package-lock.json',
@@ -213,6 +221,7 @@ const getVendorChunkName = (id: string): string | undefined => {
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: resolveBasePath(process.env.VITE_BASE_PATH),
   define: {
     __APP_PACKAGE_VERSION__: JSON.stringify(appVersion),
     __APP_REVISION__: JSON.stringify(appRevision),

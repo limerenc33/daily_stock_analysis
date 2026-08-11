@@ -1,0 +1,73 @@
+name: Deploy Paper Trading Dashboard
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/deploy-paper-trading-pages.yml'
+      - 'apps/dsa-web/**'
+  workflow_run:
+    workflows: ['US Paper Trading Daily']
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: paper-trading-pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Restore latest paper-trading state
+        run: |
+          git fetch origin paper-trading-state --depth=1
+          git show FETCH_HEAD:data/us_paper_trading/state.json > apps/dsa-web/public/paper-trading-state.json
+
+      - name: Set up Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: apps/dsa-web/package-lock.json
+
+      - name: Install Web dependencies
+        run: npm ci --prefix apps/dsa-web
+
+      - name: Build static paper-trading dashboard
+        env:
+          VITE_PAPER_TRADING_DASHBOARD: 'true'
+          VITE_BASE_PATH: /${{ github.event.repository.name }}/
+          DSA_WEB_REVISION: ${{ github.sha }}
+        run: npm run build --prefix apps/dsa-web
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: static
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

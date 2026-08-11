@@ -40,3 +40,9 @@ python scripts/run_us_paper_trading.py --notify
 6. 若仓库已配置通知 Secret，同时发送到已有企业微信、飞书、Telegram、邮件、ntfy、Gotify、PushPlus、Server酱、自定义 Webhook、Discord 或 Slack 渠道。
 
 手动验证可以在 Actions 页面运行 `US Paper Trading Daily` workflow。首次执行只生成候选信号；下一交易日收盘后的执行才会记录下一交易日开盘成交。
+
+## 公开只读看板
+
+`.github/workflows/deploy-paper-trading-pages.yml` 将 Web 应用构建为不依赖后端 API 的只读模拟交易看板，并发布到 GitHub Pages。它在前端代码进入 `main` 后部署一次，也会在 `US Paper Trading Daily` 每次成功完成后，从 `paper-trading-state` 分支读取最新账本并重新部署。
+
+看板只展示组合净值、收益、回撤、候选、五基准对比和验证进度，不开放设置、交易录入或真实下单。GitHub Pages 必须在仓库设置中启用并选择 GitHub Actions 作为发布来源。

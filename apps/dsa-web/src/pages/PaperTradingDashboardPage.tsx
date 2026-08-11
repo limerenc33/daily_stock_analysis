@@ -1,0 +1,533 @@
+import { useEffect, useMemo, useState } from 'react';
+import {
+  Activity,
+  AlertTriangle,
+  CalendarDays,
+  Clock3,
+  Database,
+  ExternalLink,
+  Github,
+  RefreshCw,
+  ShieldCheck,
+  TrendingDown,
+  TrendingUp,
+} from 'lucide-react';
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
+
+type Candidate = {
+  code: string;
+  screen_score: number;
+  signal_close: number;
+};
+
+type Snapshot = {
+  date: string;
+  strategy_equity: number;
+  strategy_total_return_pct: number;
+  strategy_daily_return_pct: number;
+  strategy_drawdown_pct: number;
+  benchmark_total_return_pct: Record<string, number>;
+};
+
+type ActiveCycle = {
+  status: string;
+  signal_date?: string;
+  entry_date?: string;
+  exit_date?: string;
+  selected?: Candidate[];
+  coverage?: {
+    expected_count: number;
+    covered_count: number;
+    ratio: number;
+  };
+};
+
+type Portfolio = {
+  universe: string[];
+  active_cycle?: ActiveCycle | null;
+  closed_cycles: unknown[];
+  snapshots: Snapshot[];
+};
+
+type ValidationDiagnostic = {
+  completed_cycles: number;
+  required_completed_cycles: number;
+  positive_excess_benchmarks: number;
+  required_positive_excess_benchmarks: number;
+  effective: boolean;
+};
+
+type PaperTradingState = {
+  strategy: string;
+  research_status: string;
+  updated_at: string;
+  latest_market_date: string;
+  benchmarks: string[];
+  config: {
+    initial_capital: number;
+    holding_days: number;
+    per_side_cost_bps: number;
+    minimum_universe_coverage: number;
+    minimum_completed_cycles: number;
+    top_k: number;
+  };
+  portfolios: Record<string, Portfolio>;
+  live_validation: {
+    effective: boolean;
+    status: string;
+    diagnostics: Record<string, ValidationDiagnostic>;
+    warning: string;
+  };
+};
+
+const DATA_URL = `${import.meta.env.BASE_URL}paper-trading-state.json`;
+const ACTIONS_URL = 'https://github.com/limerenc33/daily_stock_analysis/actions/workflows/us-paper-trading.yml';
+const REPOSITORY_URL = 'https://github.com/limerenc33/daily_stock_analysis';
+const PORTFOLIO_LABELS: Record<string, string> = {
+  large_cap_22: '大盘股 22',
+  diversified_60: '跨行业 60',
+};
+const CHART_COLORS: Record<string, string> = {
+  strategy: '#22d3ee',
+  SPY: '#f59e0b',
+  QQQ: '#a78bfa',
+  IWM: '#34d399',
+  DIA: '#fb7185',
+  RSP: '#60a5fa',
+};
+
+const formatMoney = (value: number) => new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+}).format(value);
+
+const formatPercent = (value: number, digits = 2) => `${value >= 0 ? '+' : ''}${value.toFixed(digits)}%`;
+
+const formatUpdatedAt = (value: string) => {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return value || '未知';
+  }
+  return new Intl.DateTimeFormat('zh-CN', {
+    timeZone: 'Asia/Shanghai',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).format(parsed);
+};
+
+const cycleLabel = (status?: string) => ({
+  active: '持仓中',
+  closed: '已退出',
+  idle: '等待信号',
+  pending: '等待次日开盘',
+}[status || ''] || status || '暂无周期');
+
+const Metric = ({
+  label,
+  value,
+  detail,
+  tone = 'neutral',
+}: {
+  label: string;
+  value: string;
+  detail: string;
+  tone?: 'neutral' | 'positive' | 'negative';
+}) => (
+  <div className="min-w-0 px-4 py-4 sm:px-5">
+    <div className="text-xs font-medium text-muted-text">{label}</div>
+    <div className={`mt-1 truncate text-xl font-semibold tabular-nums ${
+      tone === 'positive' ? 'text-emerald-400' : tone === 'negative' ? 'text-rose-400' : 'text-foreground'
+    }`}>
+      {value}
+    </div>
+    <div className="mt-1 truncate text-xs text-muted-text">{detail}</div>
+  </div>
+);
+
+const PaperTradingDashboardPage = () => {
+  const [state, setState] = useState<PaperTradingState | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [activePortfolio, setActivePortfolio] = useState('large_cap_22');
+
+  const loadState = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const response = await fetch(`${DATA_URL}?t=${Date.now()}`, { cache: 'no-store' });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      setState(await response.json() as PaperTradingState);
+    } catch (loadError) {
+      setError(loadError instanceof Error ? loadError.message : '未知错误');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    document.title = '美股模拟交易看板 - DSA';
+    void loadState();
+  }, []);
+
+  const portfolioEntries = useMemo(() => Object.entries(state?.portfolios || {}), [state]);
+  const portfolio = state?.portfolios[activePortfolio] || portfolioEntries[0]?.[1];
+  const portfolioName = state?.portfolios[activePortfolio] ? activePortfolio : portfolioEntries[0]?.[0] || '';
+  const latest = portfolio?.snapshots.at(-1);
+  const cycle = portfolio?.active_cycle || null;
+  const candidates = cycle?.selected || [];
+  const diagnostic = state?.live_validation.diagnostics[portfolioName];
+  const chartData = useMemo(() => (portfolio?.snapshots || []).map((snapshot) => ({
+    date: snapshot.date.slice(5),
+    strategy: snapshot.strategy_total_return_pct,
+    ...snapshot.benchmark_total_return_pct,
+  })), [portfolio]);
+  const completionRatio = diagnostic
+    ? Math.min(diagnostic.completed_cycles / diagnostic.required_completed_cycles * 100, 100)
+    : 0;
+
+  if (loading && !state) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-base text-foreground">
+        <div className="flex items-center gap-3 text-sm text-muted-text">
+          <RefreshCw className="h-4 w-4 animate-spin text-cyan" />
+          正在读取模拟交易账本
+        </div>
+      </div>
+    );
+  }
+
+  if (!state || !portfolio || !latest) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-base px-4 text-foreground">
+        <div className="w-full max-w-md border border-rose-400/30 bg-card p-6 text-center shadow-soft-card">
+          <AlertTriangle className="mx-auto h-7 w-7 text-rose-400" />
+          <h1 className="mt-3 text-lg font-semibold">模拟交易数据暂不可用</h1>
+          <p className="mt-2 text-sm text-muted-text">{error || '账本中还没有可展示的收益快照。'}</p>
+          <button
+            type="button"
+            className="mt-5 inline-flex h-10 w-10 items-center justify-center border border-border bg-hover text-foreground hover:border-cyan/50"
+            onClick={() => void loadState()}
+            aria-label="重新加载"
+            title="重新加载"
+          >
+            <RefreshCw className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const returnTone = latest.strategy_total_return_pct > 0
+    ? 'positive'
+    : latest.strategy_total_return_pct < 0 ? 'negative' : 'neutral';
+
+  return (
+    <div className="min-h-screen bg-base text-foreground">
+      <header className="border-b border-border/70 bg-card/80 backdrop-blur">
+        <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center border border-cyan/35 bg-cyan/10 text-cyan">
+              <Activity className="h-5 w-5" />
+            </div>
+            <div className="min-w-0">
+              <div className="truncate text-sm font-semibold">DSA 美股模拟验证</div>
+              <div className="truncate text-xs text-muted-text">{state.strategy}</div>
+            </div>
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <a
+              href={REPOSITORY_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="flex h-9 w-9 items-center justify-center border border-border bg-card text-muted-text hover:border-cyan/40 hover:text-cyan"
+              aria-label="打开 GitHub 仓库"
+              title="打开 GitHub 仓库"
+            >
+              <Github className="h-4 w-4" />
+            </a>
+            <button
+              type="button"
+              className="flex h-9 w-9 items-center justify-center border border-border bg-card text-muted-text hover:border-cyan/40 hover:text-cyan disabled:opacity-50"
+              onClick={() => void loadState()}
+              disabled={loading}
+              aria-label="刷新账本"
+              title="刷新账本"
+            >
+              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
+        <section className="flex flex-col justify-between gap-5 border-b border-border/70 pb-6 lg:flex-row lg:items-end">
+          <div>
+            <div className="flex flex-wrap items-center gap-2 text-xs text-muted-text">
+              <span className={`inline-flex items-center gap-1.5 border px-2 py-1 font-medium ${
+                state.live_validation.effective
+                  ? 'border-emerald-400/35 bg-emerald-400/10 text-emerald-400'
+                  : 'border-amber-400/35 bg-amber-400/10 text-amber-300'
+              }`}>
+                {state.live_validation.effective
+                  ? <ShieldCheck className="h-3.5 w-3.5" />
+                  : <AlertTriangle className="h-3.5 w-3.5" />}
+                {state.live_validation.effective ? '验证通过' : '证据不足或未通过'}
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <CalendarDays className="h-3.5 w-3.5" /> 数据日 {state.latest_market_date}
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <Clock3 className="h-3.5 w-3.5" /> 北京时间 {formatUpdatedAt(state.updated_at)} 更新
+              </span>
+            </div>
+            <h1 className="mt-4 text-2xl font-semibold sm:text-3xl">模拟组合收益与候选追踪</h1>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-secondary-text">
+              仅记录规则驱动的虚拟成交与基准对比，不连接券商，不构成投资建议。策略分用于候选相对排序，不代表上涨概率或预期收益。
+            </p>
+          </div>
+          <a
+            href={ACTIONS_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex h-10 items-center justify-center gap-2 self-start border border-border bg-card px-3 text-sm font-medium text-foreground hover:border-cyan/40 hover:text-cyan lg:self-auto"
+          >
+            查看每日运行
+            <ExternalLink className="h-4 w-4" />
+          </a>
+        </section>
+
+        <section className="py-5">
+          <div className="inline-flex max-w-full border border-border bg-card p-1" role="tablist" aria-label="股票池">
+            {portfolioEntries.map(([name]) => (
+              <button
+                key={name}
+                type="button"
+                role="tab"
+                aria-selected={portfolioName === name}
+                onClick={() => setActivePortfolio(name)}
+                className={`min-h-9 px-3 text-sm font-medium transition-colors sm:px-4 ${
+                  portfolioName === name
+                    ? 'bg-cyan/15 text-cyan'
+                    : 'text-muted-text hover:bg-hover hover:text-foreground'
+                }`}
+              >
+                {PORTFOLIO_LABELS[name] || name}
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <section className="grid divide-y divide-border border-y border-border bg-card sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:grid-cols-4">
+          <Metric label="组合净值" value={formatMoney(latest.strategy_equity)} detail={`初始 ${formatMoney(state.config.initial_capital)}`} />
+          <Metric label="累计收益" value={formatPercent(latest.strategy_total_return_pct)} detail={`当日 ${formatPercent(latest.strategy_daily_return_pct)}`} tone={returnTone} />
+          <Metric label="最大回撤" value={formatPercent(latest.strategy_drawdown_pct)} detail="按每日组合净值计算" tone={latest.strategy_drawdown_pct < 0 ? 'negative' : 'neutral'} />
+          <Metric label="当前周期" value={cycleLabel(cycle?.status)} detail={`${portfolio.closed_cycles.length} 个周期已完成`} />
+        </section>
+
+        <section className="border-b border-border py-7">
+          <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 className="text-base font-semibold">累计收益轨迹</h2>
+              <p className="mt-1 text-xs text-muted-text">策略与五个基准，单位 %</p>
+            </div>
+            <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-muted-text">
+              {['strategy', ...state.benchmarks].map((key) => (
+                <span key={key} className="inline-flex items-center gap-1.5">
+                  <span className="h-2 w-2" style={{ backgroundColor: CHART_COLORS[key] }} />
+                  {key === 'strategy' ? '策略' : key}
+                </span>
+              ))}
+            </div>
+          </div>
+          <div className="h-64 w-full sm:h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={chartData} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
+                <CartesianGrid stroke="rgba(148, 163, 184, 0.12)" vertical={false} />
+                <XAxis dataKey="date" stroke="rgba(148, 163, 184, 0.55)" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
+                <YAxis
+                  domain={chartData.length < 2 ? [-1, 1] : ['auto', 'auto']}
+                  stroke="rgba(148, 163, 184, 0.55)"
+                  tick={{ fontSize: 11 }}
+                  tickFormatter={(value) => `${value}%`}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <Tooltip
+                  contentStyle={{ background: '#15181d', border: '1px solid rgba(148,163,184,.28)', borderRadius: 4 }}
+                  labelStyle={{ color: '#e5e7eb' }}
+                  formatter={(value) => [`${Number(value).toFixed(2)}%`]}
+                />
+                {['strategy', ...state.benchmarks].map((key) => (
+                  <Line
+                    key={key}
+                    type="monotone"
+                    dataKey={key}
+                    name={key === 'strategy' ? '策略' : key}
+                    stroke={CHART_COLORS[key]}
+                    strokeWidth={key === 'strategy' ? 2.5 : 1.5}
+                    dot={chartData.length < 3}
+                    activeDot={{ r: 4 }}
+                    connectNulls
+                  />
+                ))}
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </section>
+
+        <section className="grid border-b border-border lg:grid-cols-2 lg:divide-x lg:divide-border">
+          <div className="min-w-0 py-7 lg:pr-7">
+            <div className="mb-4 flex items-end justify-between gap-3">
+              <div>
+                <h2 className="text-base font-semibold">本周期候选</h2>
+                <p className="mt-1 text-xs text-muted-text">信号日 {cycle?.signal_date || 'N/A'} · {cycleLabel(cycle?.status)}</p>
+              </div>
+              <span className="text-xs text-muted-text">Top {state.config.top_k}</span>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[32rem] text-left text-sm">
+                <thead className="border-y border-border/70 text-xs text-muted-text">
+                  <tr>
+                    <th className="w-12 py-2 font-medium">#</th>
+                    <th className="py-2 font-medium">代码</th>
+                    <th className="py-2 font-medium">策略分</th>
+                    <th className="py-2 text-right font-medium">信号收盘价</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/50">
+                  {candidates.map((candidate, index) => (
+                    <tr key={candidate.code}>
+                      <td className="py-3 text-muted-text">{index + 1}</td>
+                      <td className="py-3 font-semibold tracking-wide">{candidate.code}</td>
+                      <td className="py-3">
+                        <div className="flex items-center gap-3">
+                          <span className="w-10 tabular-nums">{candidate.screen_score.toFixed(1)}</span>
+                          <span className="h-1.5 w-24 overflow-hidden bg-hover">
+                            <span className="block h-full bg-cyan" style={{ width: `${Math.min(candidate.screen_score, 100)}%` }} />
+                          </span>
+                        </div>
+                      </td>
+                      <td className="py-3 text-right tabular-nums">{formatMoney(candidate.signal_close)}</td>
+                    </tr>
+                  ))}
+                  {!candidates.length ? (
+                    <tr><td className="py-5 text-muted-text" colSpan={4}>本周期保持现金</td></tr>
+                  ) : null}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="min-w-0 py-7 lg:pl-7">
+            <div className="mb-4">
+              <h2 className="text-base font-semibold">多基准比较</h2>
+              <p className="mt-1 text-xs text-muted-text">策略累计收益相对同周期基准</p>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[28rem] text-left text-sm">
+                <thead className="border-y border-border/70 text-xs text-muted-text">
+                  <tr>
+                    <th className="py-2 font-medium">基准</th>
+                    <th className="py-2 text-right font-medium">基准收益</th>
+                    <th className="py-2 text-right font-medium">策略超额</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/50">
+                  {state.benchmarks.map((benchmark) => {
+                    const benchmarkReturn = latest.benchmark_total_return_pct[benchmark] || 0;
+                    const excess = latest.strategy_total_return_pct - benchmarkReturn;
+                    return (
+                      <tr key={benchmark}>
+                        <td className="py-3 font-medium">{benchmark}</td>
+                        <td className="py-3 text-right tabular-nums">{formatPercent(benchmarkReturn)}</td>
+                        <td className={`py-3 text-right tabular-nums ${excess > 0 ? 'text-emerald-400' : excess < 0 ? 'text-rose-400' : ''}`}>
+                          {`${excess >= 0 ? '+' : ''}${excess.toFixed(2)}pp`}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section className="grid gap-0 border-b border-border lg:grid-cols-[1.4fr_1fr] lg:divide-x lg:divide-border">
+          <div className="py-7 lg:pr-7">
+            <div className="flex items-center gap-2">
+              {diagnostic?.effective ? <ShieldCheck className="h-5 w-5 text-emerald-400" /> : <Database className="h-5 w-5 text-amber-300" />}
+              <h2 className="text-base font-semibold">有效性证据进度</h2>
+            </div>
+            <div className="mt-5 grid gap-5 sm:grid-cols-2">
+              <div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-muted-text">完成周期</span>
+                  <span className="tabular-nums">{diagnostic?.completed_cycles || 0} / {diagnostic?.required_completed_cycles || state.config.minimum_completed_cycles}</span>
+                </div>
+                <div className="mt-2 h-2 overflow-hidden bg-hover">
+                  <div className="h-full bg-amber-400" style={{ width: `${completionRatio}%` }} />
+                </div>
+              </div>
+              <div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-muted-text">跑赢基准</span>
+                  <span className="tabular-nums">{diagnostic?.positive_excess_benchmarks || 0} / {diagnostic?.required_positive_excess_benchmarks || 3}</span>
+                </div>
+                <div className="mt-2 h-2 overflow-hidden bg-hover">
+                  <div
+                    className="h-full bg-cyan"
+                    style={{ width: `${Math.min((diagnostic?.positive_excess_benchmarks || 0) / (diagnostic?.required_positive_excess_benchmarks || 3) * 100, 100)}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+            <p className="mt-4 text-sm leading-6 text-secondary-text">
+              每个正式股票池需要至少 {state.config.minimum_completed_cycles} 个周期、组合盈利且跑赢至少 3/5 基准。历史综合验证仍独立生效。
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-x-5 gap-y-6 py-7 lg:pl-7">
+            {[
+              ['初始资金', formatMoney(state.config.initial_capital)],
+              ['持有周期', `${state.config.holding_days} 个交易日`],
+              ['单边成本', `${state.config.per_side_cost_bps} bps`],
+              ['行情覆盖', `${((cycle?.coverage?.ratio || 0) * 100).toFixed(0)}%`],
+            ].map(([label, value]) => (
+              <div key={label} className="border-l-2 border-border px-3 py-1">
+                <div className="text-xs text-muted-text">{label}</div>
+                <div className="mt-1 text-sm font-medium tabular-nums">{value}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <footer className="flex flex-col gap-2 py-5 text-xs text-muted-text sm:flex-row sm:items-center sm:justify-between">
+          <span className="inline-flex items-center gap-1.5">
+            {latest.strategy_total_return_pct >= 0
+              ? <TrendingUp className="h-3.5 w-3.5" />
+              : <TrendingDown className="h-3.5 w-3.5" />}
+            数据来自可审计的 paper-trading-state 分支
+          </span>
+          <span>虚拟成交 · 无真实订单 · 非投资建议</span>
+        </footer>
+      </main>
+    </div>
+  );
+};
+
+export default PaperTradingDashboardPage;
