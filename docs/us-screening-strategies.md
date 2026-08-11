@@ -51,14 +51,14 @@ yfinance 的 `fast_info` 和 `info` 对估值字段的覆盖并不稳定，ADR�
 
 在把候选接到购买建议或自动监控前，至少补齐以下验证：
 
-- 基准：`SPY`（S&P 500）和 `QQQ`（Nasdaq 100），同时报告超额收益。
+- 基准：`SPY`、`QQQ`、`IWM`、`DIA`、`RSP`，同时报告绝对收益和多基准超额收益。
 - 指标：CAGR、Sharpe、最大回撤、Calmar、胜率、盈亏比、换手率、手续费和滑点后的净收益。
 - 方法：按时间切分的 walk-forward；所有财报、成分股和估值字段必须 point-in-time，禁止使用未来修订值。
 - 组合：Top-K、单票权重上限、行业/主题集中度、现金比例、再平衡频率和停牌/退市处理。
 - 风险：VIX 或其他市场状态信号、财报事件窗口、隔夜跳空、美元现金和交易时段限制。
 - 记录：每次筛选保存股票池版本、数据时间、策略版本、候选分数、最终人工决策、成交价、费用、持仓和退出原因。
 
-当前仓库已提供筛选结果和 portfolio 相关 API，但尚未把上述回测、券商订单确认、交易 ledger 和个性化止盈/移动止损全部串成默认自动任务。下一阶段应先实现 paper-trading ledger 与定时收益快照，再考虑券商 API 和真实下单。
+当前仓库已增加独立 paper-trading ledger、定时收益快照和 GitHub Actions 日报，详见 [`us-paper-trading.md`](us-paper-trading.md)。它严格保持模拟交易边界，不包含券商订单确认、个性化止盈/移动止损或真实下单；这些能力只有在策略通过完整验证并补齐授权数据后才可另行评估。
 
 当前版本已提供独立历史回放器 `src/services/screening/us_backtest.py` 和命令行入口 `scripts/run_us_strategy_backtest.py`。回放器在每个历史信号日重算 `compute_daily_features()`，按硬过滤和 screen score 选 Top-K，下一交易日开盘入场，固定交易日数后收盘退出，并将交易成本/滑点计入净收益。由于免费行情通常没有可靠的 point-in-time 市值、PE/PB，回放结果会显式列出被排除的字段；这是一项可审计的技术信号验证，不应被描述为完整的基本面回测。
 
@@ -77,6 +77,12 @@ python scripts/run_us_strategy_backtest.py \
   --source auto \
   --top-k 5 \
   --holding-days 10
+```
+
+每日模拟交易：
+
+```bash
+python scripts/run_us_paper_trading.py --notify
 ```
 
 `--source auto` 先尝试 yfinance，失败后尝试 Stooq，并将每只股票实际使用的源写入结果 JSON。运行前请确认网络和数据授权可用；下载失败时不要用合成数据替代真实回测。结果位于 `data/us_backtest/results.json`，缓存位于 `data/us_backtest/`。

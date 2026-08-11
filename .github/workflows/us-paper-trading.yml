@@ -1,0 +1,128 @@
+name: US Paper Trading Daily
+
+on:
+  schedule:
+    # 22:30 UTC is after the US close in both EDT and EST (06:30 Beijing next day).
+    - cron: '30 22 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: us-paper-trading-daily
+  cancel-in-progress: false
+
+jobs:
+  paper-trading:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out default branch
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Restore paper-trading state
+        run: |
+          mkdir -p data/us_paper_trading
+          if git fetch origin paper-trading-state; then
+            if git show origin/paper-trading-state:data/us_paper_trading/state.json > /tmp/us-paper-state.json; then
+              mv /tmp/us-paper-state.json data/us_paper_trading/state.json
+            fi
+          fi
+
+      - name: Advance portfolios and publish notifications
+        env:
+          WECHAT_WEBHOOK_URL: ${{ secrets.WECHAT_WEBHOOK_URL }}
+          DINGTALK_WEBHOOK_URL: ${{ secrets.DINGTALK_WEBHOOK_URL }}
+          DINGTALK_SECRET: ${{ secrets.DINGTALK_SECRET }}
+          FEISHU_WEBHOOK_URL: ${{ secrets.FEISHU_WEBHOOK_URL }}
+          FEISHU_WEBHOOK_SECRET: ${{ secrets.FEISHU_WEBHOOK_SECRET }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          EMAIL_SENDER: ${{ vars.EMAIL_SENDER || secrets.EMAIL_SENDER }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          EMAIL_RECEIVERS: ${{ vars.EMAIL_RECEIVERS || secrets.EMAIL_RECEIVERS }}
+          NTFY_URL: ${{ secrets.NTFY_URL }}
+          NTFY_TOKEN: ${{ secrets.NTFY_TOKEN }}
+          GOTIFY_URL: ${{ secrets.GOTIFY_URL }}
+          GOTIFY_TOKEN: ${{ secrets.GOTIFY_TOKEN }}
+          PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+          SERVERCHAN3_SENDKEY: ${{ secrets.SERVERCHAN3_SENDKEY }}
+          CUSTOM_WEBHOOK_URLS: ${{ secrets.CUSTOM_WEBHOOK_URLS }}
+          CUSTOM_WEBHOOK_BEARER_TOKEN: ${{ secrets.CUSTOM_WEBHOOK_BEARER_TOKEN }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          NOTIFICATION_REPORT_CHANNELS: ${{ vars.NOTIFICATION_REPORT_CHANNELS || secrets.NOTIFICATION_REPORT_CHANNELS }}
+          NOTIFICATION_TIMEZONE: Asia/Shanghai
+        run: python scripts/run_us_paper_trading.py --notify
+
+      - name: Add report to workflow summary
+        if: always()
+        run: |
+          if [ -f data/us_paper_trading/latest.md ]; then
+            cat data/us_paper_trading/latest.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload auditable state and report
+        uses: actions/upload-artifact@v4
+        with:
+          name: us-paper-trading-${{ github.run_id }}
+          path: |
+            data/us_paper_trading/state.json
+            data/us_paper_trading/latest.md
+          retention-days: 90
+
+      - name: Update the daily GitHub issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const title = '美股模拟交易日报';
+            const report = fs.readFileSync('data/us_paper_trading/latest.md', 'utf8').slice(0, 60000);
+            const { owner, repo } = context.repo;
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              owner, repo, state: 'open', per_page: 100
+            });
+            const existing = issues.find(item => !item.pull_request && item.title === title);
+            if (!existing) {
+              await github.rest.issues.create({ owner, repo, title, body: report });
+            } else {
+              await github.rest.issues.update({ owner, repo, issue_number: existing.number, body: report });
+              await github.rest.issues.createComment({
+                owner, repo, issue_number: existing.number,
+                body: `每日更新：${new Date().toISOString()}\n\n${report}`
+              });
+            }
+
+      - name: Persist state on a dedicated branch
+        run: |
+          cp data/us_paper_trading/state.json /tmp/us-paper-state.json
+          cp data/us_paper_trading/latest.md /tmp/us-paper-latest.md
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          if git fetch origin paper-trading-state; then
+            git switch -C paper-trading-state origin/paper-trading-state
+          else
+            git switch --orphan paper-trading-state
+            git rm -rf . || true
+          fi
+          mkdir -p data/us_paper_trading
+          cp /tmp/us-paper-state.json data/us_paper_trading/state.json
+          cp /tmp/us-paper-latest.md data/us_paper_trading/latest.md
+          git add -f data/us_paper_trading/state.json data/us_paper_trading/latest.md
+          git commit -m "chore: update US paper trading state ${GITHUB_RUN_ID}" || exit 0
+          git push origin HEAD:paper-trading-state
