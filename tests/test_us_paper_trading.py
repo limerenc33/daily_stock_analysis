@@ -162,3 +162,6 @@ def test_paper_trading_workflow_persists_state_and_publishes_daily_report():
     assert "python scripts/run_us_paper_trading.py --notify" in rendered
     assert "paper-trading-state" in rendered
     assert "美股模拟交易日报" in rendered
+    assert "continue-on-error: true" in rendered
+    assert "actions/upload-artifact@v6" in rendered
+    assert "actions/github-script@v8" in rendered

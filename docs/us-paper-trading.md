@@ -35,7 +35,7 @@ python scripts/run_us_paper_trading.py --notify
 1. 从 `paper-trading-state` 分支恢复上次账本。
 2. 下载真实 Yahoo 复权日线并推进两个模拟组合。
 3. 将日报写入 Actions Summary 并保存 90 天 artifact。
-4. 创建或更新仓库中的“美股模拟交易日报”Issue，后续每天追加评论。
+4. 若仓库启用了 Issues，创建或更新“美股模拟交易日报”Issue，后续每天追加评论；若 Issues 已关闭，该步骤降级跳过，不影响 artifact 与账本持久化。
 5. 将最新状态提交到独立的 `paper-trading-state` 分支。
 6. 若仓库已配置通知 Secret，同时发送到已有企业微信、飞书、Telegram、邮件、ntfy、Gotify、PushPlus、Server酱、自定义 Webhook、Discord 或 Slack 渠道。
 
