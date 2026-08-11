@@ -109,6 +109,12 @@ _SCORING_PROFILE_KEYS = {
     "theme_heat_cooling_score_penalty_cap",
     "theme_heat_overheat_score",
     "theme_heat_overheat_penalty_slope",
+    "risk_control_volatility_target_pct",
+    "risk_control_volatility_max_pct",
+    "risk_control_drawdown_target_pct",
+    "risk_control_drawdown_floor_pct",
+    "risk_control_atr_target_pct",
+    "risk_control_atr_max_pct",
 }
 _RISK_PROFILE_KEYS = {
     "chase_change_pct",
@@ -141,6 +147,9 @@ _RISK_PROFILE_KEYS = {
 }
 _PORTFOLIO_PROFILE_KEYS = {"max_same_bucket", "concentration_penalty", "buckets"}
 _SCORECARD_PROFILE_KEYS = {
+    "version",
+    "valuation_status",
+    "source",
     "value_quality_value_min",
     "value_quality_stability_min",
     "value_quality_bonus",

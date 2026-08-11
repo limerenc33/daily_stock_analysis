@@ -1,7 +1,7 @@
 name: us_quality_momentum
 display_name: 美股趋势质量
 description: 面向美股大盘股的趋势质量策略，兼顾流动性、趋势确认和回撤控制
-version: "1.0"
+version: "2.0"
 category: trend
 tags: [us, momentum, quality, trend, large_cap]
 analysis_skills: [bull_trend, growth_quality]
@@ -33,12 +33,12 @@ screening:
     atr_20_pct_max: 6.5
   tech_weight: 0.55
   factor_weights:
-    momentum: 0.32
-    liquidity: 0.24
-    stability: 0.20
-    size: 0.14
-    activity: 0.06
-    value: 0.04
+    trend_confirmation: 0.25
+    momentum: 0.20
+    risk_control: 0.20
+    liquidity: 0.15
+    relative_strength: 0.10
+    data_quality: 0.10
   scoring_profile:
     momentum_chase_start_pct: 5.0
     momentum_chase_penalty_slope: 12.0
@@ -48,6 +48,12 @@ screening:
     stability_high_volatility_pct: 40.0
     stability_max_drawdown_floor_pct: -15.0
     stability_high_atr_pct: 6.0
+    risk_control_volatility_target_pct: 18.0
+    risk_control_volatility_max_pct: 45.0
+    risk_control_drawdown_target_pct: -5.0
+    risk_control_drawdown_floor_pct: -15.0
+    risk_control_atr_target_pct: 2.0
+    risk_control_atr_max_pct: 6.5
   risk_profile:
     chase_change_pct: 8.0
     abnormal_volume_ratio: 5.0
@@ -56,7 +62,12 @@ screening:
   portfolio_profile:
     max_same_bucket: 2
     concentration_penalty: 3.0
+  scorecard_profile:
+    version: us_evidence_v2
+    valuation_status: not_scored
+    source: yahoo_adjusted_daily
   ranking_hints: |
-    优先选择流动性充足、股价站上 MA20、MACD 未转弱且 20 日回撤可控的美股大盘股。
-    不以 PE/PB 缺失作为淘汰条件，估值仅作为低权重排序因素；下单前需要核对财报、事件和盘前盘后流动性。
+    优先选择趋势确认、动量质量、回撤控制和流动性均有日线证据的美股大盘股。
+    PE/PB、市值和财务质量在当前 Yahoo 日线回放中不可得，因此明确标记为未评分，不使用缺失值默认分参与排名。
+    下单前仍需要独立核对财报、事件和盘前盘后流动性；本策略只用于模拟验证。
   max_output: 5

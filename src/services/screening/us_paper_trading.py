@@ -13,6 +13,7 @@ import pandas as pd
 from src.services.screening.filter import apply_hard_filters
 from src.services.screening.scorer import compute_screen_scores
 from src.services.screening.strategy import load_all_strategies
+from src.services.screening.us_candidate_evidence import FACTOR_LABELS, build_us_candidate_evidence
 from src.services.screening.us_backtest import (
     _backtest_filters,
     _feature_row,
@@ -49,6 +50,7 @@ def create_paper_trading_state(
     return {
         "schema_version": 1,
         "strategy": config.strategy_name,
+        "scorecard_version": None,
         "research_status": "not_validated",
         "created_at": datetime.now(timezone.utc).isoformat(),
         "updated_at": None,
@@ -115,19 +117,21 @@ def rank_candidates_on_date(
         selected = selected.sort_values(
             ["screen_score", "code"], ascending=[False, True]
         ).head(top_k)
+    selected_payload = []
+    for _, row in selected.iterrows():
+        payload = {
+            "code": str(row["code"]),
+            "screen_score": round(float(row["screen_score"]), 4),
+            "signal_close": round(float(row["price"]), 6),
+        }
+        payload.update(build_us_candidate_evidence(row, strategy.screening))
+        selected_payload.append(payload)
     return {
         "signal_date": signal_date.isoformat(),
         "universe_expected_count": expected_count,
         "universe_feature_covered_count": covered_count,
         "universe_coverage_ratio": round(coverage_ratio, 6),
-        "selected": [
-            {
-                "code": str(row["code"]),
-                "screen_score": round(float(row["screen_score"]), 4),
-                "signal_close": round(float(row["price"]), 6),
-            }
-            for _, row in selected.iterrows()
-        ],
+        "selected": selected_payload,
     }
 
 
@@ -153,7 +157,18 @@ def advance_paper_trading_state(
         raise ValueError("no common benchmark date is available")
     effective_date = eligible_dates[-1]
     events: dict[str, list[dict[str, object]]] = {}
+    strategies_dir = strategies_dir or Path(__file__).with_name("strategies")
+    strategy = load_all_strategies(strategies_dir)[config.strategy_name]
+    state["scorecard_version"] = str(
+        strategy.screening.scorecard_profile.get("version") or "us_evidence_v2"
+    )
     for name, portfolio in dict(state["portfolios"]).items():
+        migration_event = _ensure_active_cycle_evidence(
+            portfolio,
+            normalized,
+            config,
+            strategies_dir=strategies_dir,
+        )
         events[name] = _advance_portfolio(
             portfolio,
             normalized,
@@ -162,11 +177,82 @@ def advance_paper_trading_state(
             config,
             strategies_dir=strategies_dir,
         )
+        if migration_event is not None:
+            events[name].insert(0, migration_event)
     state["updated_at"] = datetime.now(timezone.utc).isoformat()
     state["latest_market_date"] = effective_date.isoformat()
     state["live_validation"] = evaluate_live_validation(state)
     state["last_events"] = events
     return state
+
+
+def _ensure_active_cycle_evidence(
+    portfolio: dict[str, object],
+    histories: Mapping[str, pd.DataFrame],
+    config: USPaperTradingConfig,
+    *,
+    strategies_dir: Path,
+) -> dict[str, object] | None:
+    """Upgrade pre-evidence cycles without rewriting already executed trades."""
+    cycle = portfolio.get("active_cycle")
+    if not isinstance(cycle, dict):
+        return None
+    selected = list(cycle.get("selected", []))
+    if not selected or all(item.get("selection_thesis") for item in selected):
+        return None
+    signal_date_text = str(cycle.get("signal_date") or "")
+    try:
+        signal_date = date.fromisoformat(signal_date_text)
+    except ValueError:
+        return None
+    universe = [str(item) for item in portfolio.get("universe", [])]
+    requested_top_k = (
+        config.top_k
+        if cycle.get("status") == "pending"
+        else max(len(universe), 1)
+    )
+    ranked = rank_candidates_on_date(
+        config.strategy_name,
+        {code: histories.get(code, pd.DataFrame()) for code in universe},
+        signal_date,
+        top_k=requested_top_k,
+        lookback_days=config.lookback_days,
+        minimum_universe_coverage=config.minimum_universe_coverage,
+        strategies_dir=strategies_dir,
+    )
+    rebuilt = list(ranked["selected"])
+    if cycle.get("status") == "pending":
+        cycle["selected"] = rebuilt
+        return {
+            "type": "scorecard_upgraded",
+            "signal_date": signal_date_text,
+            "mode": "pending_signal_recomputed",
+        }
+
+    evidence_by_code = {str(item["code"]): item for item in rebuilt}
+    migrated = 0
+    for item in selected:
+        evidence = evidence_by_code.get(str(item.get("code") or ""))
+        if evidence is None:
+            continue
+        original_score = item.get("screen_score")
+        for key, value in evidence.items():
+            if key not in {"code", "screen_score", "signal_close"}:
+                item[key] = value
+        item["scorecard_version"] = "legacy_v1_evidence_backfill"
+        item["score_explanation"] = (
+            "保留信号生成时的旧版排序分；证据卡按同一信号日重建，不改写已执行交易。"
+        )
+        item["screen_score"] = original_score
+        migrated += 1
+    if migrated:
+        return {
+            "type": "scorecard_upgraded",
+            "signal_date": signal_date_text,
+            "mode": "open_cycle_evidence_backfilled",
+            "candidate_count": migrated,
+        }
+    return None
 
 
 def _advance_portfolio(
@@ -448,6 +534,60 @@ def render_paper_trading_report(state: Mapping[str, object]) -> str:
         else:
             lines.append("候选：无，当前周期保持现金。")
         lines.append("")
+    lines.extend(["## 候选与选股理由", ""])
+    for name, portfolio in dict(state["portfolios"]).items():
+        active = portfolio.get("active_cycle") or {}
+        selected = list(active.get("selected", []))
+        lines.extend([
+            f"### {name}",
+            "",
+            f"信号日 `{active.get('signal_date', 'N/A')}`，当前周期 `{active.get('status', 'idle')}`。",
+            "",
+        ])
+        if not selected:
+            lines.extend(["当前无候选，组合保持现金。", ""])
+            continue
+        for index, item in enumerate(selected, start=1):
+            lines.extend([
+                f"#### {index}. {item['code']} - {float(item['screen_score']):.1f} 分",
+                "",
+                f"> {item.get('selection_thesis') or '旧周期未保存结构化选股理由。'}",
+                "",
+            ])
+            factor_scores = dict(item.get("factor_scores") or {})
+            factor_weights = dict(item.get("factor_weights") or {})
+            if factor_scores:
+                factors = []
+                for key, value in factor_scores.items():
+                    if value is None:
+                        continue
+                    label = FACTOR_LABELS.get(str(key), str(key))
+                    weight = float(factor_weights.get(key) or 0.0) * 100.0
+                    factors.append(f"{label} {float(value):.1f}（{weight:.0f}%）")
+                if factors:
+                    lines.append("- 因子：" + "；".join(factors))
+            lines.append("- 入选证据：" + _join_report_items(item.get("reasons_pass"), "未记录"))
+            lines.append("- 观察项：" + _join_report_items(item.get("reasons_watch"), "暂无"))
+            lines.append(
+                "- 风险提示："
+                + _join_report_items(item.get("risk_flags"), "未触发额外技术风险标记")
+            )
+            lines.append(
+                "- 失效条件："
+                + _join_report_items(
+                    item.get("invalidation_conditions"),
+                    "按统一硬风控执行",
+                )
+            )
+            lines.append("- 数据来源：" + _join_report_items(item.get("data_sources"), "未记录"))
+            lines.extend([
+                "- 分数说明："
+                + str(
+                    item.get("score_explanation")
+                    or "规则排序分，不是上涨概率或预期收益。"
+                ),
+                "",
+            ])
     lines.extend([
         "## 验证门槛",
         "",
@@ -455,6 +595,13 @@ def render_paper_trading_report(state: Mapping[str, object]) -> str:
         "",
     ])
     return "\n".join(lines)
+
+
+def _join_report_items(value: object, fallback: str) -> str:
+    if not isinstance(value, (list, tuple)):
+        return fallback
+    items = [str(item).strip() for item in value if str(item).strip()]
+    return "；".join(items) if items else fallback
 
 
 def _bar_on_date(frame: pd.DataFrame | None, target: date):

@@ -5,6 +5,7 @@ import PaperTradingDashboardPage from '../PaperTradingDashboardPage';
 
 const state = {
   strategy: 'us_quality_momentum',
+  scorecard_version: 'us_evidence_v2',
   research_status: 'not_validated',
   updated_at: '2026-08-11T03:12:48Z',
   latest_market_date: '2026-08-10',
@@ -24,7 +25,36 @@ const state = {
       active_cycle: {
         status: 'pending',
         signal_date: '2026-08-10',
-        selected: [{ code: 'LLY', screen_score: 71.3253, signal_close: 1231.94 }],
+        selected: [{
+          code: 'LLY',
+          screen_score: 71.3253,
+          signal_close: 1231.94,
+          scorecard_version: 'us_evidence_v2',
+          score_explanation: '0-100 规则排序分，不是上涨概率或预期收益。',
+          factor_scores: {
+            trend_confirmation: 82.4,
+            momentum: 76.1,
+            risk_control: 68.7,
+            liquidity: 74.2,
+            relative_strength: 90,
+            data_quality: 100,
+          },
+          factor_weights: {
+            trend_confirmation: 0.25,
+            momentum: 0.2,
+            risk_control: 0.2,
+            liquidity: 0.15,
+            relative_strength: 0.1,
+            data_quality: 0.1,
+          },
+          reasons_pass: ['收盘价站上 MA20', 'MA5 >= MA20 >= MA60，均线结构偏多'],
+          reasons_watch: ['估值、市值与财务质量未接入本次日线回放，未参与评分'],
+          risk_flags: [],
+          selection_thesis: '趋势确认、动量质量贡献居前并通过全部硬筛选；未触发额外技术风险标记。',
+          invalidation_conditions: ['收盘价跌破 MA20 或 MACD 转为 bearish'],
+          data_sources: ['Yahoo Finance 复权 OHLCV 日线（收盘后信号）'],
+          data_gaps: ['估值、市值与财务质量未接入本次日线回放，未参与评分'],
+        }],
         coverage: { expected_count: 22, covered_count: 22, ratio: 1 },
       },
       snapshots: [{
@@ -70,8 +100,14 @@ describe('PaperTradingDashboardPage', () => {
 
     expect(await screen.findByRole('heading', { name: '模拟组合收益与候选追踪' })).toBeInTheDocument();
     expect(screen.getByText('证据不足或未通过')).toBeInTheDocument();
-    expect(screen.getByText('LLY')).toBeInTheDocument();
-    expect(screen.getByText('71.3')).toBeInTheDocument();
+    expect(screen.getAllByText('LLY')).toHaveLength(2);
+    expect(screen.getAllByText('71.3')).toHaveLength(2);
+    expect(screen.getByRole('heading', { name: '候选证据卡' })).toBeInTheDocument();
+    expect(screen.getAllByText(/趋势确认、动量质量贡献居前/)).toHaveLength(2);
+    expect(screen.getByText('趋势确认')).toBeInTheDocument();
+    expect(screen.getByText('收盘价站上 MA20')).toBeInTheDocument();
+    expect(screen.getAllByText(/估值、市值与财务质量未接入/).length).toBeGreaterThan(0);
+    expect(screen.getByText('未触发额外技术风险标记')).toBeInTheDocument();
     expect(screen.getByText('等待次日开盘')).toBeInTheDocument();
     expect(screen.getByText('0 / 20')).toBeInTheDocument();
     await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));

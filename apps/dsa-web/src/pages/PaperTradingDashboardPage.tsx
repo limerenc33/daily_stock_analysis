@@ -3,11 +3,14 @@ import {
   Activity,
   AlertTriangle,
   CalendarDays,
+  CheckCircle2,
   Clock3,
   Database,
+  Eye,
   ExternalLink,
   Github,
   RefreshCw,
+  ShieldAlert,
   ShieldCheck,
   TrendingDown,
   TrendingUp,
@@ -26,6 +29,18 @@ type Candidate = {
   code: string;
   screen_score: number;
   signal_close: number;
+  scorecard_version?: string;
+  score_explanation?: string;
+  factor_scores?: Record<string, number | null>;
+  factor_weights?: Record<string, number>;
+  evidence_metrics?: Record<string, string | number | boolean | null>;
+  reasons_pass?: string[];
+  reasons_watch?: string[];
+  risk_flags?: string[];
+  selection_thesis?: string;
+  invalidation_conditions?: string[];
+  data_sources?: string[];
+  data_gaps?: string[];
 };
 
 type Snapshot = {
@@ -67,6 +82,7 @@ type ValidationDiagnostic = {
 
 type PaperTradingState = {
   strategy: string;
+  scorecard_version?: string;
   research_status: string;
   updated_at: string;
   latest_market_date: string;
@@ -95,6 +111,15 @@ const PORTFOLIO_LABELS: Record<string, string> = {
   large_cap_22: '大盘股 22',
   diversified_60: '跨行业 60',
 };
+const FACTOR_LABELS: Record<string, string> = {
+  trend_confirmation: '趋势确认',
+  momentum: '动量质量',
+  risk_control: '风险控制',
+  liquidity: '流动性容量',
+  relative_strength: '相对强度',
+  data_quality: '数据质量',
+};
+const FACTOR_ORDER = Object.keys(FACTOR_LABELS);
 const CHART_COLORS: Record<string, string> = {
   strategy: '#22d3ee',
   SPY: '#f59e0b',
@@ -156,6 +181,33 @@ const Metric = ({
     <div className="mt-1 truncate text-xs text-muted-text">{detail}</div>
   </div>
 );
+
+const EvidenceList = ({
+  title,
+  items,
+  emptyText,
+  tone,
+}: {
+  title: string;
+  items?: string[];
+  emptyText: string;
+  tone: 'pass' | 'watch' | 'risk';
+}) => {
+  const Icon = tone === 'pass' ? CheckCircle2 : tone === 'watch' ? Eye : ShieldAlert;
+  const color = tone === 'pass' ? 'text-emerald-400' : tone === 'watch' ? 'text-amber-300' : 'text-rose-400';
+  const visibleItems = items?.length ? items : [emptyText];
+  return (
+    <div className="min-w-0">
+      <div className={`flex items-center gap-1.5 text-xs font-medium ${color}`}>
+        <Icon className="h-3.5 w-3.5 shrink-0" />
+        {title}
+      </div>
+      <ul className="mt-2 space-y-1.5 text-xs leading-5 text-secondary-text">
+        {visibleItems.map((item) => <li key={item}>{item}</li>)}
+      </ul>
+    </div>
+  );
+};
 
 const PaperTradingDashboardPage = () => {
   const [state, setState] = useState<PaperTradingState | null>(null);
@@ -223,7 +275,6 @@ const PaperTradingDashboardPage = () => {
             className="mt-5 inline-flex h-10 w-10 items-center justify-center border border-border bg-hover text-foreground hover:border-cyan/50"
             onClick={() => void loadState()}
             aria-label="重新加载"
-            title="重新加载"
           >
             <RefreshCw className="h-4 w-4" />
           </button>
@@ -256,7 +307,6 @@ const PaperTradingDashboardPage = () => {
               rel="noreferrer"
               className="flex h-9 w-9 items-center justify-center border border-border bg-card text-muted-text hover:border-cyan/40 hover:text-cyan"
               aria-label="打开 GitHub 仓库"
-              title="打开 GitHub 仓库"
             >
               <Github className="h-4 w-4" />
             </a>
@@ -266,7 +316,6 @@ const PaperTradingDashboardPage = () => {
               onClick={() => void loadState()}
               disabled={loading}
               aria-label="刷新账本"
-              title="刷新账本"
             >
               <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
             </button>
@@ -400,12 +449,13 @@ const PaperTradingDashboardPage = () => {
               <span className="text-xs text-muted-text">Top {state.config.top_k}</span>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[32rem] text-left text-sm">
+              <table className="w-full min-w-[46rem] text-left text-sm">
                 <thead className="border-y border-border/70 text-xs text-muted-text">
                   <tr>
                     <th className="w-12 py-2 font-medium">#</th>
                     <th className="py-2 font-medium">代码</th>
                     <th className="py-2 font-medium">策略分</th>
+                    <th className="py-2 font-medium">核心理由</th>
                     <th className="py-2 text-right font-medium">信号收盘价</th>
                   </tr>
                 </thead>
@@ -413,7 +463,7 @@ const PaperTradingDashboardPage = () => {
                   {candidates.map((candidate, index) => (
                     <tr key={candidate.code}>
                       <td className="py-3 text-muted-text">{index + 1}</td>
-                      <td className="py-3 font-semibold tracking-wide">{candidate.code}</td>
+                      <td className="py-3 font-semibold">{candidate.code}</td>
                       <td className="py-3">
                         <div className="flex items-center gap-3">
                           <span className="w-10 tabular-nums">{candidate.screen_score.toFixed(1)}</span>
@@ -422,11 +472,14 @@ const PaperTradingDashboardPage = () => {
                           </span>
                         </div>
                       </td>
+                      <td className="max-w-[20rem] py-3 pr-4 text-xs leading-5 text-secondary-text">
+                        {candidate.selection_thesis || '旧周期暂无结构化理由'}
+                      </td>
                       <td className="py-3 text-right tabular-nums">{formatMoney(candidate.signal_close)}</td>
                     </tr>
                   ))}
                   {!candidates.length ? (
-                    <tr><td className="py-5 text-muted-text" colSpan={4}>本周期保持现金</td></tr>
+                    <tr><td className="py-5 text-muted-text" colSpan={5}>本周期保持现金</td></tr>
                   ) : null}
                 </tbody>
               </table>
@@ -464,6 +517,79 @@ const PaperTradingDashboardPage = () => {
                 </tbody>
               </table>
             </div>
+          </div>
+        </section>
+
+        <section className="border-b border-border py-7">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 className="text-base font-semibold">候选证据卡</h2>
+              <p className="mt-1 text-xs text-muted-text">规则证据、风险与数据缺口随交易账本保存</p>
+            </div>
+            <span className="text-xs text-muted-text">{state.scorecard_version || candidates[0]?.scorecard_version || '旧版账本'}</span>
+          </div>
+          <div className="mt-3 divide-y divide-border/70">
+            {candidates.map((candidate, index) => {
+              const factors = FACTOR_ORDER
+                .filter((key) => candidate.factor_scores?.[key] != null)
+                .map((key) => ({
+                  key,
+                  score: Number(candidate.factor_scores?.[key]),
+                  weight: Number(candidate.factor_weights?.[key] || 0),
+                }));
+              return (
+                <article key={candidate.code} className="grid gap-6 py-6 lg:grid-cols-[13rem_1fr_1.15fr]">
+                  <div className="min-w-0">
+                    <div className="flex items-baseline gap-3">
+                      <span className="text-xs text-muted-text">#{index + 1}</span>
+                      <h3 className="text-xl font-semibold">{candidate.code}</h3>
+                      <span className="text-sm tabular-nums text-cyan">{candidate.screen_score.toFixed(1)}</span>
+                    </div>
+                    <p className="mt-3 text-sm leading-6 text-secondary-text">
+                      {candidate.selection_thesis || '该候选来自旧版账本，尚无结构化证据。'}
+                    </p>
+                    <p className="mt-3 text-xs leading-5 text-muted-text">
+                      {candidate.score_explanation || '规则排序分，不代表上涨概率或预期收益。'}
+                    </p>
+                  </div>
+
+                  <div className="min-w-0">
+                    <div className="text-xs font-medium text-muted-text">六维因子</div>
+                    <div className="mt-3 grid gap-x-5 gap-y-3 sm:grid-cols-2">
+                      {factors.map(({ key, score, weight }) => (
+                        <div key={key} className="min-w-0">
+                          <div className="flex items-center justify-between gap-3 text-xs">
+                            <span className="truncate text-secondary-text">{FACTOR_LABELS[key] || key}</span>
+                            <span className="shrink-0 tabular-nums">{score.toFixed(1)} · {(weight * 100).toFixed(0)}%</span>
+                          </div>
+                          <div className="mt-1.5 h-1.5 overflow-hidden bg-hover">
+                            <div className="h-full bg-cyan" style={{ width: `${Math.max(0, Math.min(score, 100))}%` }} />
+                          </div>
+                        </div>
+                      ))}
+                      {!factors.length ? <p className="text-xs text-muted-text">旧周期未保存因子明细</p> : null}
+                    </div>
+                    <div className="mt-4 border-t border-border/60 pt-3 text-xs leading-5 text-muted-text">
+                      <div>数据：{candidate.data_sources?.join('；') || '未记录'}</div>
+                      {candidate.data_gaps?.length ? <div className="mt-1 text-amber-300">缺口：{candidate.data_gaps.join('；')}</div> : null}
+                    </div>
+                  </div>
+
+                  <div className="grid min-w-0 gap-5 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+                    <EvidenceList title="入选证据" items={candidate.reasons_pass} emptyText="未记录" tone="pass" />
+                    <EvidenceList title="观察项" items={candidate.reasons_watch} emptyText="暂无额外观察项" tone="watch" />
+                    <EvidenceList title="风险提示" items={candidate.risk_flags} emptyText="未触发额外技术风险标记" tone="risk" />
+                    <div className="sm:col-span-3 lg:col-span-1 xl:col-span-3">
+                      <div className="text-xs font-medium text-muted-text">失效条件</div>
+                      <p className="mt-1.5 text-xs leading-5 text-secondary-text">
+                        {candidate.invalidation_conditions?.join('；') || '按统一硬风控执行'}
+                      </p>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+            {!candidates.length ? <p className="py-6 text-sm text-muted-text">本周期没有候选证据，组合保持现金。</p> : null}
           </div>
         </section>
 

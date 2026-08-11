@@ -17,6 +17,10 @@ _FACTOR_COLUMNS = {
     "size": "factor_size_score",
     "theme_heat": "factor_theme_heat_score",
     "topic_alignment": "factor_topic_alignment_score",
+    "trend_confirmation": "factor_trend_confirmation_score",
+    "risk_control": "factor_risk_control_score",
+    "relative_strength": "factor_relative_strength_score",
+    "data_quality": "factor_data_quality_score",
 }
 _DEFAULT_SCORING_PROFILE = {
     "momentum_base": 60.0,
@@ -86,6 +90,12 @@ _DEFAULT_SCORING_PROFILE = {
     "topic_alignment_match_bonus": 25.0,
     "topic_alignment_heat_weight": 0.25,
     "topic_alignment_unmatched_penalty": 12.0,
+    "risk_control_volatility_target_pct": 18.0,
+    "risk_control_volatility_max_pct": 45.0,
+    "risk_control_drawdown_target_pct": -5.0,
+    "risk_control_drawdown_floor_pct": -15.0,
+    "risk_control_atr_target_pct": 2.0,
+    "risk_control_atr_max_pct": 6.5,
 }
 
 
@@ -148,6 +158,10 @@ def _compute_factor_scores(df: pd.DataFrame, config: ScreeningConfig | None = No
         "size": _compute_size_score(df),
         "theme_heat": _compute_theme_heat_score(df, profile),
         "topic_alignment": _compute_topic_alignment_score(df, profile),
+        "trend_confirmation": _compute_trend_confirmation_score(df),
+        "risk_control": _compute_risk_control_score(df, profile),
+        "relative_strength": _compute_relative_strength_score(df),
+        "data_quality": _compute_data_quality_score(df),
     }
 
 
@@ -384,6 +398,71 @@ def _compute_size_score(df: pd.DataFrame) -> pd.Series:
     return _rank_score(log_mv.where(mv > 0), lower_is_better=False, na_score=35)
 
 
+def _compute_trend_confirmation_score(df: pd.DataFrame) -> pd.Series:
+    """Score independently observable trend confirmation signals."""
+    signal = _numeric_column(df, "signal_score").fillna(40).clip(0, 100)
+    price_above = _boolean_score(df, "price_above_ma20", missing_score=40)
+    ma_bullish = _boolean_score(df, "ma_bullish", missing_score=40)
+    if "macd_status" in df.columns:
+        macd = df["macd_status"].astype(str).str.lower().map({
+            "bullish": 100.0,
+            "neutral": 60.0,
+            "bearish": 0.0,
+        }).fillna(40.0)
+    else:
+        macd = pd.Series(40.0, index=df.index)
+    return (
+        signal * 0.35
+        + price_above * 0.25
+        + ma_bullish * 0.20
+        + macd * 0.20
+    ).clip(0, 100)
+
+
+def _compute_risk_control_score(
+    df: pd.DataFrame,
+    profile: dict[str, float],
+) -> pd.Series:
+    """Reward lower volatility, shallower drawdown, and smaller ATR."""
+    volatility = _bounded_lower_is_better_score(
+        _numeric_column(df, "volatility_20d_pct"),
+        target=profile["risk_control_volatility_target_pct"],
+        limit=profile["risk_control_volatility_max_pct"],
+        missing_score=35.0,
+    )
+    drawdown = _bounded_higher_is_better_score(
+        _numeric_column(df, "max_drawdown_20d_pct"),
+        floor=profile["risk_control_drawdown_floor_pct"],
+        target=profile["risk_control_drawdown_target_pct"],
+        missing_score=35.0,
+    )
+    atr = _bounded_lower_is_better_score(
+        _numeric_column(df, "atr_20_pct"),
+        target=profile["risk_control_atr_target_pct"],
+        limit=profile["risk_control_atr_max_pct"],
+        missing_score=35.0,
+    )
+    return (volatility * 0.40 + drawdown * 0.35 + atr * 0.25).clip(0, 100)
+
+
+def _compute_relative_strength_score(df: pd.DataFrame) -> pd.Series:
+    """Rank 60-session returns inside the point-in-time candidate pool."""
+    if "change_60d" not in df.columns:
+        return pd.Series(30.0, index=df.index)
+    return _rank_score(
+        _numeric_column(df, "change_60d"),
+        lower_is_better=False,
+        na_score=30.0,
+    )
+
+
+def _compute_data_quality_score(df: pd.DataFrame) -> pd.Series:
+    """Expose data completeness as a scored dimension instead of hiding it."""
+    if "daily_quality_score" not in df.columns:
+        return pd.Series(30.0, index=df.index)
+    return _numeric_column(df, "daily_quality_score").fillna(30.0).clip(0, 100)
+
+
 def _compute_theme_heat_score(df: pd.DataFrame, profile: dict[str, float]) -> pd.Series:
     base = pd.Series(profile["theme_heat_unknown_score"], index=df.index)
     if "board_heat_score" in df.columns:
@@ -485,6 +564,58 @@ def _numeric_column(df: pd.DataFrame, column: str) -> pd.Series:
     if column not in df.columns:
         return pd.Series(pd.NA, index=df.index)
     return pd.to_numeric(df[column], errors="coerce")
+
+
+def _boolean_score(
+    df: pd.DataFrame,
+    column: str,
+    *,
+    missing_score: float,
+) -> pd.Series:
+    if column not in df.columns:
+        return pd.Series(float(missing_score), index=df.index)
+
+    def convert(value: object) -> float:
+        if pd.isna(value):
+            return float(missing_score)
+        if isinstance(value, str):
+            normalized = value.strip().lower()
+            if normalized in {"true", "1", "yes"}:
+                return 100.0
+            if normalized in {"false", "0", "no"}:
+                return 0.0
+            return float(missing_score)
+        return 100.0 if bool(value) else 0.0
+
+    return df[column].map(convert)
+
+
+def _bounded_lower_is_better_score(
+    values: pd.Series,
+    *,
+    target: float,
+    limit: float,
+    missing_score: float,
+) -> pd.Series:
+    if limit <= target:
+        return pd.Series(float(missing_score), index=values.index)
+    numeric = pd.to_numeric(values, errors="coerce")
+    score = 100.0 - (numeric - target).clip(lower=0) * 100.0 / (limit - target)
+    return score.clip(0, 100).fillna(float(missing_score))
+
+
+def _bounded_higher_is_better_score(
+    values: pd.Series,
+    *,
+    floor: float,
+    target: float,
+    missing_score: float,
+) -> pd.Series:
+    if target <= floor:
+        return pd.Series(float(missing_score), index=values.index)
+    numeric = pd.to_numeric(values, errors="coerce")
+    score = (numeric - floor) * 100.0 / (target - floor)
+    return score.clip(0, 100).fillna(float(missing_score))
 
 
 def _rank_score(
