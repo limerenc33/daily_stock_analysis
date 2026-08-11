@@ -1,9 +1,9 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "strategy": "us_quality_momentum",
   "research_status": "not_validated",
   "created_at": "2026-08-11T03:12:22.409161+00:00",
-  "updated_at": "2026-08-11T11:14:32.437243+00:00",
+  "updated_at": "2026-08-11T23:10:34.677816+00:00",
   "config": {
     "strategy_name": "us_quality_momentum",
     "top_k": 5,
@@ -12,7 +12,10 @@
     "initial_capital": 100000.0,
     "per_side_cost_bps": 10.0,
     "minimum_universe_coverage": 0.95,
-    "minimum_completed_cycles": 20
+    "minimum_completed_cycles": 20,
+    "grid_step_pct": 3.0,
+    "grid_take_profit_levels": 2,
+    "grid_stop_loss_levels": 2
   },
   "benchmarks": [
     "SPY",
@@ -56,7 +59,7 @@
         "RSP": 100000.0
       },
       "active_cycle": {
-        "status": "pending",
+        "status": "open",
         "signal_date": "2026-08-10",
         "selected": [
           {
@@ -378,7 +381,434 @@
           "expected_count": 22,
           "covered_count": 22,
           "ratio": 1.0
-        }
+        },
+        "entry_date": "2026-08-11",
+        "starting_equity": 100000.0,
+        "benchmark_starting_equity": {
+          "SPY": 100000.0,
+          "QQQ": 100000.0,
+          "IWM": 100000.0,
+          "DIA": 100000.0,
+          "RSP": 100000.0
+        },
+        "benchmark_entries": {
+          "SPY": 774.530029,
+          "QQQ": 723.299988,
+          "IWM": 300.929993,
+          "DIA": 539.909973,
+          "RSP": 219.970001
+        },
+        "positions": [
+          {
+            "code": "LLY",
+            "screen_score": 84.7225,
+            "signal_close": 1231.939941,
+            "scorecard_version": "us_evidence_v2",
+            "score_method": "weighted_rule_score_0_100",
+            "score_explanation": "0-100 规则排序分，只用于同日同股票池比较，不是上涨概率或预期收益。",
+            "factor_scores": {
+              "trend_confirmation": 97.7328,
+              "momentum": 83.9249,
+              "risk_control": 53.2358,
+              "liquidity": 85.7143,
+              "relative_strength": 100.0,
+              "data_quality": 100.0
+            },
+            "factor_weights": {
+              "trend_confirmation": 0.25,
+              "momentum": 0.2,
+              "risk_control": 0.2,
+              "liquidity": 0.15,
+              "relative_strength": 0.1,
+              "data_quality": 0.1
+            },
+            "evidence_metrics": {
+              "change_pct": 3.8989,
+              "change_60d_pct": 21.4926,
+              "signal_score": 93.5224,
+              "volume_ratio_20d": 1.0974,
+              "volatility_20d_pct": 36.0404,
+              "max_drawdown_20d_pct": -8.6003,
+              "atr_20_pct": 3.3386,
+              "daily_quality_score": 100.0,
+              "price_above_ma20": true,
+              "ma_bullish": true,
+              "macd_status": "bullish",
+              "rsi_status": "neutral"
+            },
+            "reasons_pass": [
+              "收盘价 1231.94 站上 MA20 1173.66",
+              "MA5 >= MA20 >= MA60，均线结构偏多",
+              "MACD 为 bullish，满足趋势白名单",
+              "趋势信号 93.5，高于门槛 55",
+              "60 日涨跌幅 +21.5%，处于规则允许区间",
+              "20 日波动率 36.0%、回撤 -8.6%、ATR 3.3% 均未触发硬风控"
+            ],
+            "reasons_watch": [
+              "估值、市值与财务质量未接入本次日线回放，未参与评分"
+            ],
+            "risk_flags": [
+              "20 日波动率 36.0%，接近上限 45.0%"
+            ],
+            "selection_thesis": "趋势确认、动量质量贡献居前并通过全部硬筛选；20 日波动率 36.0%，接近上限 45.0%。 基本面未验证，因此只作为模拟候选。",
+            "invalidation_conditions": [
+              "收盘价跌破 MA20 或 MACD 转为 bearish",
+              "20 日波动率高于 45.0%、20 日回撤低于 -15.0%、ATR 高于 6.5%",
+              "行情数据质量低于可审计要求"
+            ],
+            "data_sources": [
+              "Yahoo Finance 复权 OHLCV 日线（收盘后信号）"
+            ],
+            "data_gaps": [
+              "估值、市值与财务质量未接入本次日线回放，未参与评分"
+            ],
+            "entry_date": "2026-08-11",
+            "entry_open": 1230.650024,
+            "allocated_capital": 20000.0,
+            "quantity": 16.25157405,
+            "status": "open",
+            "remaining_quantity": 16.25157405,
+            "realized_value": 0.0,
+            "fills": [],
+            "last_price": 1215.02002,
+            "last_evaluated_date": "2026-08-11",
+            "grid": {
+              "step_pct": 3.0,
+              "take_profit_prices": [
+                1267.569525,
+                1304.489025
+              ],
+              "stop_loss_price": 1156.811023,
+              "completed_take_profit_levels": []
+            }
+          },
+          {
+            "code": "XOM",
+            "screen_score": 80.6581,
+            "signal_close": 159.789993,
+            "scorecard_version": "us_evidence_v2",
+            "score_method": "weighted_rule_score_0_100",
+            "score_explanation": "0-100 规则排序分，只用于同日同股票池比较，不是上涨概率或预期收益。",
+            "factor_scores": {
+              "trend_confirmation": 95.852,
+              "momentum": 79.142,
+              "risk_control": 86.4763,
+              "liquidity": 71.4286,
+              "relative_strength": 28.5714,
+              "data_quality": 100.0
+            },
+            "factor_weights": {
+              "trend_confirmation": 0.25,
+              "momentum": 0.2,
+              "risk_control": 0.2,
+              "liquidity": 0.15,
+              "relative_strength": 0.1,
+              "data_quality": 0.1
+            },
+            "evidence_metrics": {
+              "change_pct": 4.4106,
+              "change_60d_pct": 6.1388,
+              "signal_score": 88.1486,
+              "volume_ratio_20d": 1.3513,
+              "volatility_20d_pct": 25.4841,
+              "max_drawdown_20d_pct": -3.4019,
+              "atr_20_pct": 2.4385,
+              "daily_quality_score": 100.0,
+              "price_above_ma20": true,
+              "ma_bullish": true,
+              "macd_status": "bullish",
+              "rsi_status": "neutral"
+            },
+            "reasons_pass": [
+              "收盘价 159.79 站上 MA20 152.83",
+              "MA5 >= MA20 >= MA60，均线结构偏多",
+              "MACD 为 bullish，满足趋势白名单",
+              "趋势信号 88.1，高于门槛 55",
+              "60 日涨跌幅 +6.1%，处于规则允许区间",
+              "20 日波动率 25.5%、回撤 -3.4%、ATR 2.4% 均未触发硬风控"
+            ],
+            "reasons_watch": [
+              "估值、市值与财务质量未接入本次日线回放，未参与评分"
+            ],
+            "risk_flags": [],
+            "selection_thesis": "趋势确认、风险控制贡献居前并通过全部硬筛选；未触发额外技术风险标记。 基本面未验证，因此只作为模拟候选。",
+            "invalidation_conditions": [
+              "收盘价跌破 MA20 或 MACD 转为 bearish",
+              "20 日波动率高于 45.0%、20 日回撤低于 -15.0%、ATR 高于 6.5%",
+              "行情数据质量低于可审计要求"
+            ],
+            "data_sources": [
+              "Yahoo Finance 复权 OHLCV 日线（收盘后信号）"
+            ],
+            "data_gaps": [
+              "估值、市值与财务质量未接入本次日线回放，未参与评分"
+            ],
+            "entry_date": "2026-08-11",
+            "entry_open": 159.654999,
+            "allocated_capital": 20000.0,
+            "quantity": 125.27011464,
+            "status": "open",
+            "remaining_quantity": 125.27011464,
+            "realized_value": 0.0,
+            "fills": [],
+            "last_price": 159.800003,
+            "last_evaluated_date": "2026-08-11",
+            "grid": {
+              "step_pct": 3.0,
+              "take_profit_prices": [
+                164.444649,
+                169.234299
+              ],
+              "stop_loss_price": 150.075699,
+              "completed_take_profit_levels": []
+            }
+          },
+          {
+            "code": "JPM",
+            "screen_score": 79.6653,
+            "signal_close": 359.790009,
+            "scorecard_version": "us_evidence_v2",
+            "score_method": "weighted_rule_score_0_100",
+            "score_explanation": "0-100 规则排序分，只用于同日同股票池比较，不是上涨概率或预期收益。",
+            "factor_scores": {
+              "trend_confirmation": 85.3953,
+              "momentum": 69.4688,
+              "risk_control": 97.1136,
+              "liquidity": 42.8571,
+              "relative_strength": 85.7143,
+              "data_quality": 100.0
+            },
+            "factor_weights": {
+              "trend_confirmation": 0.25,
+              "momentum": 0.2,
+              "risk_control": 0.2,
+              "liquidity": 0.15,
+              "relative_strength": 0.1,
+              "data_quality": 0.1
+            },
+            "evidence_metrics": {
+              "change_pct": 0.6349,
+              "change_60d_pct": 20.37,
+              "signal_score": 81.1295,
+              "volume_ratio_20d": 0.6584,
+              "volatility_20d_pct": 19.5598,
+              "max_drawdown_20d_pct": -3.5264,
+              "atr_20_pct": 2.1036,
+              "daily_quality_score": 100.0,
+              "price_above_ma20": true,
+              "ma_bullish": true,
+              "macd_status": "neutral",
+              "rsi_status": "neutral"
+            },
+            "reasons_pass": [
+              "收盘价 359.79 站上 MA20 350.67",
+              "MA5 >= MA20 >= MA60，均线结构偏多",
+              "MACD 为 neutral，满足趋势白名单",
+              "趋势信号 81.1，高于门槛 55",
+              "60 日涨跌幅 +20.4%，处于规则允许区间",
+              "20 日波动率 19.6%、回撤 -3.5%、ATR 2.1% 均未触发硬风控"
+            ],
+            "reasons_watch": [
+              "MACD 仅为 neutral，需要观察是否转强",
+              "估值、市值与财务质量未接入本次日线回放，未参与评分"
+            ],
+            "risk_flags": [],
+            "selection_thesis": "趋势确认、风险控制贡献居前并通过全部硬筛选；未触发额外技术风险标记。 基本面未验证，因此只作为模拟候选。",
+            "invalidation_conditions": [
+              "收盘价跌破 MA20 或 MACD 转为 bearish",
+              "20 日波动率高于 45.0%、20 日回撤低于 -15.0%、ATR 高于 6.5%",
+              "行情数据质量低于可审计要求"
+            ],
+            "data_sources": [
+              "Yahoo Finance 复权 OHLCV 日线（收盘后信号）"
+            ],
+            "data_gaps": [
+              "估值、市值与财务质量未接入本次日线回放，未参与评分"
+            ],
+            "entry_date": "2026-08-11",
+            "entry_open": 360.049988,
+            "allocated_capital": 20000.0,
+            "quantity": 55.54784246,
+            "status": "open",
+            "remaining_quantity": 55.54784246,
+            "realized_value": 0.0,
+            "fills": [],
+            "last_price": 362.040009,
+            "last_evaluated_date": "2026-08-11",
+            "grid": {
+              "step_pct": 3.0,
+              "take_profit_prices": [
+                370.851488,
+                381.652987
+              ],
+              "stop_loss_price": 338.446989,
+              "completed_take_profit_levels": []
+            }
+          },
+          {
+            "code": "JNJ",
+            "screen_score": 75.4925,
+            "signal_close": 261.809998,
+            "scorecard_version": "us_evidence_v2",
+            "score_method": "weighted_rule_score_0_100",
+            "score_explanation": "0-100 规则排序分，只用于同日同股票池比较，不是上涨概率或预期收益。",
+            "factor_scores": {
+              "trend_confirmation": 84.6488,
+              "momentum": 67.7799,
+              "risk_control": 89.5858,
+              "liquidity": 57.1429,
+              "relative_strength": 42.8571,
+              "data_quality": 100.0
+            },
+            "factor_weights": {
+              "trend_confirmation": 0.25,
+              "momentum": 0.2,
+              "risk_control": 0.2,
+              "liquidity": 0.15,
+              "relative_strength": 0.1,
+              "data_quality": 0.1
+            },
+            "evidence_metrics": {
+              "change_pct": 0.9914,
+              "change_60d_pct": 14.2764,
+              "signal_score": 78.9967,
+              "volume_ratio_20d": 1.1093,
+              "volatility_20d_pct": 23.5566,
+              "max_drawdown_20d_pct": -4.6189,
+              "atr_20_pct": 2.3928,
+              "daily_quality_score": 100.0,
+              "price_above_ma20": true,
+              "ma_bullish": true,
+              "macd_status": "neutral",
+              "rsi_status": "neutral"
+            },
+            "reasons_pass": [
+              "收盘价 261.81 站上 MA20 256.85",
+              "MA5 >= MA20 >= MA60，均线结构偏多",
+              "MACD 为 neutral，满足趋势白名单",
+              "趋势信号 79.0，高于门槛 55",
+              "60 日涨跌幅 +14.3%，处于规则允许区间",
+              "20 日波动率 23.6%、回撤 -4.6%、ATR 2.4% 均未触发硬风控"
+            ],
+            "reasons_watch": [
+              "MACD 仅为 neutral，需要观察是否转强",
+              "估值、市值与财务质量未接入本次日线回放，未参与评分"
+            ],
+            "risk_flags": [],
+            "selection_thesis": "趋势确认、风险控制贡献居前并通过全部硬筛选；未触发额外技术风险标记。 基本面未验证，因此只作为模拟候选。",
+            "invalidation_conditions": [
+              "收盘价跌破 MA20 或 MACD 转为 bearish",
+              "20 日波动率高于 45.0%、20 日回撤低于 -15.0%、ATR 高于 6.5%",
+              "行情数据质量低于可审计要求"
+            ],
+            "data_sources": [
+              "Yahoo Finance 复权 OHLCV 日线（收盘后信号）"
+            ],
+            "data_gaps": [
+              "估值、市值与财务质量未接入本次日线回放，未参与评分"
+            ],
+            "entry_date": "2026-08-11",
+            "entry_open": 261.230011,
+            "allocated_capital": 20000.0,
+            "quantity": 76.56088182,
+            "status": "open",
+            "remaining_quantity": 76.56088182,
+            "realized_value": 0.0,
+            "fills": [],
+            "last_price": 259.799988,
+            "last_evaluated_date": "2026-08-11",
+            "grid": {
+              "step_pct": 3.0,
+              "take_profit_prices": [
+                269.066911,
+                276.903812
+              ],
+              "stop_loss_price": 245.55621,
+              "completed_take_profit_levels": []
+            }
+          },
+          {
+            "code": "HD",
+            "screen_score": 73.8055,
+            "signal_close": 350.779999,
+            "scorecard_version": "us_evidence_v2",
+            "score_method": "weighted_rule_score_0_100",
+            "score_explanation": "0-100 规则排序分，只用于同日同股票池比较，不是上涨概率或预期收益。",
+            "factor_scores": {
+              "trend_confirmation": 97.1593,
+              "momentum": 75.0737,
+              "risk_control": 76.0761,
+              "liquidity": 14.2857,
+              "relative_strength": 71.4286,
+              "data_quality": 100.0
+            },
+            "factor_weights": {
+              "trend_confirmation": 0.25,
+              "momentum": 0.2,
+              "risk_control": 0.2,
+              "liquidity": 0.15,
+              "relative_strength": 0.1,
+              "data_quality": 0.1
+            },
+            "evidence_metrics": {
+              "change_pct": -1.361,
+              "change_60d_pct": 16.8108,
+              "signal_score": 91.8838,
+              "volume_ratio_20d": 0.8123,
+              "volatility_20d_pct": 28.2511,
+              "max_drawdown_20d_pct": -6.6979,
+              "atr_20_pct": 2.503,
+              "daily_quality_score": 100.0,
+              "price_above_ma20": true,
+              "ma_bullish": true,
+              "macd_status": "bullish",
+              "rsi_status": "neutral"
+            },
+            "reasons_pass": [
+              "收盘价 350.78 站上 MA20 340.07",
+              "MA5 >= MA20 >= MA60，均线结构偏多",
+              "MACD 为 bullish，满足趋势白名单",
+              "趋势信号 91.9，高于门槛 55",
+              "60 日涨跌幅 +16.8%，处于规则允许区间",
+              "20 日波动率 28.3%、回撤 -6.7%、ATR 2.5% 均未触发硬风控"
+            ],
+            "reasons_watch": [
+              "估值、市值与财务质量未接入本次日线回放，未参与评分"
+            ],
+            "risk_flags": [],
+            "selection_thesis": "趋势确认、风险控制贡献居前并通过全部硬筛选；未触发额外技术风险标记。 基本面未验证，因此只作为模拟候选。",
+            "invalidation_conditions": [
+              "收盘价跌破 MA20 或 MACD 转为 bearish",
+              "20 日波动率高于 45.0%、20 日回撤低于 -15.0%、ATR 高于 6.5%",
+              "行情数据质量低于可审计要求"
+            ],
+            "data_sources": [
+              "Yahoo Finance 复权 OHLCV 日线（收盘后信号）"
+            ],
+            "data_gaps": [
+              "估值、市值与财务质量未接入本次日线回放，未参与评分"
+            ],
+            "entry_date": "2026-08-11",
+            "entry_open": 352.290009,
+            "allocated_capital": 20000.0,
+            "quantity": 56.77140854,
+            "status": "open",
+            "remaining_quantity": 56.77140854,
+            "realized_value": 0.0,
+            "fills": [],
+            "last_price": 354.480011,
+            "last_evaluated_date": "2026-08-11",
+            "grid": {
+              "step_pct": 3.0,
+              "take_profit_prices": [
+                362.858709,
+                373.42741
+              ],
+              "stop_loss_price": 331.152608,
+              "completed_take_profit_levels": []
+            }
+          }
+        ]
       },
       "closed_cycles": [],
       "snapshots": [
@@ -402,9 +832,31 @@
             "DIA": 0.0,
             "RSP": 0.0
           }
+        },
+        {
+          "date": "2026-08-11",
+          "strategy_equity": 99689.760486,
+          "strategy_total_return_pct": -0.31024,
+          "strategy_daily_return_pct": -0.31024,
+          "strategy_drawdown_pct": -0.31024,
+          "benchmark_equity": {
+            "SPY": 99288.452193,
+            "QQQ": 99130.806592,
+            "IWM": 99819.897398,
+            "DIA": 99313.866395,
+            "RSP": 100126.663379
+          },
+          "benchmark_total_return_pct": {
+            "SPY": -0.711548,
+            "QQQ": -0.869193,
+            "IWM": -0.180103,
+            "DIA": -0.686134,
+            "RSP": 0.126663
+          }
         }
       ],
-      "last_processed_date": "2026-08-10"
+      "last_processed_date": "2026-08-11",
+      "event_log": []
     },
     "diversified_60": {
       "universe": [
@@ -478,7 +930,7 @@
         "RSP": 100000.0
       },
       "active_cycle": {
-        "status": "pending",
+        "status": "open",
         "signal_date": "2026-08-10",
         "selected": [
           {
@@ -800,7 +1252,434 @@
           "expected_count": 60,
           "covered_count": 60,
           "ratio": 1.0
-        }
+        },
+        "entry_date": "2026-08-11",
+        "starting_equity": 100000.0,
+        "benchmark_starting_equity": {
+          "SPY": 100000.0,
+          "QQQ": 100000.0,
+          "IWM": 100000.0,
+          "DIA": 100000.0,
+          "RSP": 100000.0
+        },
+        "benchmark_entries": {
+          "SPY": 774.530029,
+          "QQQ": 723.299988,
+          "IWM": 300.929993,
+          "DIA": 539.909973,
+          "RSP": 219.970001
+        },
+        "positions": [
+          {
+            "code": "BAC",
+            "screen_score": 86.5842,
+            "signal_close": 63.860001,
+            "scorecard_version": "us_evidence_v2",
+            "score_method": "weighted_rule_score_0_100",
+            "score_explanation": "0-100 规则排序分，只用于同日同股票池比较，不是上涨概率或预期收益。",
+            "factor_scores": {
+              "trend_confirmation": 86.4275,
+              "momentum": 73.101,
+              "risk_control": 100.0,
+              "liquidity": 71.4286,
+              "relative_strength": 96.4286,
+              "data_quality": 100.0
+            },
+            "factor_weights": {
+              "trend_confirmation": 0.25,
+              "momentum": 0.2,
+              "risk_control": 0.2,
+              "liquidity": 0.15,
+              "relative_strength": 0.1,
+              "data_quality": 0.1
+            },
+            "evidence_metrics": {
+              "change_pct": 1.0923,
+              "change_60d_pct": 28.7957,
+              "signal_score": 84.0785,
+              "volume_ratio_20d": 0.769,
+              "volatility_20d_pct": 15.9613,
+              "max_drawdown_20d_pct": -2.4752,
+              "atr_20_pct": 1.7781,
+              "daily_quality_score": 100.0,
+              "price_above_ma20": true,
+              "ma_bullish": true,
+              "macd_status": "neutral",
+              "rsi_status": "neutral"
+            },
+            "reasons_pass": [
+              "收盘价 63.86 站上 MA20 61.99",
+              "MA5 >= MA20 >= MA60，均线结构偏多",
+              "MACD 为 neutral，满足趋势白名单",
+              "趋势信号 84.1，高于门槛 55",
+              "60 日涨跌幅 +28.8%，处于规则允许区间",
+              "20 日波动率 16.0%、回撤 -2.5%、ATR 1.8% 均未触发硬风控"
+            ],
+            "reasons_watch": [
+              "MACD 仅为 neutral，需要观察是否转强",
+              "估值、市值与财务质量未接入本次日线回放，未参与评分"
+            ],
+            "risk_flags": [],
+            "selection_thesis": "趋势确认、风险控制贡献居前并通过全部硬筛选；未触发额外技术风险标记。 基本面未验证，因此只作为模拟候选。",
+            "invalidation_conditions": [
+              "收盘价跌破 MA20 或 MACD 转为 bearish",
+              "20 日波动率高于 45.0%、20 日回撤低于 -15.0%、ATR 高于 6.5%",
+              "行情数据质量低于可审计要求"
+            ],
+            "data_sources": [
+              "Yahoo Finance 复权 OHLCV 日线（收盘后信号）"
+            ],
+            "data_gaps": [
+              "估值、市值与财务质量未接入本次日线回放，未参与评分"
+            ],
+            "entry_date": "2026-08-11",
+            "entry_open": 63.98,
+            "allocated_capital": 20000.0,
+            "quantity": 312.59768901,
+            "status": "open",
+            "remaining_quantity": 312.59768901,
+            "realized_value": 0.0,
+            "fills": [],
+            "last_price": 64.0,
+            "last_evaluated_date": "2026-08-11",
+            "grid": {
+              "step_pct": 3.0,
+              "take_profit_prices": [
+                65.8994,
+                67.8188
+              ],
+              "stop_loss_price": 60.1412,
+              "completed_take_profit_levels": []
+            }
+          },
+          {
+            "code": "XOM",
+            "screen_score": 85.301,
+            "signal_close": 159.789993,
+            "scorecard_version": "us_evidence_v2",
+            "score_method": "weighted_rule_score_0_100",
+            "score_explanation": "0-100 规则排序分，只用于同日同股票池比较，不是上涨概率或预期收益。",
+            "factor_scores": {
+              "trend_confirmation": 95.852,
+              "momentum": 79.142,
+              "risk_control": 86.4763,
+              "liquidity": 92.8571,
+              "relative_strength": 42.8571,
+              "data_quality": 100.0
+            },
+            "factor_weights": {
+              "trend_confirmation": 0.25,
+              "momentum": 0.2,
+              "risk_control": 0.2,
+              "liquidity": 0.15,
+              "relative_strength": 0.1,
+              "data_quality": 0.1
+            },
+            "evidence_metrics": {
+              "change_pct": 4.4106,
+              "change_60d_pct": 6.1388,
+              "signal_score": 88.1486,
+              "volume_ratio_20d": 1.3513,
+              "volatility_20d_pct": 25.4841,
+              "max_drawdown_20d_pct": -3.4019,
+              "atr_20_pct": 2.4385,
+              "daily_quality_score": 100.0,
+              "price_above_ma20": true,
+              "ma_bullish": true,
+              "macd_status": "bullish",
+              "rsi_status": "neutral"
+            },
+            "reasons_pass": [
+              "收盘价 159.79 站上 MA20 152.83",
+              "MA5 >= MA20 >= MA60，均线结构偏多",
+              "MACD 为 bullish，满足趋势白名单",
+              "趋势信号 88.1，高于门槛 55",
+              "60 日涨跌幅 +6.1%，处于规则允许区间",
+              "20 日波动率 25.5%、回撤 -3.4%、ATR 2.4% 均未触发硬风控"
+            ],
+            "reasons_watch": [
+              "估值、市值与财务质量未接入本次日线回放，未参与评分"
+            ],
+            "risk_flags": [],
+            "selection_thesis": "趋势确认、风险控制贡献居前并通过全部硬筛选；未触发额外技术风险标记。 基本面未验证，因此只作为模拟候选。",
+            "invalidation_conditions": [
+              "收盘价跌破 MA20 或 MACD 转为 bearish",
+              "20 日波动率高于 45.0%、20 日回撤低于 -15.0%、ATR 高于 6.5%",
+              "行情数据质量低于可审计要求"
+            ],
+            "data_sources": [
+              "Yahoo Finance 复权 OHLCV 日线（收盘后信号）"
+            ],
+            "data_gaps": [
+              "估值、市值与财务质量未接入本次日线回放，未参与评分"
+            ],
+            "entry_date": "2026-08-11",
+            "entry_open": 159.654999,
+            "allocated_capital": 20000.0,
+            "quantity": 125.27011464,
+            "status": "open",
+            "remaining_quantity": 125.27011464,
+            "realized_value": 0.0,
+            "fills": [],
+            "last_price": 159.800003,
+            "last_evaluated_date": "2026-08-11",
+            "grid": {
+              "step_pct": 3.0,
+              "take_profit_prices": [
+                164.444649,
+                169.234299
+              ],
+              "stop_loss_price": 150.075699,
+              "completed_take_profit_levels": []
+            }
+          },
+          {
+            "code": "LLY",
+            "screen_score": 84.9011,
+            "signal_close": 1231.939941,
+            "scorecard_version": "us_evidence_v2",
+            "score_method": "weighted_rule_score_0_100",
+            "score_explanation": "0-100 规则排序分，只用于同日同股票池比较，不是上涨概率或预期收益。",
+            "factor_scores": {
+              "trend_confirmation": 97.7328,
+              "momentum": 83.9249,
+              "risk_control": 53.2358,
+              "liquidity": 96.4286,
+              "relative_strength": 85.7143,
+              "data_quality": 100.0
+            },
+            "factor_weights": {
+              "trend_confirmation": 0.25,
+              "momentum": 0.2,
+              "risk_control": 0.2,
+              "liquidity": 0.15,
+              "relative_strength": 0.1,
+              "data_quality": 0.1
+            },
+            "evidence_metrics": {
+              "change_pct": 3.8989,
+              "change_60d_pct": 21.4926,
+              "signal_score": 93.5224,
+              "volume_ratio_20d": 1.0974,
+              "volatility_20d_pct": 36.0404,
+              "max_drawdown_20d_pct": -8.6003,
+              "atr_20_pct": 3.3386,
+              "daily_quality_score": 100.0,
+              "price_above_ma20": true,
+              "ma_bullish": true,
+              "macd_status": "bullish",
+              "rsi_status": "neutral"
+            },
+            "reasons_pass": [
+              "收盘价 1231.94 站上 MA20 1173.66",
+              "MA5 >= MA20 >= MA60，均线结构偏多",
+              "MACD 为 bullish，满足趋势白名单",
+              "趋势信号 93.5，高于门槛 55",
+              "60 日涨跌幅 +21.5%，处于规则允许区间",
+              "20 日波动率 36.0%、回撤 -8.6%、ATR 3.3% 均未触发硬风控"
+            ],
+            "reasons_watch": [
+              "估值、市值与财务质量未接入本次日线回放，未参与评分"
+            ],
+            "risk_flags": [
+              "20 日波动率 36.0%，接近上限 45.0%"
+            ],
+            "selection_thesis": "趋势确认、动量质量贡献居前并通过全部硬筛选；20 日波动率 36.0%，接近上限 45.0%。 基本面未验证，因此只作为模拟候选。",
+            "invalidation_conditions": [
+              "收盘价跌破 MA20 或 MACD 转为 bearish",
+              "20 日波动率高于 45.0%、20 日回撤低于 -15.0%、ATR 高于 6.5%",
+              "行情数据质量低于可审计要求"
+            ],
+            "data_sources": [
+              "Yahoo Finance 复权 OHLCV 日线（收盘后信号）"
+            ],
+            "data_gaps": [
+              "估值、市值与财务质量未接入本次日线回放，未参与评分"
+            ],
+            "entry_date": "2026-08-11",
+            "entry_open": 1230.650024,
+            "allocated_capital": 20000.0,
+            "quantity": 16.25157405,
+            "status": "open",
+            "remaining_quantity": 16.25157405,
+            "realized_value": 0.0,
+            "fills": [],
+            "last_price": 1215.02002,
+            "last_evaluated_date": "2026-08-11",
+            "grid": {
+              "step_pct": 3.0,
+              "take_profit_prices": [
+                1267.569525,
+                1304.489025
+              ],
+              "stop_loss_price": 1156.811023,
+              "completed_take_profit_levels": []
+            }
+          },
+          {
+            "code": "JPM",
+            "screen_score": 84.3082,
+            "signal_close": 359.790009,
+            "scorecard_version": "us_evidence_v2",
+            "score_method": "weighted_rule_score_0_100",
+            "score_explanation": "0-100 规则排序分，只用于同日同股票池比较，不是上涨概率或预期收益。",
+            "factor_scores": {
+              "trend_confirmation": 85.3953,
+              "momentum": 69.4688,
+              "risk_control": 97.1136,
+              "liquidity": 78.5714,
+              "relative_strength": 78.5714,
+              "data_quality": 100.0
+            },
+            "factor_weights": {
+              "trend_confirmation": 0.25,
+              "momentum": 0.2,
+              "risk_control": 0.2,
+              "liquidity": 0.15,
+              "relative_strength": 0.1,
+              "data_quality": 0.1
+            },
+            "evidence_metrics": {
+              "change_pct": 0.6349,
+              "change_60d_pct": 20.37,
+              "signal_score": 81.1295,
+              "volume_ratio_20d": 0.6584,
+              "volatility_20d_pct": 19.5598,
+              "max_drawdown_20d_pct": -3.5264,
+              "atr_20_pct": 2.1036,
+              "daily_quality_score": 100.0,
+              "price_above_ma20": true,
+              "ma_bullish": true,
+              "macd_status": "neutral",
+              "rsi_status": "neutral"
+            },
+            "reasons_pass": [
+              "收盘价 359.79 站上 MA20 350.67",
+              "MA5 >= MA20 >= MA60，均线结构偏多",
+              "MACD 为 neutral，满足趋势白名单",
+              "趋势信号 81.1，高于门槛 55",
+              "60 日涨跌幅 +20.4%，处于规则允许区间",
+              "20 日波动率 19.6%、回撤 -3.5%、ATR 2.1% 均未触发硬风控"
+            ],
+            "reasons_watch": [
+              "MACD 仅为 neutral，需要观察是否转强",
+              "估值、市值与财务质量未接入本次日线回放，未参与评分"
+            ],
+            "risk_flags": [],
+            "selection_thesis": "趋势确认、风险控制贡献居前并通过全部硬筛选；未触发额外技术风险标记。 基本面未验证，因此只作为模拟候选。",
+            "invalidation_conditions": [
+              "收盘价跌破 MA20 或 MACD 转为 bearish",
+              "20 日波动率高于 45.0%、20 日回撤低于 -15.0%、ATR 高于 6.5%",
+              "行情数据质量低于可审计要求"
+            ],
+            "data_sources": [
+              "Yahoo Finance 复权 OHLCV 日线（收盘后信号）"
+            ],
+            "data_gaps": [
+              "估值、市值与财务质量未接入本次日线回放，未参与评分"
+            ],
+            "entry_date": "2026-08-11",
+            "entry_open": 360.049988,
+            "allocated_capital": 20000.0,
+            "quantity": 55.54784246,
+            "status": "open",
+            "remaining_quantity": 55.54784246,
+            "realized_value": 0.0,
+            "fills": [],
+            "last_price": 362.040009,
+            "last_evaluated_date": "2026-08-11",
+            "grid": {
+              "step_pct": 3.0,
+              "take_profit_prices": [
+                370.851488,
+                381.652987
+              ],
+              "stop_loss_price": 338.446989,
+              "completed_take_profit_levels": []
+            }
+          },
+          {
+            "code": "GE",
+            "screen_score": 82.3667,
+            "signal_close": 366.700012,
+            "scorecard_version": "us_evidence_v2",
+            "score_method": "weighted_rule_score_0_100",
+            "score_explanation": "0-100 规则排序分，只用于同日同股票池比较，不是上涨概率或预期收益。",
+            "factor_scores": {
+              "trend_confirmation": 98.1114,
+              "momentum": 78.4593,
+              "risk_control": 73.2351,
+              "liquidity": 57.1429,
+              "relative_strength": 89.2857,
+              "data_quality": 100.0
+            },
+            "factor_weights": {
+              "trend_confirmation": 0.25,
+              "momentum": 0.2,
+              "risk_control": 0.2,
+              "liquidity": 0.15,
+              "relative_strength": 0.1,
+              "data_quality": 0.1
+            },
+            "evidence_metrics": {
+              "change_pct": -0.9133,
+              "change_60d_pct": 24.5825,
+              "signal_score": 94.6039,
+              "volume_ratio_20d": 0.7915,
+              "volatility_20d_pct": 31.4996,
+              "max_drawdown_20d_pct": -5.453,
+              "atr_20_pct": 2.9324,
+              "daily_quality_score": 100.0,
+              "price_above_ma20": true,
+              "ma_bullish": true,
+              "macd_status": "bullish",
+              "rsi_status": "neutral"
+            },
+            "reasons_pass": [
+              "收盘价 366.70 站上 MA20 358.21",
+              "MA5 >= MA20 >= MA60，均线结构偏多",
+              "MACD 为 bullish，满足趋势白名单",
+              "趋势信号 94.6，高于门槛 55",
+              "60 日涨跌幅 +24.6%，处于规则允许区间",
+              "20 日波动率 31.5%、回撤 -5.5%、ATR 2.9% 均未触发硬风控"
+            ],
+            "reasons_watch": [
+              "估值、市值与财务质量未接入本次日线回放，未参与评分"
+            ],
+            "risk_flags": [],
+            "selection_thesis": "趋势确认、动量质量贡献居前并通过全部硬筛选；未触发额外技术风险标记。 基本面未验证，因此只作为模拟候选。",
+            "invalidation_conditions": [
+              "收盘价跌破 MA20 或 MACD 转为 bearish",
+              "20 日波动率高于 45.0%、20 日回撤低于 -15.0%、ATR 高于 6.5%",
+              "行情数据质量低于可审计要求"
+            ],
+            "data_sources": [
+              "Yahoo Finance 复权 OHLCV 日线（收盘后信号）"
+            ],
+            "data_gaps": [
+              "估值、市值与财务质量未接入本次日线回放，未参与评分"
+            ],
+            "entry_date": "2026-08-11",
+            "entry_open": 367.73999,
+            "allocated_capital": 20000.0,
+            "quantity": 54.3862526,
+            "status": "open",
+            "remaining_quantity": 54.3862526,
+            "realized_value": 0.0,
+            "fills": [],
+            "last_price": 368.059998,
+            "last_evaluated_date": "2026-08-11",
+            "grid": {
+              "step_pct": 3.0,
+              "take_profit_prices": [
+                378.77219,
+                389.804389
+              ],
+              "stop_loss_price": 345.675591,
+              "completed_take_profit_levels": []
+            }
+          }
+        ]
       },
       "closed_cycles": [],
       "snapshots": [
@@ -824,12 +1703,34 @@
             "DIA": 0.0,
             "RSP": 0.0
           }
+        },
+        {
+          "date": "2026-08-11",
+          "strategy_equity": 99698.553276,
+          "strategy_total_return_pct": -0.301447,
+          "strategy_daily_return_pct": -0.301447,
+          "strategy_drawdown_pct": -0.301447,
+          "benchmark_equity": {
+            "SPY": 99288.452193,
+            "QQQ": 99130.806592,
+            "IWM": 99819.897398,
+            "DIA": 99313.866395,
+            "RSP": 100126.663379
+          },
+          "benchmark_total_return_pct": {
+            "SPY": -0.711548,
+            "QQQ": -0.869193,
+            "IWM": -0.180103,
+            "DIA": -0.686134,
+            "RSP": 0.126663
+          }
         }
       ],
-      "last_processed_date": "2026-08-10"
+      "last_processed_date": "2026-08-11",
+      "event_log": []
     }
   },
-  "latest_market_date": "2026-08-10",
+  "latest_market_date": "2026-08-11",
   "live_validation": {
     "effective": false,
     "status": "insufficient_or_failed",
@@ -854,24 +1755,28 @@
   "last_events": {
     "large_cap_22": [
       {
-        "type": "scorecard_upgraded",
-        "signal_date": "2026-08-10",
-        "mode": "pending_signal_recomputed"
-      },
-      {
-        "type": "no_change",
-        "market_date": "2026-08-10"
+        "type": "opened",
+        "entry_date": "2026-08-11",
+        "codes": [
+          "LLY",
+          "XOM",
+          "JPM",
+          "JNJ",
+          "HD"
+        ]
       }
     ],
     "diversified_60": [
       {
-        "type": "scorecard_upgraded",
-        "signal_date": "2026-08-10",
-        "mode": "pending_signal_recomputed"
-      },
-      {
-        "type": "no_change",
-        "market_date": "2026-08-10"
+        "type": "opened",
+        "entry_date": "2026-08-11",
+        "codes": [
+          "BAC",
+          "XOM",
+          "LLY",
+          "JPM",
+          "GE"
+        ]
       }
     ]
   },
