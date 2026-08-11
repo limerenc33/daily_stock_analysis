@@ -177,4 +177,5 @@ def test_paper_trading_dashboard_deploys_after_successful_daily_run():
     assert workflow["permissions"] == {"contents": "read", "pages": "write", "id-token": "write"}
     assert "paper-trading-state" in rendered
     assert "VITE_PAPER_TRADING_DASHBOARD: 'true'" in rendered
+    assert "enablement: true" in rendered
     assert "actions/deploy-pages@v4" in rendered
