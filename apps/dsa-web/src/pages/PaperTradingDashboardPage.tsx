@@ -9,6 +9,7 @@ import {
   Eye,
   ExternalLink,
   Github,
+  Grid2X2,
   RefreshCw,
   ShieldAlert,
   ShieldCheck,
@@ -52,12 +53,46 @@ type Snapshot = {
   benchmark_total_return_pct: Record<string, number>;
 };
 
+type GridFill = {
+  date: string;
+  observed_at?: string | null;
+  reason: string;
+  grid_level?: number | null;
+  trigger_price: number;
+  fill_price: number;
+  quantity: number;
+  source: string;
+};
+
+type GridPosition = Candidate & {
+  status: string;
+  entry_date: string;
+  entry_open: number;
+  quantity: number;
+  remaining_quantity: number;
+  last_price?: number;
+  fills: GridFill[];
+  grid: {
+    step_pct: number;
+    take_profit_prices: number[];
+    stop_loss_price: number;
+    completed_take_profit_levels: number[];
+  };
+};
+
+type GridEvent = GridFill & {
+  type: string;
+  code: string;
+  remaining_quantity: number;
+};
+
 type ActiveCycle = {
   status: string;
   signal_date?: string;
   entry_date?: string;
   exit_date?: string;
   selected?: Candidate[];
+  positions?: GridPosition[];
   coverage?: {
     expected_count: number;
     covered_count: number;
@@ -70,6 +105,7 @@ type Portfolio = {
   active_cycle?: ActiveCycle | null;
   closed_cycles: unknown[];
   snapshots: Snapshot[];
+  event_log?: GridEvent[];
 };
 
 type ValidationDiagnostic = {
@@ -94,6 +130,9 @@ type PaperTradingState = {
     minimum_universe_coverage: number;
     minimum_completed_cycles: number;
     top_k: number;
+    grid_step_pct?: number;
+    grid_take_profit_levels?: number;
+    grid_stop_loss_levels?: number;
   };
   portfolios: Record<string, Portfolio>;
   live_validation: {
@@ -155,10 +194,18 @@ const formatUpdatedAt = (value: string) => {
 
 const cycleLabel = (status?: string) => ({
   active: '持仓中',
+  open: '持仓中',
+  awaiting_settlement: '等待收盘结算',
   closed: '已退出',
   idle: '等待信号',
   pending: '等待次日开盘',
 }[status || ''] || status || '暂无周期');
+
+const exitReasonLabel = (reason?: string) => ({
+  grid_take_profit: '网格止盈',
+  grid_stop_loss: '网格止损',
+  time_exit: '到期退出',
+}[reason || ''] || reason || '退出');
 
 const Metric = ({
   label,
@@ -242,6 +289,8 @@ const PaperTradingDashboardPage = () => {
   const latest = portfolio?.snapshots.at(-1);
   const cycle = portfolio?.active_cycle || null;
   const candidates = cycle?.selected || [];
+  const positions = cycle?.positions || [];
+  const recentGridEvents = (portfolio?.event_log || []).slice(-6).reverse();
   const diagnostic = state?.live_validation.diagnostics[portfolioName];
   const chartData = useMemo(() => (portfolio?.snapshots || []).map((snapshot) => ({
     date: snapshot.date.slice(5),
@@ -388,10 +437,85 @@ const PaperTradingDashboardPage = () => {
           <Metric label="当前周期" value={cycleLabel(cycle?.status)} detail={`${portfolio.closed_cycles.length} 个周期已完成`} />
         </section>
 
+        <section className="grid border-b border-border lg:grid-cols-[1.7fr_1fr] lg:divide-x lg:divide-border">
+          <div className="min-w-0 py-7 lg:pr-7">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Grid2X2 className="h-4 w-4 text-cyan" />
+                  <h2 className="text-[16px] font-semibold text-foreground">网格止损止盈</h2>
+                </div>
+                <p className="mt-1 text-xs text-muted-text">
+                  每格 {(state.config.grid_step_pct || 3).toFixed(1)}% · 上涨 {state.config.grid_take_profit_levels || 2} 格分批止盈 · 下跌 {state.config.grid_stop_loss_levels || 2} 格止损
+                </p>
+              </div>
+              <span className="text-xs text-muted-text">最长持有 {state.config.holding_days} 个交易日</span>
+            </div>
+            <div className="mt-4 overflow-x-auto">
+              <table className="w-full min-w-[44rem] text-left text-sm">
+                <thead className="border-y border-border/70 text-xs text-muted-text">
+                  <tr>
+                    <th className="py-2 font-medium">代码</th>
+                    <th className="py-2 text-right font-medium">入场价</th>
+                    <th className="py-2 text-right font-medium">止损线</th>
+                    <th className="py-2 text-right font-medium">下一止盈格</th>
+                    <th className="py-2 text-right font-medium">剩余仓位</th>
+                    <th className="py-2 text-right font-medium">最新记录价</th>
+                    <th className="py-2 text-right font-medium">状态</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/50">
+                  {positions.map((position) => {
+                    const completed = new Set(position.grid.completed_take_profit_levels || []);
+                    const nextTarget = position.grid.take_profit_prices.find((_, index) => !completed.has(index + 1));
+                    const remainingRatio = position.quantity > 0 ? position.remaining_quantity / position.quantity * 100 : 0;
+                    return (
+                      <tr key={position.code}>
+                        <td className="py-3 font-semibold">{position.code}</td>
+                        <td className="py-3 text-right tabular-nums">{formatMoney(position.entry_open)}</td>
+                        <td className="py-3 text-right tabular-nums text-rose-400">{formatMoney(position.grid.stop_loss_price)}</td>
+                        <td className="py-3 text-right tabular-nums text-emerald-400">
+                          {nextTarget == null ? '已完成' : formatMoney(nextTarget)}
+                        </td>
+                        <td className="py-3 text-right tabular-nums">{remainingRatio.toFixed(0)}%</td>
+                        <td className="py-3 text-right tabular-nums">{formatMoney(position.last_price || position.entry_open)}</td>
+                        <td className="py-3 text-right text-xs text-secondary-text">{position.status === 'closed' ? '已退出' : '监控中'}</td>
+                      </tr>
+                    );
+                  })}
+                  {!positions.length ? (
+                    <tr><td className="py-5 text-muted-text" colSpan={7}>下一交易日开盘后生成持仓网格价格</td></tr>
+                  ) : null}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="min-w-0 py-7 lg:pl-7">
+            <h2 className="text-[16px] font-semibold text-foreground">最近网格成交</h2>
+            <p className="mt-1 text-xs text-muted-text">触发价与模拟成交价分开记录</p>
+            <div className="mt-4 divide-y divide-border/60">
+              {recentGridEvents.map((event) => (
+                <div key={`${event.code}-${event.date}-${event.reason}-${event.grid_level || 0}`} className="py-3 first:pt-0">
+                  <div className="flex items-center justify-between gap-3 text-sm">
+                    <span className="font-medium">{event.code} · {exitReasonLabel(event.type || event.reason)}</span>
+                    <span className="text-xs tabular-nums text-muted-text">{event.date}</span>
+                  </div>
+                  <div className="mt-1 text-xs leading-5 text-secondary-text">
+                    触发 {formatMoney(event.trigger_price)} · 成交 {formatMoney(event.fill_price)} · {event.quantity.toFixed(4)} 股
+                  </div>
+                  <div className="mt-1 truncate text-xs text-muted-text">{event.source}</div>
+                </div>
+              ))}
+              {!recentGridEvents.length ? <p className="py-4 text-sm text-muted-text">当前还没有网格成交记录</p> : null}
+            </div>
+          </div>
+        </section>
+
         <section className="border-b border-border py-7">
           <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h2 className="text-base font-semibold">累计收益轨迹</h2>
+              <h2 className="text-[16px] font-semibold text-foreground">累计收益轨迹</h2>
               <p className="mt-1 text-xs text-muted-text">策略与五个基准，单位 %</p>
             </div>
             <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-muted-text">
@@ -443,7 +567,7 @@ const PaperTradingDashboardPage = () => {
           <div className="min-w-0 py-7 lg:pr-7">
             <div className="mb-4 flex items-end justify-between gap-3">
               <div>
-                <h2 className="text-base font-semibold">本周期候选</h2>
+                <h2 className="text-[16px] font-semibold text-foreground">本周期候选</h2>
                 <p className="mt-1 text-xs text-muted-text">信号日 {cycle?.signal_date || 'N/A'} · {cycleLabel(cycle?.status)}</p>
               </div>
               <span className="text-xs text-muted-text">Top {state.config.top_k}</span>
@@ -488,7 +612,7 @@ const PaperTradingDashboardPage = () => {
 
           <div className="min-w-0 py-7 lg:pl-7">
             <div className="mb-4">
-              <h2 className="text-base font-semibold">多基准比较</h2>
+              <h2 className="text-[16px] font-semibold text-foreground">多基准比较</h2>
               <p className="mt-1 text-xs text-muted-text">策略累计收益相对同周期基准</p>
             </div>
             <div className="overflow-x-auto">
@@ -523,7 +647,7 @@ const PaperTradingDashboardPage = () => {
         <section className="border-b border-border py-7">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h2 className="text-base font-semibold">候选证据卡</h2>
+              <h2 className="text-[16px] font-semibold text-foreground">候选证据卡</h2>
               <p className="mt-1 text-xs text-muted-text">规则证据、风险与数据缺口随交易账本保存</p>
             </div>
             <span className="text-xs text-muted-text">{state.scorecard_version || candidates[0]?.scorecard_version || '旧版账本'}</span>
@@ -597,7 +721,7 @@ const PaperTradingDashboardPage = () => {
           <div className="py-7 lg:pr-7">
             <div className="flex items-center gap-2">
               {diagnostic?.effective ? <ShieldCheck className="h-5 w-5 text-emerald-400" /> : <Database className="h-5 w-5 text-amber-300" />}
-              <h2 className="text-base font-semibold">有效性证据进度</h2>
+              <h2 className="text-[16px] font-semibold text-foreground">有效性证据进度</h2>
             </div>
             <div className="mt-5 grid gap-5 sm:grid-cols-2">
               <div>
@@ -631,6 +755,7 @@ const PaperTradingDashboardPage = () => {
             {[
               ['初始资金', formatMoney(state.config.initial_capital)],
               ['持有周期', `${state.config.holding_days} 个交易日`],
+              ['网格步长', `${(state.config.grid_step_pct || 3).toFixed(1)}%`],
               ['单边成本', `${state.config.per_side_cost_bps} bps`],
               ['行情覆盖', `${((cycle?.coverage?.ratio || 0) * 100).toFixed(0)}%`],
             ].map(([label, value]) => (

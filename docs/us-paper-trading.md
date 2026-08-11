@@ -24,7 +24,10 @@
 - 股票池：`large_cap_22` 与 `diversified_60`。
 - 每个股票池初始模拟资金 100,000 美元，Top 5 等权，可使用碎股。
 - 收盘后生成信号，下一交易日开盘模拟成交。
-- 持有 10 个交易日，在第 10 个交易日收盘模拟退出；周期不重叠。
+- 网格默认每格 3%：价格上涨一格（+3%）卖出一半，上涨两格（+6%）卖出剩余仓位；价格下跌两格（-6%）卖出全部剩余仓位。
+- 10 个交易日是最长持有期；尚未被网格卖出的仓位在第 10 个交易日收盘模拟退出，周期不重叠。
+- 盘中观察价穿越网格时按观察价模拟成交；开盘跳空穿越网格时按开盘或首次观察价成交，不假设可以成交在更优的触发价。
+- 收盘任务使用真实日线 OHLC 回补盘中任务可能漏掉的网格触发。同一根日线同时触及止损和止盈时按止损先发生处理，避免利用未知的盘中路径高估收益。
 - 单边综合成本 10 bps，包括手续费与滑点假设。
 - 行情或特征覆盖率低于 95% 时任务直接失败，不会静默忽略缺失标的。
 - 每个股票池至少完成 20 个周期，且组合盈利并跑赢至少 3/5 基准，实时观察才会标记通过；历史综合回测门槛仍独立生效。
@@ -45,6 +48,16 @@ python scripts/run_us_paper_trading.py --notify
 
 默认状态写入 `data/us_paper_trading/state.json`，日报写入 `data/us_paper_trading/latest.md`。相同市场日期重复执行是幂等的，不会重复成交或累计收益。
 
+可通过环境变量或 GitHub Repository Variables 调整后续新开仓使用的网格参数：
+
+```bash
+US_GRID_STEP_PCT=3.0
+US_GRID_TAKE_PROFIT_LEVELS=2
+US_GRID_STOP_LOSS_LEVELS=2
+```
+
+已开仓持仓会把实际网格价格固化到账本中，之后修改配置不会改写其历史成交。
+
 ## GitHub Actions 部署
 
 `.github/workflows/us-paper-trading.yml` 在每个美股交易日收盘后运行，即北京时间周二至周六约 06:30。任务会：
@@ -56,13 +69,19 @@ python scripts/run_us_paper_trading.py --notify
 5. 将最新状态提交到独立的 `paper-trading-state` 分支。
 6. 若仓库已配置通知 Secret，同时发送到已有企业微信、飞书、Telegram、邮件、ntfy、Gotify、PushPlus、Server酱、自定义 Webhook、Discord 或 Slack 渠道。
 
+`.github/workflows/us-grid-monitor.yml` 在覆盖美股常规交易时段的 UTC 窗口内每 15 分钟启动一次，并在脚本中再次校验 `America/New_York` 的 09:30-16:00。它只读取仍在持仓的代码，复用统一实时行情链路：配置 Longbridge 时优先使用 Longbridge，否则使用 Yahoo，并可由 Finnhub、Alpha Vantage 补充。陈旧或不可用报价不会触发成交。
+
+只有网格实际触发时，盘中任务才会更新 `paper-trading-state`、重新部署 Pages 并发送通知。通知会包含触发价、模拟成交价、数量、剩余仓位和报价来源。GitHub Actions 调度可能延迟，15 分钟轮询也可能错过短暂穿价，因此这是可审计的模拟验证，不是执行级止损；真实资金应使用券商托管的条件单。
+
+网格退出属于新的成交模型，旧版固定持有周期不会计入网格模型所需的 20 个完成周期。加入网格不代表策略已经有效；仍需积累真实前向模拟周期，并单独补做覆盖网格参数和盘中路径假设的历史回测。
+
 手动验证可以在 Actions 页面运行 `US Paper Trading Daily` workflow。首次执行只生成候选信号；下一交易日收盘后的执行才会记录下一交易日开盘成交。
 
 ## 公开只读看板
 
 `.github/workflows/deploy-paper-trading-pages.yml` 将 Web 应用构建为不依赖后端 API 的只读模拟交易看板，并发布到 GitHub Pages。它在前端代码进入 `main` 后部署一次，也会在 `US Paper Trading Daily` 每次成功完成后，从 `paper-trading-state` 分支读取最新账本并重新部署。
 
-看板展示组合净值、收益、回撤、候选、五基准对比、验证进度，以及每只候选的核心理由、六维因子、观察项、风险和失效条件；不开放设置、交易录入或真实下单。GitHub Pages 必须在仓库设置中启用并选择 GitHub Actions 作为发布来源。
+看板展示组合净值、收益、回撤、候选、五基准对比、验证进度，以及每只候选的核心理由、六维因子、观察项、风险和失效条件。开仓后还会展示入场价、止损线、下一止盈格、剩余仓位、最新记录价和最近网格成交；不开放设置、交易录入或真实下单。GitHub Pages 必须在仓库设置中启用并选择 GitHub Actions 作为发布来源。
 
 ## 版本与验证边界
 

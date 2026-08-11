@@ -1,0 +1,93 @@
+name: US Paper Trading Grid Monitor
+
+on:
+  schedule:
+    # Covers regular US sessions in both EST and EDT. The script rejects
+    # observations outside 09:30-16:00 America/New_York.
+    - cron: '*/15 13-21 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: us-paper-trading-state
+  cancel-in-progress: false
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Restore paper-trading state
+        id: restore
+        run: |
+          mkdir -p data/us_paper_trading
+          if git fetch origin paper-trading-state && \
+             git show origin/paper-trading-state:data/us_paper_trading/state.json > data/us_paper_trading/state.json; then
+            git show origin/paper-trading-state:data/us_paper_trading/latest.md > data/us_paper_trading/latest.md || true
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Python
+        if: steps.restore.outputs.available == 'true'
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+          cache: pip
+
+      - name: Install dependencies
+        if: steps.restore.outputs.available == 'true'
+        run: pip install -r requirements.txt
+
+      - name: Check realtime grid levels
+        if: steps.restore.outputs.available == 'true'
+        env:
+          LONGBRIDGE_OAUTH_CLIENT_ID: ${{ vars.LONGBRIDGE_OAUTH_CLIENT_ID || secrets.LONGBRIDGE_OAUTH_CLIENT_ID }}
+          LONGBRIDGE_OAUTH_TOKEN_CACHE_B64: ${{ secrets.LONGBRIDGE_OAUTH_TOKEN_CACHE_B64 }}
+          LONGBRIDGE_APP_KEY: ${{ secrets.LONGBRIDGE_APP_KEY }}
+          LONGBRIDGE_APP_SECRET: ${{ secrets.LONGBRIDGE_APP_SECRET }}
+          LONGBRIDGE_ACCESS_TOKEN: ${{ secrets.LONGBRIDGE_ACCESS_TOKEN }}
+          FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
+          ALPHAVANTAGE_API_KEY: ${{ secrets.ALPHAVANTAGE_API_KEY }}
+          EMAIL_SENDER: ${{ vars.EMAIL_SENDER || secrets.EMAIL_SENDER }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          EMAIL_RECEIVERS: ${{ vars.EMAIL_RECEIVERS || secrets.EMAIL_RECEIVERS }}
+          NOTIFICATION_REPORT_CHANNELS: ${{ vars.NOTIFICATION_REPORT_CHANNELS || secrets.NOTIFICATION_REPORT_CHANNELS }}
+          NOTIFICATION_TIMEZONE: Asia/Shanghai
+        run: python scripts/run_us_grid_monitor.py --notify
+
+      - name: Persist triggered grid fills
+        id: persist
+        if: steps.restore.outputs.available == 'true'
+        run: |
+          cp data/us_paper_trading/state.json /tmp/us-paper-state.json
+          cp data/us_paper_trading/latest.md /tmp/us-paper-latest.md
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git switch -C paper-trading-state origin/paper-trading-state
+          cp /tmp/us-paper-state.json data/us_paper_trading/state.json
+          cp /tmp/us-paper-latest.md data/us_paper_trading/latest.md
+          git add -f data/us_paper_trading/state.json data/us_paper_trading/latest.md
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git commit -m "chore: record US grid fills ${GITHUB_RUN_ID}"
+          git push origin HEAD:paper-trading-state
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy updated dashboard
+        if: steps.persist.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run deploy-paper-trading-pages.yml --ref main

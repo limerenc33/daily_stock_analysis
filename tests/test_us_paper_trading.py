@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 import pandas as pd
@@ -9,9 +9,13 @@ from scripts.run_us_paper_trading import split_yfinance_download
 from src.services.screening.us_paper_trading import (
     USPaperTradingConfig,
     advance_paper_trading_state,
+    apply_realtime_grid_quotes,
     create_paper_trading_state,
+    evaluate_live_validation,
     rank_candidates_on_date,
+    render_grid_event_notification,
     render_paper_trading_report,
+    upgrade_paper_trading_state,
 )
 from src.services.screening.strategy import load_all_strategies
 from src.services.screening.us_candidate_evidence import build_us_candidate_evidence
@@ -93,6 +97,152 @@ def test_paper_trading_is_idempotent_for_same_market_date():
     assert len(first["snapshots"]) == snapshot_count
     assert first["active_cycle"]["signal_date"] == signal_date
     assert state["last_events"]["test_universe"][0]["type"] == "no_change"
+
+
+def test_daily_grid_takes_partial_profit_then_exits_remaining_at_time_limit():
+    histories = {"AAA": _history(step=0.1), "SPY": _history(step=0.1)}
+    dates = [value.date() for value in histories["SPY"]["date"]]
+    state = create_paper_trading_state(
+        {"test_universe": ["AAA"]},
+        benchmarks=("SPY",),
+        config=USPaperTradingConfig(top_k=1, minimum_universe_coverage=1.0),
+    )
+    advance_paper_trading_state(state, histories, as_of=dates[100])
+    advance_paper_trading_state(state, histories, as_of=dates[101])
+    position = state["portfolios"]["test_universe"]["active_cycle"]["positions"][0]
+    first_target = position["grid"]["take_profit_prices"][0]
+    histories["AAA"].loc[102, "high"] = first_target + 0.01
+    histories["AAA"].loc[102, "low"] = position["grid"]["stop_loss_price"] + 0.01
+
+    advance_paper_trading_state(state, histories, as_of=dates[102])
+
+    position = state["portfolios"]["test_universe"]["active_cycle"]["positions"][0]
+    assert position["status"] == "open"
+    assert position["remaining_quantity"] == pytest.approx(position["quantity"] / 2)
+    assert position["fills"][0]["reason"] == "grid_take_profit"
+    assert position["fills"][0]["fill_price"] == pytest.approx(first_target)
+    assert state["portfolios"]["test_universe"]["event_log"][-1]["type"] == "grid_take_profit"
+
+    advance_paper_trading_state(state, histories, as_of=dates[110])
+    closed = state["portfolios"]["test_universe"]["closed_cycles"][0]
+    assert closed["exit_model"] == "grid_v1"
+    assert [fill["reason"] for fill in closed["trades"][0]["fills"]] == [
+        "grid_take_profit",
+        "time_exit",
+    ]
+
+
+def test_daily_grid_uses_stop_first_when_bar_touches_both_sides():
+    histories = {"AAA": _history(step=0.1), "SPY": _history(step=0.1)}
+    dates = [value.date() for value in histories["SPY"]["date"]]
+    state = create_paper_trading_state(
+        {"test_universe": ["AAA"]},
+        benchmarks=("SPY",),
+        config=USPaperTradingConfig(top_k=1, minimum_universe_coverage=1.0),
+    )
+    advance_paper_trading_state(state, histories, as_of=dates[100])
+    advance_paper_trading_state(state, histories, as_of=dates[101])
+    position = state["portfolios"]["test_universe"]["active_cycle"]["positions"][0]
+    histories["AAA"].loc[102, "low"] = position["grid"]["stop_loss_price"] - 0.01
+    histories["AAA"].loc[102, "high"] = position["grid"]["take_profit_prices"][-1] + 0.01
+
+    advance_paper_trading_state(state, histories, as_of=dates[102])
+
+    trade = state["portfolios"]["test_universe"]["closed_cycles"][0]["trades"][0]
+    assert trade["exit_reason"] == "grid_stop_loss"
+    assert [fill["reason"] for fill in trade["fills"]] == ["grid_stop_loss"]
+
+
+def test_realtime_grid_quotes_are_incremental_and_idempotent():
+    histories = {"AAA": _history(step=0.1), "SPY": _history(step=0.1)}
+    dates = [value.date() for value in histories["SPY"]["date"]]
+    state = create_paper_trading_state(
+        {"test_universe": ["AAA"]},
+        benchmarks=("SPY",),
+        config=USPaperTradingConfig(top_k=1, minimum_universe_coverage=1.0),
+    )
+    advance_paper_trading_state(state, histories, as_of=dates[100])
+    advance_paper_trading_state(state, histories, as_of=dates[101])
+    position = state["portfolios"]["test_universe"]["active_cycle"]["positions"][0]
+    observed_at = datetime(2025, 5, 22, 15, 0, tzinfo=timezone.utc)
+    first_target = position["grid"]["take_profit_prices"][0]
+
+    first = apply_realtime_grid_quotes(
+        state,
+        {"AAA": {"price": first_target + 0.25, "source": "Longbridge"}},
+        observed_at=observed_at,
+        market_date=dates[102],
+    )
+    repeated = apply_realtime_grid_quotes(
+        state,
+        {"AAA": {"price": first_target + 0.25, "source": "Longbridge"}},
+        observed_at=observed_at,
+        market_date=dates[102],
+    )
+
+    assert first["test_universe"][0]["type"] == "grid_take_profit"
+    assert first["test_universe"][0]["source"] == "Longbridge"
+    assert repeated == {}
+    assert len(position["fills"]) == 1
+
+    stop = apply_realtime_grid_quotes(
+        state,
+        {"AAA": {"price": position["grid"]["stop_loss_price"] - 0.5, "source": "Finnhub"}},
+        observed_at=observed_at,
+        market_date=dates[103],
+    )
+    assert stop["test_universe"][0]["type"] == "grid_stop_loss"
+    assert state["portfolios"]["test_universe"]["active_cycle"]["status"] == "awaiting_settlement"
+    notification = render_grid_event_notification(state, stop)
+    assert "网格止损" in notification
+    assert "Finnhub" in notification
+
+
+def test_schema_one_state_upgrades_without_replaying_existing_open_days():
+    histories = {"AAA": _history(), "SPY": _history(step=0.3)}
+    dates = [value.date() for value in histories["SPY"]["date"]]
+    state = create_paper_trading_state(
+        {"test_universe": ["AAA"]}, benchmarks=("SPY",),
+        config=USPaperTradingConfig(top_k=1, minimum_universe_coverage=1.0),
+    )
+    advance_paper_trading_state(state, histories, as_of=dates[100])
+    advance_paper_trading_state(state, histories, as_of=dates[101])
+    position = state["portfolios"]["test_universe"]["active_cycle"]["positions"][0]
+    for key in ("grid", "remaining_quantity", "realized_value", "fills", "status", "last_evaluated_date"):
+        position.pop(key, None)
+    state["schema_version"] = 1
+    for key in ("grid_step_pct", "grid_take_profit_levels", "grid_stop_loss_levels"):
+        state["config"].pop(key, None)
+
+    changed = upgrade_paper_trading_state(state)
+
+    assert changed is True
+    assert state["schema_version"] == 2
+    assert position["grid"]["take_profit_prices"]
+    assert position["last_evaluated_date"] == dates[101].isoformat()
+
+
+def test_live_validation_does_not_count_legacy_fixed_hold_cycles():
+    state = create_paper_trading_state(
+        {"test_universe": ["AAA"]},
+        benchmarks=("SPY",),
+        config=USPaperTradingConfig(
+            top_k=1,
+            minimum_universe_coverage=1.0,
+            minimum_completed_cycles=1,
+        ),
+    )
+    portfolio = state["portfolios"]["test_universe"]
+    portfolio["closed_cycles"] = [{"exit_model": "fixed_hold_v1"}]
+    portfolio["snapshots"] = [{
+        "strategy_total_return_pct": 10.0,
+        "benchmark_total_return_pct": {"SPY": 1.0},
+    }]
+
+    validation = evaluate_live_validation(state)
+
+    assert validation["diagnostics"]["test_universe"]["completed_cycles"] == 0
+    assert validation["effective"] is False
 
 
 def test_legacy_pending_signal_is_upgraded_on_idempotent_run():
@@ -247,6 +397,8 @@ def test_report_keeps_live_validation_and_all_benchmarks_visible():
     assert "候选与选股理由" in report
     assert "入选证据" in report
     assert "分数说明" in report
+    assert "网格风控与成交" in report
+    assert "每格 3.0%" in report
     for benchmark in ("SPY", "QQQ", "IWM", "DIA", "RSP"):
         assert benchmark in report
 
@@ -279,6 +431,7 @@ def test_paper_trading_workflow_persists_state_and_publishes_daily_report():
     assert triggers["schedule"] == [{"cron": "30 22 * * 1-5"}]
     assert workflow["permissions"] == {"contents": "write", "issues": "write"}
     assert "python scripts/run_us_paper_trading.py --notify" in rendered
+    assert "US_GRID_STEP_PCT" in rendered
     assert "paper-trading-state" in rendered
     assert "美股模拟交易日报" in rendered
     assert "continue-on-error: true" in rendered
@@ -298,3 +451,19 @@ def test_paper_trading_dashboard_deploys_after_successful_daily_run():
     assert "VITE_PAPER_TRADING_DASHBOARD: 'true'" in rendered
     assert "enablement: true" in rendered
     assert "actions/deploy-pages@v4" in rendered
+
+
+def test_realtime_grid_monitor_is_serialized_with_daily_state_updates():
+    workflow_path = Path(".github/workflows/us-grid-monitor.yml")
+    workflow = yaml.safe_load(workflow_path.read_text(encoding="utf-8"))
+    triggers = workflow.get(True, workflow.get("on"))
+    rendered = workflow_path.read_text(encoding="utf-8")
+
+    assert triggers["schedule"] == [{"cron": "*/15 13-21 * * 1-5"}]
+    assert workflow["permissions"] == {"contents": "write", "actions": "write"}
+    assert workflow["concurrency"]["group"] == "us-paper-trading-state"
+    assert "python scripts/run_us_grid_monitor.py --notify" in rendered
+    assert "LONGBRIDGE_OAUTH_TOKEN_CACHE_B64" in rendered
+    assert "FINNHUB_API_KEY" in rendered
+    assert "git diff --cached --quiet" in rendered
+    assert "gh workflow run deploy-paper-trading-pages.yml --ref main" in rendered

@@ -11,7 +11,7 @@ permissions:
   issues: write
 
 concurrency:
-  group: us-paper-trading-daily
+  group: us-paper-trading-state
   cancel-in-progress: false
 
 jobs:
@@ -46,6 +46,9 @@ jobs:
 
       - name: Advance portfolios and publish notifications
         env:
+          US_GRID_STEP_PCT: ${{ vars.US_GRID_STEP_PCT || '3.0' }}
+          US_GRID_TAKE_PROFIT_LEVELS: ${{ vars.US_GRID_TAKE_PROFIT_LEVELS || '2' }}
+          US_GRID_STOP_LOSS_LEVELS: ${{ vars.US_GRID_STOP_LOSS_LEVELS || '2' }}
           WECHAT_WEBHOOK_URL: ${{ secrets.WECHAT_WEBHOOK_URL }}
           DINGTALK_WEBHOOK_URL: ${{ secrets.DINGTALK_WEBHOOK_URL }}
           DINGTALK_SECRET: ${{ secrets.DINGTALK_SECRET }}

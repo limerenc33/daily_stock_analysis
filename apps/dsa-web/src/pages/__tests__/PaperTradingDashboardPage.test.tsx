@@ -17,14 +17,18 @@ const state = {
     minimum_universe_coverage: 0.95,
     minimum_completed_cycles: 20,
     top_k: 5,
+    grid_step_pct: 3,
+    grid_take_profit_levels: 2,
+    grid_stop_loss_levels: 2,
   },
   portfolios: {
     large_cap_22: {
       universe: ['LLY'],
       closed_cycles: [],
       active_cycle: {
-        status: 'pending',
+        status: 'open',
         signal_date: '2026-08-10',
+        entry_date: '2026-08-11',
         selected: [{
           code: 'LLY',
           screen_score: 71.3253,
@@ -55,8 +59,39 @@ const state = {
           data_sources: ['Yahoo Finance 复权 OHLCV 日线（收盘后信号）'],
           data_gaps: ['估值、市值与财务质量未接入本次日线回放，未参与评分'],
         }],
+        positions: [{
+          code: 'LLY',
+          screen_score: 71.3253,
+          signal_close: 1231.94,
+          status: 'open',
+          entry_date: '2026-08-11',
+          entry_open: 1240,
+          quantity: 40,
+          remaining_quantity: 20,
+          last_price: 1278,
+          fills: [],
+          grid: {
+            step_pct: 3,
+            take_profit_prices: [1277.2, 1314.4],
+            stop_loss_price: 1165.6,
+            completed_take_profit_levels: [1],
+          },
+        }],
         coverage: { expected_count: 22, covered_count: 22, ratio: 1 },
       },
+      event_log: [{
+        type: 'grid_take_profit',
+        code: 'LLY',
+        date: '2026-08-11',
+        observed_at: '2026-08-11T15:30:00Z',
+        reason: 'grid_take_profit',
+        grid_level: 1,
+        trigger_price: 1277.2,
+        fill_price: 1278,
+        quantity: 20,
+        remaining_quantity: 20,
+        source: 'Longbridge',
+      }],
       snapshots: [{
         date: '2026-08-10',
         strategy_equity: 100000,
@@ -100,7 +135,7 @@ describe('PaperTradingDashboardPage', () => {
 
     expect(await screen.findByRole('heading', { name: '模拟组合收益与候选追踪' })).toBeInTheDocument();
     expect(screen.getByText('证据不足或未通过')).toBeInTheDocument();
-    expect(screen.getAllByText('LLY')).toHaveLength(2);
+    expect(screen.getAllByText('LLY')).toHaveLength(3);
     expect(screen.getAllByText('71.3')).toHaveLength(2);
     expect(screen.getByRole('heading', { name: '候选证据卡' })).toBeInTheDocument();
     expect(screen.getAllByText(/趋势确认、动量质量贡献居前/)).toHaveLength(2);
@@ -108,7 +143,12 @@ describe('PaperTradingDashboardPage', () => {
     expect(screen.getByText('收盘价站上 MA20')).toBeInTheDocument();
     expect(screen.getAllByText(/估值、市值与财务质量未接入/).length).toBeGreaterThan(0);
     expect(screen.getByText('未触发额外技术风险标记')).toBeInTheDocument();
-    expect(screen.getByText('等待次日开盘')).toBeInTheDocument();
+    expect(screen.getByText('持仓中')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '网格止损止盈' })).toBeInTheDocument();
+    expect(screen.getByText(/上涨 2 格分批止盈/)).toBeInTheDocument();
+    expect(screen.getByText('最近网格成交')).toBeInTheDocument();
+    expect(screen.getByText('LLY · 网格止盈')).toBeInTheDocument();
+    expect(screen.getByText('Longbridge')).toBeInTheDocument();
     expect(screen.getByText('0 / 20')).toBeInTheDocument();
     await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
   });

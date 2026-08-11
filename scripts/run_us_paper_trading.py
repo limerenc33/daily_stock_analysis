@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 from datetime import date, timedelta
 import json
+import os
 from pathlib import Path
 import sys
 
@@ -100,20 +101,34 @@ def download_yahoo_histories(
     return histories
 
 
-def _load_or_create_state(path: Path) -> dict[str, object]:
+def _load_or_create_state(
+    path: Path,
+    *,
+    config: USPaperTradingConfig | None = None,
+) -> dict[str, object]:
     if path.is_file():
         try:
             state = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as exc:
             raise ValueError(f"paper-trading state is unreadable: {path}") from exc
-        if int(state.get("schema_version") or 0) != 1:
+        if int(state.get("schema_version") or 0) not in {1, 2}:
             raise ValueError("unsupported paper-trading state schema")
         return state
     return create_paper_trading_state(
         {name: UNIVERSES[name] for name in STOCK_UNIVERSES},
         benchmarks=BENCHMARKS,
-        config=USPaperTradingConfig(),
+        config=config or USPaperTradingConfig(),
     )
+
+
+def _optional_env_float(name: str) -> float | None:
+    value = os.getenv(name)
+    return float(value) if value not in {None, ""} else None
+
+
+def _optional_env_int(name: str) -> int | None:
+    value = os.getenv(name)
+    return int(value) if value not in {None, ""} else None
 
 
 def _write_atomic(path: Path, content: str) -> None:
@@ -152,12 +167,35 @@ def main() -> int:
     parser.add_argument("--as-of", type=_parse_date, default=None)
     parser.add_argument("--history-days", type=int, default=420)
     parser.add_argument("--batch-size", type=int, default=25)
+    parser.add_argument("--grid-step-pct", type=float, default=_optional_env_float("US_GRID_STEP_PCT"))
+    parser.add_argument(
+        "--grid-take-profit-levels",
+        type=int,
+        default=_optional_env_int("US_GRID_TAKE_PROFIT_LEVELS"),
+    )
+    parser.add_argument(
+        "--grid-stop-loss-levels",
+        type=int,
+        default=_optional_env_int("US_GRID_STOP_LOSS_LEVELS"),
+    )
     parser.add_argument("--notify", action="store_true")
     args = parser.parse_args()
     if args.history_days < 240 or args.batch_size <= 0:
         parser.error("--history-days must be at least 240 and --batch-size must be positive")
 
-    state = _load_or_create_state(args.state)
+    config_overrides = {
+        key: value
+        for key, value in {
+            "grid_step_pct": args.grid_step_pct,
+            "grid_take_profit_levels": args.grid_take_profit_levels,
+            "grid_stop_loss_levels": args.grid_stop_loss_levels,
+        }.items()
+        if value is not None
+    }
+    initial_config = USPaperTradingConfig(**config_overrides)
+    state = _load_or_create_state(args.state, config=initial_config)
+    if config_overrides:
+        state.setdefault("config", {}).update(config_overrides)
     requested_end = args.as_of or date.today()
     tickers = list(dict.fromkeys(
         ticker
