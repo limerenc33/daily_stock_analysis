@@ -1,0 +1,53 @@
+name: us_quality_momentum_v2
+display_name: 美股趋势质量 v2（已拒绝）
+description: 仅用于复现训练段冻结后失败的样本外候选，不可用于生产选股
+version: "2.0-rejected"
+category: trend
+tags: [us, momentum, quality, rejected_research_candidate]
+analysis_skills: [bull_trend, growth_quality]
+style:
+  risk_profile: balanced
+  holding_period: swing
+  execution_style: trend_quality
+  market_regime: [risk_on, trend, rotation]
+  capital_profile: high_liquidity
+  ui_badge: 已拒绝
+
+screening:
+  enabled: true
+  market_scope: [us]
+  hard_filters:
+    exclude_st: false
+    amount_min: 50000000
+    price_min: 5
+    change_pct_min: -5.0
+    change_pct_max: 6.0
+    change_60d_min: 0.0
+    change_60d_max: 45.0
+    require_price_above_ma20: true
+    signal_score_min: 55
+    macd_status_whitelist: [bullish, neutral]
+    volatility_20d_pct_max: 40.0
+    max_drawdown_20d_pct_min: -15.0
+    atr_20_pct_max: 6.0
+  tech_weight: 0.55
+  factor_weights:
+    momentum: 0.50
+    stability: 0.25
+    liquidity: 0.20
+    activity: 0.05
+  scoring_profile:
+    momentum_60d_slope: 1.2
+    momentum_60d_overheat_pct: 45.0
+  risk_profile:
+    chase_change_pct: 8.0
+    abnormal_volume_ratio: 5.0
+    weak_signal_score: 48.0
+    low_daily_quality_score: 82.0
+  portfolio_profile:
+    max_same_bucket: 2
+    concentration_penalty: 3.0
+  ranking_hints: |
+    参数在 2015-2019 训练段冻结，但 2020-2025 综合样本外验证失败。
+    此文件仅为审计复现保留，严禁接入自动购买建议或下单链路。
+  max_output: 5

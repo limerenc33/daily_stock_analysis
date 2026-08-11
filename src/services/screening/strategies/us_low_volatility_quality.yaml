@@ -1,0 +1,62 @@
+name: us_low_volatility_quality
+display_name: 美股低波质量
+description: 面向美股高流动性大盘股的低波动、浅回撤防守型筛选
+version: "1.0"
+category: quality
+tags: [us, quality, defensive, low_volatility, stability]
+analysis_skills: [growth_quality, defensive_quality]
+style:
+  risk_profile: defensive
+  holding_period: swing
+  execution_style: quality_defensive
+  market_regime: [risk_off, range_bound, low_volatility]
+  capital_profile: high_liquidity
+  ui_badge: 美股低波
+
+screening:
+  enabled: true
+  market_scope: [us]
+  hard_filters:
+    exclude_st: false
+    amount_min: 50000000
+    market_cap_min: 15000000000
+    price_min: 5
+    change_pct_min: -4.0
+    change_pct_max: 5.0
+    change_60d_min: -12.0
+    change_60d_max: 30.0
+    signal_score_min: 52
+    range_20d_pct_max: 30.0
+    volatility_20d_pct_max: 30.0
+    max_drawdown_20d_pct_min: -10.0
+    atr_20_pct_max: 4.5
+  tech_weight: 0.35
+  factor_weights:
+    stability: 0.34
+    liquidity: 0.20
+    size: 0.18
+    momentum: 0.12
+    value: 0.10
+    activity: 0.06
+  scoring_profile:
+    momentum_60d_overheat_pct: 30.0
+    momentum_chase_start_pct: 4.0
+    momentum_chase_penalty_slope: 16.0
+    activity_ideal_volume_ratio: 1.2
+    activity_ideal_turnover_rate: 1.0
+    stability_hot_change_pct: 5.0
+    stability_high_volatility_pct: 28.0
+    stability_max_drawdown_floor_pct: -10.0
+    stability_high_atr_pct: 4.0
+  risk_profile:
+    chase_change_pct: 6.0
+    abnormal_volume_ratio: 4.0
+    weak_signal_score: 45.0
+    low_daily_quality_score: 85.0
+  portfolio_profile:
+    max_same_bucket: 2
+    concentration_penalty: 2.5
+  ranking_hints: |
+    优先选择 20 日年化波动、ATR 和最大回撤较低且成交额稳定的美股大盘股。
+    这是防守型观察池，不代表无风险；仍需检查财报日期、利率敏感性、行业集中度和基准相对收益。
+  max_output: 5

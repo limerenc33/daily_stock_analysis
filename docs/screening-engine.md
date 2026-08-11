@@ -34,11 +34,15 @@ SCREENING_HOTSPOT_CALL_TIMEOUT_SEC=8
 SCREENING_HOTSPOT_SEARCH_TIMEOUT_SEC=12
 SCREENING_SNAPSHOT_CALL_TIMEOUT_SEC=60
 SCREENING_DAILY_CALL_TIMEOUT_SEC=20
+SCREENING_US_UNIVERSE_SOURCE=auto
+SCREENING_US_TICKERS=AAPL,MSFT,NVDA,AMZN,GOOGL
 SCREENING_EASTMONEY_MIN_INTERVAL_SEC=1.0
 SCREENING_EASTMONEY_JITTER_SEC=0.3
 ```
 
 路径、缓存、超时和限流项只影响选股链路。`SCREENING_SNAPSHOT_CACHE_TTL_SEC` 默认 300 秒，设为 `0` 可关闭新鲜快照复用。`SCREENING_HOTSPOT_CALL_TIMEOUT_SEC` 的正数值是默认热点 provider 单次板块、成分股或直接详情 fallback 调用的总预算，后续 fallback 和并行成分股源共用同一截止时间，并把剩余时间传入可终止的 AkShare 子进程与 HTTP socket；设为 `0/off/disabled` 只关闭这层总预算，各真实数据源仍保留自身硬超时。`SCREENING_HOTSPOT_SEARCH_TIMEOUT_SEC` 是用户主动新闻搜索的端到端截止时间，缓存 owner 等待、重新竞争和 provider 子进程共享同一个绝对 deadline；`0/off/disabled` 会回退到安全默认值 12 秒，而不是无限等待。完整示例以 `.env.example` 为准。
+
+美股股票池由 `src/services/screening/snapshot_us.py` 提供。`SCREENING_US_UNIVERSE_SOURCE` 可选 `auto`、`env`、`sp500`、`default`；`auto` 会优先使用显式的 `SCREENING_US_TICKERS`，再尝试 Wikipedia 的 S&P 500 列表，最后使用内置的大盘股兜底。美股策略在 `DAILY_SOURCE=auto` 时会自动把日线历史路由到 `yfinance`，不应将中国市场的数据源用于美股技术过滤。
 
 ## API 契约
 

@@ -37,11 +37,14 @@ def fetch_us_universe(source: str = "auto") -> list[str]:
         sp500   — scrape S&P 500 from Wikipedia
         env     — read SCREENING_US_TICKERS (comma-separated)
         default — hardcoded top-50 US large-caps
-        auto    — try sp500 → env → default
+        auto    — use SCREENING_US_TICKERS when configured, then S&P 500,
+                   then the built-in default universe
     """
     src = source.lower()
     if src == "auto":
-        for s in ("sp500", "env", "default"):
+        # An explicit ticker list is deterministic and must win over a live
+        # Wikipedia scrape. This also makes paper-trading and tests repeatable.
+        for s in ("env", "sp500", "default"):
             try:
                 tickers = fetch_us_universe(s)
                 if tickers:
@@ -75,7 +78,7 @@ def _fetch_sp500_tickers() -> list[str]:
 def fetch_us_snapshot(
     tickers: list[str] | None = None,
     *,
-    universe_source: str = "auto",
+    universe_source: str | None = None,
     max_workers: int = 8,
 ) -> pd.DataFrame:
     """Fetch a US equity snapshot in the screening schema.
@@ -88,7 +91,8 @@ def fetch_us_snapshot(
     import yfinance as yf
 
     if tickers is None:
-        tickers = fetch_us_universe(universe_source)
+        source = universe_source or os.getenv("SCREENING_US_UNIVERSE_SOURCE", "auto")
+        tickers = fetch_us_universe(source)
 
     logger.info("Fetching US snapshot for %d tickers", len(tickers))
 

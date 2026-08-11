@@ -228,11 +228,18 @@ def screen(
         enrich_count = min(daily_limit, len(provisional))
         daily_candidates = provisional.head(enrich_count)
         try:
+            # yfinance is explicit-only in the shared daily fetcher. When a
+            # US strategy uses the default ``auto`` setting, route it to the
+            # US-compatible source instead of silently trying CN providers.
+            effective_daily_source = config.daily_source
+            if market == "us" and str(effective_daily_source).strip().lower() in {"", "auto"}:
+                effective_daily_source = "yfinance"
+                degradation.append("US market daily source: yfinance")
             enriched = enrich_daily_features(
                 daily_candidates,
                 max_rows=enrich_count,
                 lookback_days=config.daily_lookback_days,
-                source=config.daily_source,
+                source=effective_daily_source,
                 fetch_retries=config.daily_fetch_retries,
                 cache_dir=config.daily_history_cache_dir,
                 cache_ttl_seconds=config.daily_history_cache_ttl_hours * 3600,

@@ -141,6 +141,8 @@ def _fetch_us_snapshot_with_fallback(
     """Fetch US equity snapshot via yfinance adapter."""
     from src.services.screening.snapshot_us import fetch_us_snapshot
 
+    # The adapter reads SCREENING_US_UNIVERSE_SOURCE itself so direct callers
+    # and the market router share one configuration path.
     df = fetch_us_snapshot()
     missing = _missing_required_columns(df, required_columns or [])
     if missing:

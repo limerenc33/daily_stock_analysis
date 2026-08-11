@@ -1,0 +1,62 @@
+name: us_quality_momentum
+display_name: 美股趋势质量
+description: 面向美股大盘股的趋势质量策略，兼顾流动性、趋势确认和回撤控制
+version: "1.0"
+category: trend
+tags: [us, momentum, quality, trend, large_cap]
+analysis_skills: [bull_trend, growth_quality]
+style:
+  risk_profile: balanced
+  holding_period: swing
+  execution_style: trend_quality
+  market_regime: [risk_on, trend, rotation]
+  capital_profile: high_liquidity
+  ui_badge: 美股趋势
+
+screening:
+  enabled: true
+  market_scope: [us]
+  hard_filters:
+    exclude_st: false
+    amount_min: 50000000
+    market_cap_min: 10000000000
+    price_min: 5
+    change_pct_min: -6.0
+    change_pct_max: 8.0
+    change_60d_min: -2.0
+    change_60d_max: 45.0
+    require_price_above_ma20: true
+    signal_score_min: 55
+    macd_status_whitelist: [bullish, neutral]
+    volatility_20d_pct_max: 45.0
+    max_drawdown_20d_pct_min: -15.0
+    atr_20_pct_max: 6.5
+  tech_weight: 0.55
+  factor_weights:
+    momentum: 0.32
+    liquidity: 0.24
+    stability: 0.20
+    size: 0.14
+    activity: 0.06
+    value: 0.04
+  scoring_profile:
+    momentum_chase_start_pct: 5.0
+    momentum_chase_penalty_slope: 12.0
+    momentum_60d_overheat_pct: 42.0
+    activity_ideal_volume_ratio: 1.6
+    activity_ideal_turnover_rate: 1.5
+    stability_high_volatility_pct: 40.0
+    stability_max_drawdown_floor_pct: -15.0
+    stability_high_atr_pct: 6.0
+  risk_profile:
+    chase_change_pct: 8.0
+    abnormal_volume_ratio: 5.0
+    weak_signal_score: 48.0
+    low_daily_quality_score: 82.0
+  portfolio_profile:
+    max_same_bucket: 2
+    concentration_penalty: 3.0
+  ranking_hints: |
+    优先选择流动性充足、股价站上 MA20、MACD 未转弱且 20 日回撤可控的美股大盘股。
+    不以 PE/PB 缺失作为淘汰条件，估值仅作为低权重排序因素；下单前需要核对财报、事件和盘前盘后流动性。
+  max_output: 5

@@ -1,0 +1,1000 @@
+{
+  "training_window": {
+    "start": "2015-01-01",
+    "end": "2019-12-31"
+  },
+  "selection_rule": [
+    "minimum 200 trades in every cell",
+    "maximize worst-universe count of profitable positive-excess benchmark cells",
+    "then maximize median Sharpe",
+    "then maximize median excess return"
+  ],
+  "selected_candidate": "trend_balanced",
+  "candidates": {
+    "trend_balanced": {
+      "parameters": {
+        "hard_filters": {
+          "amount_min": 50000000,
+          "price_min": 5,
+          "change_pct_min": -5,
+          "change_pct_max": 6,
+          "change_60d_min": 0,
+          "change_60d_max": 45,
+          "require_price_above_ma20": true,
+          "signal_score_min": 55,
+          "macd_status_whitelist": [
+            "bullish",
+            "neutral"
+          ],
+          "volatility_20d_pct_max": 40,
+          "max_drawdown_20d_pct_min": -15,
+          "atr_20_pct_max": 6
+        },
+        "factor_weights": {
+          "momentum": 0.5,
+          "stability": 0.25,
+          "liquidity": 0.2,
+          "activity": 0.05
+        },
+        "scoring_profile": {
+          "momentum_60d_slope": 1.2,
+          "momentum_60d_overheat_pct": 45
+        }
+      },
+      "metrics": {
+        "large_cap_22": {
+          "SPY": {
+            "period_count": 126,
+            "trade_count": 531,
+            "total_return_pct": 82.0961,
+            "cagr_pct": 12.7354,
+            "annualized_volatility_pct": 15.9843,
+            "sharpe": 0.8323,
+            "max_drawdown_pct": -25.5677,
+            "benchmark_max_drawdown_pct": -19.3828,
+            "win_rate_pct": 57.1429,
+            "avg_return_pct": 0.5279,
+            "benchmark_return_pct": 39.8668,
+            "excess_return_pct": 42.2293,
+            "mean_excess_per_period_pct": 0.234
+          },
+          "QQQ": {
+            "period_count": 126,
+            "trade_count": 531,
+            "total_return_pct": 82.0961,
+            "cagr_pct": 12.7354,
+            "annualized_volatility_pct": 15.9843,
+            "sharpe": 0.8323,
+            "max_drawdown_pct": -25.5677,
+            "benchmark_max_drawdown_pct": -21.8784,
+            "win_rate_pct": 57.1429,
+            "avg_return_pct": 0.5279,
+            "benchmark_return_pct": 76.1518,
+            "excess_return_pct": 5.9443,
+            "mean_excess_per_period_pct": 0.03
+          },
+          "IWM": {
+            "period_count": 126,
+            "trade_count": 531,
+            "total_return_pct": 82.0961,
+            "cagr_pct": 12.7354,
+            "annualized_volatility_pct": 15.9843,
+            "sharpe": 0.8323,
+            "max_drawdown_pct": -25.5677,
+            "benchmark_max_drawdown_pct": -25.7373,
+            "win_rate_pct": 57.1429,
+            "avg_return_pct": 0.5279,
+            "benchmark_return_pct": 15.965,
+            "excess_return_pct": 66.1311,
+            "mean_excess_per_period_pct": 0.3557
+          },
+          "DIA": {
+            "period_count": 126,
+            "trade_count": 531,
+            "total_return_pct": 82.0961,
+            "cagr_pct": 12.7354,
+            "annualized_volatility_pct": 15.9843,
+            "sharpe": 0.8323,
+            "max_drawdown_pct": -25.5677,
+            "benchmark_max_drawdown_pct": -19.3112,
+            "win_rate_pct": 57.1429,
+            "avg_return_pct": 0.5279,
+            "benchmark_return_pct": 42.1941,
+            "excess_return_pct": 39.9021,
+            "mean_excess_per_period_pct": 0.2192
+          },
+          "RSP": {
+            "period_count": 126,
+            "trade_count": 531,
+            "total_return_pct": 82.0961,
+            "cagr_pct": 12.7354,
+            "annualized_volatility_pct": 15.9843,
+            "sharpe": 0.8323,
+            "max_drawdown_pct": -25.5677,
+            "benchmark_max_drawdown_pct": -20.5867,
+            "win_rate_pct": 57.1429,
+            "avg_return_pct": 0.5279,
+            "benchmark_return_pct": 28.5232,
+            "excess_return_pct": 53.573,
+            "mean_excess_per_period_pct": 0.2964
+          }
+        },
+        "diversified_60": {
+          "SPY": {
+            "period_count": 126,
+            "trade_count": 580,
+            "total_return_pct": 82.6925,
+            "cagr_pct": 12.8091,
+            "annualized_volatility_pct": 14.1898,
+            "sharpe": 0.9219,
+            "max_drawdown_pct": -13.501,
+            "benchmark_max_drawdown_pct": -19.3828,
+            "win_rate_pct": 53.1746,
+            "avg_return_pct": 0.5191,
+            "benchmark_return_pct": 39.8668,
+            "excess_return_pct": 42.8257,
+            "mean_excess_per_period_pct": 0.2252
+          },
+          "QQQ": {
+            "period_count": 126,
+            "trade_count": 580,
+            "total_return_pct": 82.6925,
+            "cagr_pct": 12.8091,
+            "annualized_volatility_pct": 14.1898,
+            "sharpe": 0.9219,
+            "max_drawdown_pct": -13.501,
+            "benchmark_max_drawdown_pct": -21.8784,
+            "win_rate_pct": 53.1746,
+            "avg_return_pct": 0.5191,
+            "benchmark_return_pct": 76.1518,
+            "excess_return_pct": 6.5407,
+            "mean_excess_per_period_pct": 0.0212
+          },
+          "IWM": {
+            "period_count": 126,
+            "trade_count": 580,
+            "total_return_pct": 82.6925,
+            "cagr_pct": 12.8091,
+            "annualized_volatility_pct": 14.1898,
+            "sharpe": 0.9219,
+            "max_drawdown_pct": -13.501,
+            "benchmark_max_drawdown_pct": -25.7373,
+            "win_rate_pct": 53.1746,
+            "avg_return_pct": 0.5191,
+            "benchmark_return_pct": 15.965,
+            "excess_return_pct": 66.7275,
+            "mean_excess_per_period_pct": 0.3469
+          },
+          "DIA": {
+            "period_count": 126,
+            "trade_count": 580,
+            "total_return_pct": 82.6925,
+            "cagr_pct": 12.8091,
+            "annualized_volatility_pct": 14.1898,
+            "sharpe": 0.9219,
+            "max_drawdown_pct": -13.501,
+            "benchmark_max_drawdown_pct": -19.3112,
+            "win_rate_pct": 53.1746,
+            "avg_return_pct": 0.5191,
+            "benchmark_return_pct": 42.1941,
+            "excess_return_pct": 40.4985,
+            "mean_excess_per_period_pct": 0.2104
+          },
+          "RSP": {
+            "period_count": 126,
+            "trade_count": 580,
+            "total_return_pct": 82.6925,
+            "cagr_pct": 12.8091,
+            "annualized_volatility_pct": 14.1898,
+            "sharpe": 0.9219,
+            "max_drawdown_pct": -13.501,
+            "benchmark_max_drawdown_pct": -20.5867,
+            "win_rate_pct": 53.1746,
+            "avg_return_pct": 0.5191,
+            "benchmark_return_pct": 28.5232,
+            "excess_return_pct": 54.1694,
+            "mean_excess_per_period_pct": 0.2876
+          }
+        }
+      },
+      "selection_diagnostics": {
+        "minimum_positive_benchmark_cells": 5,
+        "positive_benchmark_cells": {
+          "large_cap_22": 5,
+          "diversified_60": 5
+        },
+        "median_sharpe": 0.8771,
+        "median_excess_return_pct": 42.5275,
+        "minimum_trade_count": 531
+      }
+    },
+    "trend_strict": {
+      "parameters": {
+        "hard_filters": {
+          "amount_min": 50000000,
+          "price_min": 5,
+          "change_pct_min": -4,
+          "change_pct_max": 5,
+          "change_60d_min": 5,
+          "change_60d_max": 40,
+          "require_ma_bullish": true,
+          "signal_score_min": 60,
+          "macd_status_whitelist": [
+            "bullish"
+          ],
+          "volatility_20d_pct_max": 35,
+          "max_drawdown_20d_pct_min": -12,
+          "atr_20_pct_max": 5.5
+        },
+        "factor_weights": {
+          "momentum": 0.55,
+          "stability": 0.25,
+          "liquidity": 0.15,
+          "activity": 0.05
+        },
+        "scoring_profile": {
+          "momentum_60d_slope": 1.4,
+          "momentum_60d_overheat_pct": 40
+        }
+      },
+      "metrics": {
+        "large_cap_22": {
+          "SPY": {
+            "period_count": 126,
+            "trade_count": 367,
+            "total_return_pct": 94.98,
+            "cagr_pct": 14.2873,
+            "annualized_volatility_pct": 16.2367,
+            "sharpe": 0.9033,
+            "max_drawdown_pct": -16.3102,
+            "benchmark_max_drawdown_pct": -19.3828,
+            "win_rate_pct": 48.4127,
+            "avg_return_pct": 0.582,
+            "benchmark_return_pct": 39.8668,
+            "excess_return_pct": 55.1131,
+            "mean_excess_per_period_pct": 0.2881
+          },
+          "QQQ": {
+            "period_count": 126,
+            "trade_count": 367,
+            "total_return_pct": 94.98,
+            "cagr_pct": 14.2873,
+            "annualized_volatility_pct": 16.2367,
+            "sharpe": 0.9033,
+            "max_drawdown_pct": -16.3102,
+            "benchmark_max_drawdown_pct": -21.8784,
+            "win_rate_pct": 48.4127,
+            "avg_return_pct": 0.582,
+            "benchmark_return_pct": 76.1518,
+            "excess_return_pct": 18.8281,
+            "mean_excess_per_period_pct": 0.0841
+          },
+          "IWM": {
+            "period_count": 126,
+            "trade_count": 367,
+            "total_return_pct": 94.98,
+            "cagr_pct": 14.2873,
+            "annualized_volatility_pct": 16.2367,
+            "sharpe": 0.9033,
+            "max_drawdown_pct": -16.3102,
+            "benchmark_max_drawdown_pct": -25.7373,
+            "win_rate_pct": 48.4127,
+            "avg_return_pct": 0.582,
+            "benchmark_return_pct": 15.965,
+            "excess_return_pct": 79.015,
+            "mean_excess_per_period_pct": 0.4098
+          },
+          "DIA": {
+            "period_count": 126,
+            "trade_count": 367,
+            "total_return_pct": 94.98,
+            "cagr_pct": 14.2873,
+            "annualized_volatility_pct": 16.2367,
+            "sharpe": 0.9033,
+            "max_drawdown_pct": -16.3102,
+            "benchmark_max_drawdown_pct": -19.3112,
+            "win_rate_pct": 48.4127,
+            "avg_return_pct": 0.582,
+            "benchmark_return_pct": 42.1941,
+            "excess_return_pct": 52.7859,
+            "mean_excess_per_period_pct": 0.2733
+          },
+          "RSP": {
+            "period_count": 126,
+            "trade_count": 367,
+            "total_return_pct": 94.98,
+            "cagr_pct": 14.2873,
+            "annualized_volatility_pct": 16.2367,
+            "sharpe": 0.9033,
+            "max_drawdown_pct": -16.3102,
+            "benchmark_max_drawdown_pct": -20.5867,
+            "win_rate_pct": 48.4127,
+            "avg_return_pct": 0.582,
+            "benchmark_return_pct": 28.5232,
+            "excess_return_pct": 66.4568,
+            "mean_excess_per_period_pct": 0.3505
+          }
+        },
+        "diversified_60": {
+          "SPY": {
+            "period_count": 126,
+            "trade_count": 516,
+            "total_return_pct": 54.2796,
+            "cagr_pct": 9.059,
+            "annualized_volatility_pct": 13.6324,
+            "sharpe": 0.7048,
+            "max_drawdown_pct": -12.4703,
+            "benchmark_max_drawdown_pct": -19.3828,
+            "win_rate_pct": 50.7937,
+            "avg_return_pct": 0.3813,
+            "benchmark_return_pct": 39.8668,
+            "excess_return_pct": 14.4128,
+            "mean_excess_per_period_pct": 0.0874
+          },
+          "QQQ": {
+            "period_count": 126,
+            "trade_count": 516,
+            "total_return_pct": 54.2796,
+            "cagr_pct": 9.059,
+            "annualized_volatility_pct": 13.6324,
+            "sharpe": 0.7048,
+            "max_drawdown_pct": -12.4703,
+            "benchmark_max_drawdown_pct": -21.8784,
+            "win_rate_pct": 50.7937,
+            "avg_return_pct": 0.3813,
+            "benchmark_return_pct": 76.1518,
+            "excess_return_pct": -21.8722,
+            "mean_excess_per_period_pct": -0.1167
+          },
+          "IWM": {
+            "period_count": 126,
+            "trade_count": 516,
+            "total_return_pct": 54.2796,
+            "cagr_pct": 9.059,
+            "annualized_volatility_pct": 13.6324,
+            "sharpe": 0.7048,
+            "max_drawdown_pct": -12.4703,
+            "benchmark_max_drawdown_pct": -25.7373,
+            "win_rate_pct": 50.7937,
+            "avg_return_pct": 0.3813,
+            "benchmark_return_pct": 15.965,
+            "excess_return_pct": 38.3146,
+            "mean_excess_per_period_pct": 0.2091
+          },
+          "DIA": {
+            "period_count": 126,
+            "trade_count": 516,
+            "total_return_pct": 54.2796,
+            "cagr_pct": 9.059,
+            "annualized_volatility_pct": 13.6324,
+            "sharpe": 0.7048,
+            "max_drawdown_pct": -12.4703,
+            "benchmark_max_drawdown_pct": -19.3112,
+            "win_rate_pct": 50.7937,
+            "avg_return_pct": 0.3813,
+            "benchmark_return_pct": 42.1941,
+            "excess_return_pct": 12.0855,
+            "mean_excess_per_period_pct": 0.0726
+          },
+          "RSP": {
+            "period_count": 126,
+            "trade_count": 516,
+            "total_return_pct": 54.2796,
+            "cagr_pct": 9.059,
+            "annualized_volatility_pct": 13.6324,
+            "sharpe": 0.7048,
+            "max_drawdown_pct": -12.4703,
+            "benchmark_max_drawdown_pct": -20.5867,
+            "win_rate_pct": 50.7937,
+            "avg_return_pct": 0.3813,
+            "benchmark_return_pct": 28.5232,
+            "excess_return_pct": 25.7564,
+            "mean_excess_per_period_pct": 0.1498
+          }
+        }
+      },
+      "selection_diagnostics": {
+        "minimum_positive_benchmark_cells": 4,
+        "positive_benchmark_cells": {
+          "large_cap_22": 5,
+          "diversified_60": 4
+        },
+        "median_sharpe": 0.8040499999999999,
+        "median_excess_return_pct": 32.0355,
+        "minimum_trade_count": 367
+      }
+    },
+    "trend_broad": {
+      "parameters": {
+        "hard_filters": {
+          "amount_min": 50000000,
+          "price_min": 5,
+          "change_pct_min": -6,
+          "change_pct_max": 8,
+          "change_60d_min": 0,
+          "change_60d_max": 70,
+          "require_price_above_ma20": true,
+          "signal_score_min": 50,
+          "macd_status_whitelist": [
+            "bullish",
+            "neutral"
+          ],
+          "volatility_20d_pct_max": 50,
+          "max_drawdown_20d_pct_min": -20,
+          "atr_20_pct_max": 8
+        },
+        "factor_weights": {
+          "momentum": 0.7,
+          "stability": 0.15,
+          "liquidity": 0.1,
+          "activity": 0.05
+        },
+        "scoring_profile": {
+          "momentum_60d_slope": 1.5,
+          "momentum_60d_overheat_pct": 65
+        }
+      },
+      "metrics": {
+        "large_cap_22": {
+          "SPY": {
+            "period_count": 126,
+            "trade_count": 540,
+            "total_return_pct": 66.4108,
+            "cagr_pct": 10.7226,
+            "annualized_volatility_pct": 16.0526,
+            "sharpe": 0.7166,
+            "max_drawdown_pct": -25.6137,
+            "benchmark_max_drawdown_pct": -19.3828,
+            "win_rate_pct": 54.7619,
+            "avg_return_pct": 0.4565,
+            "benchmark_return_pct": 39.8668,
+            "excess_return_pct": 26.544,
+            "mean_excess_per_period_pct": 0.1626
+          },
+          "QQQ": {
+            "period_count": 126,
+            "trade_count": 540,
+            "total_return_pct": 66.4108,
+            "cagr_pct": 10.7226,
+            "annualized_volatility_pct": 16.0526,
+            "sharpe": 0.7166,
+            "max_drawdown_pct": -25.6137,
+            "benchmark_max_drawdown_pct": -21.8784,
+            "win_rate_pct": 54.7619,
+            "avg_return_pct": 0.4565,
+            "benchmark_return_pct": 76.1518,
+            "excess_return_pct": -9.741,
+            "mean_excess_per_period_pct": -0.0415
+          },
+          "IWM": {
+            "period_count": 126,
+            "trade_count": 540,
+            "total_return_pct": 66.4108,
+            "cagr_pct": 10.7226,
+            "annualized_volatility_pct": 16.0526,
+            "sharpe": 0.7166,
+            "max_drawdown_pct": -25.6137,
+            "benchmark_max_drawdown_pct": -25.7373,
+            "win_rate_pct": 54.7619,
+            "avg_return_pct": 0.4565,
+            "benchmark_return_pct": 15.965,
+            "excess_return_pct": 50.4458,
+            "mean_excess_per_period_pct": 0.2843
+          },
+          "DIA": {
+            "period_count": 126,
+            "trade_count": 540,
+            "total_return_pct": 66.4108,
+            "cagr_pct": 10.7226,
+            "annualized_volatility_pct": 16.0526,
+            "sharpe": 0.7166,
+            "max_drawdown_pct": -25.6137,
+            "benchmark_max_drawdown_pct": -19.3112,
+            "win_rate_pct": 54.7619,
+            "avg_return_pct": 0.4565,
+            "benchmark_return_pct": 42.1941,
+            "excess_return_pct": 24.2167,
+            "mean_excess_per_period_pct": 0.1478
+          },
+          "RSP": {
+            "period_count": 126,
+            "trade_count": 540,
+            "total_return_pct": 66.4108,
+            "cagr_pct": 10.7226,
+            "annualized_volatility_pct": 16.0526,
+            "sharpe": 0.7166,
+            "max_drawdown_pct": -25.6137,
+            "benchmark_max_drawdown_pct": -20.5867,
+            "win_rate_pct": 54.7619,
+            "avg_return_pct": 0.4565,
+            "benchmark_return_pct": 28.5232,
+            "excess_return_pct": 37.8876,
+            "mean_excess_per_period_pct": 0.225
+          }
+        },
+        "diversified_60": {
+          "SPY": {
+            "period_count": 126,
+            "trade_count": 582,
+            "total_return_pct": 65.6721,
+            "cagr_pct": 10.6241,
+            "annualized_volatility_pct": 15.2099,
+            "sharpe": 0.741,
+            "max_drawdown_pct": -14.9752,
+            "benchmark_max_drawdown_pct": -19.3828,
+            "win_rate_pct": 53.1746,
+            "avg_return_pct": 0.4473,
+            "benchmark_return_pct": 39.8668,
+            "excess_return_pct": 25.8053,
+            "mean_excess_per_period_pct": 0.1534
+          },
+          "QQQ": {
+            "period_count": 126,
+            "trade_count": 582,
+            "total_return_pct": 65.6721,
+            "cagr_pct": 10.6241,
+            "annualized_volatility_pct": 15.2099,
+            "sharpe": 0.741,
+            "max_drawdown_pct": -14.9752,
+            "benchmark_max_drawdown_pct": -21.8784,
+            "win_rate_pct": 53.1746,
+            "avg_return_pct": 0.4473,
+            "benchmark_return_pct": 76.1518,
+            "excess_return_pct": -10.4797,
+            "mean_excess_per_period_pct": -0.0507
+          },
+          "IWM": {
+            "period_count": 126,
+            "trade_count": 582,
+            "total_return_pct": 65.6721,
+            "cagr_pct": 10.6241,
+            "annualized_volatility_pct": 15.2099,
+            "sharpe": 0.741,
+            "max_drawdown_pct": -14.9752,
+            "benchmark_max_drawdown_pct": -25.7373,
+            "win_rate_pct": 53.1746,
+            "avg_return_pct": 0.4473,
+            "benchmark_return_pct": 15.965,
+            "excess_return_pct": 49.7071,
+            "mean_excess_per_period_pct": 0.2751
+          },
+          "DIA": {
+            "period_count": 126,
+            "trade_count": 582,
+            "total_return_pct": 65.6721,
+            "cagr_pct": 10.6241,
+            "annualized_volatility_pct": 15.2099,
+            "sharpe": 0.741,
+            "max_drawdown_pct": -14.9752,
+            "benchmark_max_drawdown_pct": -19.3112,
+            "win_rate_pct": 53.1746,
+            "avg_return_pct": 0.4473,
+            "benchmark_return_pct": 42.1941,
+            "excess_return_pct": 23.478,
+            "mean_excess_per_period_pct": 0.1386
+          },
+          "RSP": {
+            "period_count": 126,
+            "trade_count": 582,
+            "total_return_pct": 65.6721,
+            "cagr_pct": 10.6241,
+            "annualized_volatility_pct": 15.2099,
+            "sharpe": 0.741,
+            "max_drawdown_pct": -14.9752,
+            "benchmark_max_drawdown_pct": -20.5867,
+            "win_rate_pct": 53.1746,
+            "avg_return_pct": 0.4473,
+            "benchmark_return_pct": 28.5232,
+            "excess_return_pct": 37.1489,
+            "mean_excess_per_period_pct": 0.2157
+          }
+        }
+      },
+      "selection_diagnostics": {
+        "minimum_positive_benchmark_cells": 4,
+        "positive_benchmark_cells": {
+          "large_cap_22": 4,
+          "diversified_60": 4
+        },
+        "median_sharpe": 0.7288,
+        "median_excess_return_pct": 26.17465,
+        "minimum_trade_count": 540
+      }
+    },
+    "quality_trend": {
+      "parameters": {
+        "hard_filters": {
+          "amount_min": 50000000,
+          "price_min": 5,
+          "change_pct_min": -4,
+          "change_pct_max": 5,
+          "change_60d_min": 0,
+          "change_60d_max": 35,
+          "require_ma_bullish": true,
+          "signal_score_min": 55,
+          "macd_status_whitelist": [
+            "bullish",
+            "neutral"
+          ],
+          "volatility_20d_pct_max": 30,
+          "max_drawdown_20d_pct_min": -10,
+          "atr_20_pct_max": 4.5
+        },
+        "factor_weights": {
+          "momentum": 0.4,
+          "stability": 0.4,
+          "liquidity": 0.15,
+          "activity": 0.05
+        },
+        "scoring_profile": {
+          "momentum_60d_slope": 1.0,
+          "momentum_60d_overheat_pct": 35
+        }
+      },
+      "metrics": {
+        "large_cap_22": {
+          "SPY": {
+            "period_count": 126,
+            "trade_count": 491,
+            "total_return_pct": 56.4284,
+            "cagr_pct": 9.3612,
+            "annualized_volatility_pct": 14.6215,
+            "sharpe": 0.6864,
+            "max_drawdown_pct": -18.8436,
+            "benchmark_max_drawdown_pct": -19.3828,
+            "win_rate_pct": 53.1746,
+            "avg_return_pct": 0.3983,
+            "benchmark_return_pct": 39.8668,
+            "excess_return_pct": 16.5616,
+            "mean_excess_per_period_pct": 0.1044
+          },
+          "QQQ": {
+            "period_count": 126,
+            "trade_count": 491,
+            "total_return_pct": 56.4284,
+            "cagr_pct": 9.3612,
+            "annualized_volatility_pct": 14.6215,
+            "sharpe": 0.6864,
+            "max_drawdown_pct": -18.8436,
+            "benchmark_max_drawdown_pct": -21.8784,
+            "win_rate_pct": 53.1746,
+            "avg_return_pct": 0.3983,
+            "benchmark_return_pct": 76.1518,
+            "excess_return_pct": -19.7234,
+            "mean_excess_per_period_pct": -0.0997
+          },
+          "IWM": {
+            "period_count": 126,
+            "trade_count": 491,
+            "total_return_pct": 56.4284,
+            "cagr_pct": 9.3612,
+            "annualized_volatility_pct": 14.6215,
+            "sharpe": 0.6864,
+            "max_drawdown_pct": -18.8436,
+            "benchmark_max_drawdown_pct": -25.7373,
+            "win_rate_pct": 53.1746,
+            "avg_return_pct": 0.3983,
+            "benchmark_return_pct": 15.965,
+            "excess_return_pct": 40.4634,
+            "mean_excess_per_period_pct": 0.2261
+          },
+          "DIA": {
+            "period_count": 126,
+            "trade_count": 491,
+            "total_return_pct": 56.4284,
+            "cagr_pct": 9.3612,
+            "annualized_volatility_pct": 14.6215,
+            "sharpe": 0.6864,
+            "max_drawdown_pct": -18.8436,
+            "benchmark_max_drawdown_pct": -19.3112,
+            "win_rate_pct": 53.1746,
+            "avg_return_pct": 0.3983,
+            "benchmark_return_pct": 42.1941,
+            "excess_return_pct": 14.2344,
+            "mean_excess_per_period_pct": 0.0896
+          },
+          "RSP": {
+            "period_count": 126,
+            "trade_count": 491,
+            "total_return_pct": 56.4284,
+            "cagr_pct": 9.3612,
+            "annualized_volatility_pct": 14.6215,
+            "sharpe": 0.6864,
+            "max_drawdown_pct": -18.8436,
+            "benchmark_max_drawdown_pct": -20.5867,
+            "win_rate_pct": 53.1746,
+            "avg_return_pct": 0.3983,
+            "benchmark_return_pct": 28.5232,
+            "excess_return_pct": 27.9053,
+            "mean_excess_per_period_pct": 0.1667
+          }
+        },
+        "diversified_60": {
+          "SPY": {
+            "period_count": 126,
+            "trade_count": 566,
+            "total_return_pct": 64.2493,
+            "cagr_pct": 10.4335,
+            "annualized_volatility_pct": 13.5436,
+            "sharpe": 0.8018,
+            "max_drawdown_pct": -15.4842,
+            "benchmark_max_drawdown_pct": -19.3828,
+            "win_rate_pct": 54.7619,
+            "avg_return_pct": 0.4309,
+            "benchmark_return_pct": 39.8668,
+            "excess_return_pct": 24.3825,
+            "mean_excess_per_period_pct": 0.137
+          },
+          "QQQ": {
+            "period_count": 126,
+            "trade_count": 566,
+            "total_return_pct": 64.2493,
+            "cagr_pct": 10.4335,
+            "annualized_volatility_pct": 13.5436,
+            "sharpe": 0.8018,
+            "max_drawdown_pct": -15.4842,
+            "benchmark_max_drawdown_pct": -21.8784,
+            "win_rate_pct": 54.7619,
+            "avg_return_pct": 0.4309,
+            "benchmark_return_pct": 76.1518,
+            "excess_return_pct": -11.9025,
+            "mean_excess_per_period_pct": -0.067
+          },
+          "IWM": {
+            "period_count": 126,
+            "trade_count": 566,
+            "total_return_pct": 64.2493,
+            "cagr_pct": 10.4335,
+            "annualized_volatility_pct": 13.5436,
+            "sharpe": 0.8018,
+            "max_drawdown_pct": -15.4842,
+            "benchmark_max_drawdown_pct": -25.7373,
+            "win_rate_pct": 54.7619,
+            "avg_return_pct": 0.4309,
+            "benchmark_return_pct": 15.965,
+            "excess_return_pct": 48.2843,
+            "mean_excess_per_period_pct": 0.2587
+          },
+          "DIA": {
+            "period_count": 126,
+            "trade_count": 566,
+            "total_return_pct": 64.2493,
+            "cagr_pct": 10.4335,
+            "annualized_volatility_pct": 13.5436,
+            "sharpe": 0.8018,
+            "max_drawdown_pct": -15.4842,
+            "benchmark_max_drawdown_pct": -19.3112,
+            "win_rate_pct": 54.7619,
+            "avg_return_pct": 0.4309,
+            "benchmark_return_pct": 42.1941,
+            "excess_return_pct": 22.0552,
+            "mean_excess_per_period_pct": 0.1222
+          },
+          "RSP": {
+            "period_count": 126,
+            "trade_count": 566,
+            "total_return_pct": 64.2493,
+            "cagr_pct": 10.4335,
+            "annualized_volatility_pct": 13.5436,
+            "sharpe": 0.8018,
+            "max_drawdown_pct": -15.4842,
+            "benchmark_max_drawdown_pct": -20.5867,
+            "win_rate_pct": 54.7619,
+            "avg_return_pct": 0.4309,
+            "benchmark_return_pct": 28.5232,
+            "excess_return_pct": 35.7261,
+            "mean_excess_per_period_pct": 0.1994
+          }
+        }
+      },
+      "selection_diagnostics": {
+        "minimum_positive_benchmark_cells": 4,
+        "positive_benchmark_cells": {
+          "large_cap_22": 4,
+          "diversified_60": 4
+        },
+        "median_sharpe": 0.7441,
+        "median_excess_return_pct": 23.21885,
+        "minimum_trade_count": 491
+      }
+    },
+    "persistent_momentum": {
+      "parameters": {
+        "hard_filters": {
+          "amount_min": 50000000,
+          "price_min": 5,
+          "change_pct_min": -5,
+          "change_pct_max": 6,
+          "change_60d_min": 10,
+          "change_60d_max": 60,
+          "require_ma_bullish": true,
+          "signal_score_min": 55,
+          "macd_status_whitelist": [
+            "bullish",
+            "neutral"
+          ],
+          "volatility_20d_pct_max": 45,
+          "max_drawdown_20d_pct_min": -15,
+          "atr_20_pct_max": 6.5
+        },
+        "factor_weights": {
+          "momentum": 0.65,
+          "stability": 0.2,
+          "liquidity": 0.1,
+          "activity": 0.05
+        },
+        "scoring_profile": {
+          "momentum_60d_slope": 1.5,
+          "momentum_60d_overheat_pct": 60
+        }
+      },
+      "metrics": {
+        "large_cap_22": {
+          "SPY": {
+            "period_count": 126,
+            "trade_count": 392,
+            "total_return_pct": 39.6186,
+            "cagr_pct": 6.9027,
+            "annualized_volatility_pct": 14.7823,
+            "sharpe": 0.5261,
+            "max_drawdown_pct": -24.553,
+            "benchmark_max_drawdown_pct": -19.3828,
+            "win_rate_pct": 50.7937,
+            "avg_return_pct": 0.3086,
+            "benchmark_return_pct": 39.8668,
+            "excess_return_pct": -0.2482,
+            "mean_excess_per_period_pct": 0.0147
+          },
+          "QQQ": {
+            "period_count": 126,
+            "trade_count": 392,
+            "total_return_pct": 39.6186,
+            "cagr_pct": 6.9027,
+            "annualized_volatility_pct": 14.7823,
+            "sharpe": 0.5261,
+            "max_drawdown_pct": -24.553,
+            "benchmark_max_drawdown_pct": -21.8784,
+            "win_rate_pct": 50.7937,
+            "avg_return_pct": 0.3086,
+            "benchmark_return_pct": 76.1518,
+            "excess_return_pct": -36.5332,
+            "mean_excess_per_period_pct": -0.1893
+          },
+          "IWM": {
+            "period_count": 126,
+            "trade_count": 392,
+            "total_return_pct": 39.6186,
+            "cagr_pct": 6.9027,
+            "annualized_volatility_pct": 14.7823,
+            "sharpe": 0.5261,
+            "max_drawdown_pct": -24.553,
+            "benchmark_max_drawdown_pct": -25.7373,
+            "win_rate_pct": 50.7937,
+            "avg_return_pct": 0.3086,
+            "benchmark_return_pct": 15.965,
+            "excess_return_pct": 23.6536,
+            "mean_excess_per_period_pct": 0.1364
+          },
+          "DIA": {
+            "period_count": 126,
+            "trade_count": 392,
+            "total_return_pct": 39.6186,
+            "cagr_pct": 6.9027,
+            "annualized_volatility_pct": 14.7823,
+            "sharpe": 0.5261,
+            "max_drawdown_pct": -24.553,
+            "benchmark_max_drawdown_pct": -19.3112,
+            "win_rate_pct": 50.7937,
+            "avg_return_pct": 0.3086,
+            "benchmark_return_pct": 42.1941,
+            "excess_return_pct": -2.5755,
+            "mean_excess_per_period_pct": -0.0001
+          },
+          "RSP": {
+            "period_count": 126,
+            "trade_count": 392,
+            "total_return_pct": 39.6186,
+            "cagr_pct": 6.9027,
+            "annualized_volatility_pct": 14.7823,
+            "sharpe": 0.5261,
+            "max_drawdown_pct": -24.553,
+            "benchmark_max_drawdown_pct": -20.5867,
+            "win_rate_pct": 50.7937,
+            "avg_return_pct": 0.3086,
+            "benchmark_return_pct": 28.5232,
+            "excess_return_pct": 11.0954,
+            "mean_excess_per_period_pct": 0.0771
+          }
+        },
+        "diversified_60": {
+          "SPY": {
+            "period_count": 126,
+            "trade_count": 534,
+            "total_return_pct": 43.9125,
+            "cagr_pct": 7.5523,
+            "annualized_volatility_pct": 13.9636,
+            "sharpe": 0.592,
+            "max_drawdown_pct": -16.5097,
+            "benchmark_max_drawdown_pct": -19.3828,
+            "win_rate_pct": 53.9683,
+            "avg_return_pct": 0.328,
+            "benchmark_return_pct": 39.8668,
+            "excess_return_pct": 4.0457,
+            "mean_excess_per_period_pct": 0.0341
+          },
+          "QQQ": {
+            "period_count": 126,
+            "trade_count": 534,
+            "total_return_pct": 43.9125,
+            "cagr_pct": 7.5523,
+            "annualized_volatility_pct": 13.9636,
+            "sharpe": 0.592,
+            "max_drawdown_pct": -16.5097,
+            "benchmark_max_drawdown_pct": -21.8784,
+            "win_rate_pct": 53.9683,
+            "avg_return_pct": 0.328,
+            "benchmark_return_pct": 76.1518,
+            "excess_return_pct": -32.2393,
+            "mean_excess_per_period_pct": -0.1699
+          },
+          "IWM": {
+            "period_count": 126,
+            "trade_count": 534,
+            "total_return_pct": 43.9125,
+            "cagr_pct": 7.5523,
+            "annualized_volatility_pct": 13.9636,
+            "sharpe": 0.592,
+            "max_drawdown_pct": -16.5097,
+            "benchmark_max_drawdown_pct": -25.7373,
+            "win_rate_pct": 53.9683,
+            "avg_return_pct": 0.328,
+            "benchmark_return_pct": 15.965,
+            "excess_return_pct": 27.9475,
+            "mean_excess_per_period_pct": 0.1558
+          },
+          "DIA": {
+            "period_count": 126,
+            "trade_count": 534,
+            "total_return_pct": 43.9125,
+            "cagr_pct": 7.5523,
+            "annualized_volatility_pct": 13.9636,
+            "sharpe": 0.592,
+            "max_drawdown_pct": -16.5097,
+            "benchmark_max_drawdown_pct": -19.3112,
+            "win_rate_pct": 53.9683,
+            "avg_return_pct": 0.328,
+            "benchmark_return_pct": 42.1941,
+            "excess_return_pct": 1.7184,
+            "mean_excess_per_period_pct": 0.0193
+          },
+          "RSP": {
+            "period_count": 126,
+            "trade_count": 534,
+            "total_return_pct": 43.9125,
+            "cagr_pct": 7.5523,
+            "annualized_volatility_pct": 13.9636,
+            "sharpe": 0.592,
+            "max_drawdown_pct": -16.5097,
+            "benchmark_max_drawdown_pct": -20.5867,
+            "win_rate_pct": 53.9683,
+            "avg_return_pct": 0.328,
+            "benchmark_return_pct": 28.5232,
+            "excess_return_pct": 15.3893,
+            "mean_excess_per_period_pct": 0.0965
+          }
+        }
+      },
+      "selection_diagnostics": {
+        "minimum_positive_benchmark_cells": 2,
+        "positive_benchmark_cells": {
+          "large_cap_22": 2,
+          "diversified_60": 4
+        },
+        "median_sharpe": 0.55905,
+        "median_excess_return_pct": 2.88205,
+        "minimum_trade_count": 392
+      }
+    }
+  },
+  "oos_not_read_by_this_script": "2020-01-01 through 2025-12-31"
+}
