@@ -3,7 +3,7 @@
   "strategy": "us_quality_momentum",
   "research_status": "not_validated",
   "created_at": "2026-08-11T03:12:22.409161+00:00",
-  "updated_at": "2026-08-11T23:10:34.677816+00:00",
+  "updated_at": "2026-08-12T23:09:26.920617+00:00",
   "config": {
     "strategy_name": "us_quality_momentum",
     "top_k": 5,
@@ -470,8 +470,8 @@
             "remaining_quantity": 16.25157405,
             "realized_value": 0.0,
             "fills": [],
-            "last_price": 1215.02002,
-            "last_evaluated_date": "2026-08-11",
+            "last_price": 1220.280029,
+            "last_evaluated_date": "2026-08-12",
             "grid": {
               "step_pct": 3.0,
               "take_profit_prices": [
@@ -551,8 +551,8 @@
             "remaining_quantity": 125.27011464,
             "realized_value": 0.0,
             "fills": [],
-            "last_price": 159.800003,
-            "last_evaluated_date": "2026-08-11",
+            "last_price": 159.75,
+            "last_evaluated_date": "2026-08-12",
             "grid": {
               "step_pct": 3.0,
               "take_profit_prices": [
@@ -633,8 +633,8 @@
             "remaining_quantity": 55.54784246,
             "realized_value": 0.0,
             "fills": [],
-            "last_price": 362.040009,
-            "last_evaluated_date": "2026-08-11",
+            "last_price": 365.179993,
+            "last_evaluated_date": "2026-08-12",
             "grid": {
               "step_pct": 3.0,
               "take_profit_prices": [
@@ -715,8 +715,8 @@
             "remaining_quantity": 76.56088182,
             "realized_value": 0.0,
             "fills": [],
-            "last_price": 259.799988,
-            "last_evaluated_date": "2026-08-11",
+            "last_price": 260.859985,
+            "last_evaluated_date": "2026-08-12",
             "grid": {
               "step_pct": 3.0,
               "take_profit_prices": [
@@ -796,8 +796,8 @@
             "remaining_quantity": 56.77140854,
             "realized_value": 0.0,
             "fills": [],
-            "last_price": 354.480011,
-            "last_evaluated_date": "2026-08-11",
+            "last_price": 343.429993,
+            "last_evaluated_date": "2026-08-12",
             "grid": {
               "step_pct": 3.0,
               "take_profit_prices": [
@@ -853,9 +853,30 @@
             "DIA": -0.686134,
             "RSP": 0.126663
           }
+        },
+        {
+          "date": "2026-08-12",
+          "strategy_equity": 99397.813688,
+          "strategy_total_return_pct": -0.602186,
+          "strategy_daily_return_pct": -0.292855,
+          "strategy_drawdown_pct": -0.602186,
+          "benchmark_equity": {
+            "SPY": 99537.136249,
+            "QQQ": 99855.194824,
+            "IWM": 100390.316186,
+            "DIA": 99289.83556,
+            "RSP": 100303.605412
+          },
+          "benchmark_total_return_pct": {
+            "SPY": -0.462864,
+            "QQQ": -0.144805,
+            "IWM": 0.390316,
+            "DIA": -0.710164,
+            "RSP": 0.303605
+          }
         }
       ],
-      "last_processed_date": "2026-08-11",
+      "last_processed_date": "2026-08-12",
       "event_log": []
     },
     "diversified_60": {
@@ -1340,8 +1361,8 @@
             "remaining_quantity": 312.59768901,
             "realized_value": 0.0,
             "fills": [],
-            "last_price": 64.0,
-            "last_evaluated_date": "2026-08-11",
+            "last_price": 64.809998,
+            "last_evaluated_date": "2026-08-12",
             "grid": {
               "step_pct": 3.0,
               "take_profit_prices": [
@@ -1421,8 +1442,8 @@
             "remaining_quantity": 125.27011464,
             "realized_value": 0.0,
             "fills": [],
-            "last_price": 159.800003,
-            "last_evaluated_date": "2026-08-11",
+            "last_price": 159.75,
+            "last_evaluated_date": "2026-08-12",
             "grid": {
               "step_pct": 3.0,
               "take_profit_prices": [
@@ -1504,8 +1525,8 @@
             "remaining_quantity": 16.25157405,
             "realized_value": 0.0,
             "fills": [],
-            "last_price": 1215.02002,
-            "last_evaluated_date": "2026-08-11",
+            "last_price": 1220.280029,
+            "last_evaluated_date": "2026-08-12",
             "grid": {
               "step_pct": 3.0,
               "take_profit_prices": [
@@ -1586,8 +1607,8 @@
             "remaining_quantity": 55.54784246,
             "realized_value": 0.0,
             "fills": [],
-            "last_price": 362.040009,
-            "last_evaluated_date": "2026-08-11",
+            "last_price": 365.179993,
+            "last_evaluated_date": "2026-08-12",
             "grid": {
               "step_pct": 3.0,
               "take_profit_prices": [
@@ -1667,8 +1688,8 @@
             "remaining_quantity": 54.3862526,
             "realized_value": 0.0,
             "fills": [],
-            "last_price": 368.059998,
-            "last_evaluated_date": "2026-08-11",
+            "last_price": 365.329987,
+            "last_evaluated_date": "2026-08-12",
             "grid": {
               "step_pct": 3.0,
               "take_profit_prices": [
@@ -1724,13 +1745,34 @@
             "DIA": -0.686134,
             "RSP": 0.126663
           }
+        },
+        {
+          "date": "2026-08-12",
+          "strategy_equity": 100056.203734,
+          "strategy_total_return_pct": 0.056204,
+          "strategy_daily_return_pct": 0.358732,
+          "strategy_drawdown_pct": 0.0,
+          "benchmark_equity": {
+            "SPY": 99537.136249,
+            "QQQ": 99855.194824,
+            "IWM": 100390.316186,
+            "DIA": 99289.83556,
+            "RSP": 100303.605412
+          },
+          "benchmark_total_return_pct": {
+            "SPY": -0.462864,
+            "QQQ": -0.144805,
+            "IWM": 0.390316,
+            "DIA": -0.710164,
+            "RSP": 0.303605
+          }
         }
       ],
-      "last_processed_date": "2026-08-11",
+      "last_processed_date": "2026-08-12",
       "event_log": []
     }
   },
-  "latest_market_date": "2026-08-11",
+  "latest_market_date": "2026-08-12",
   "live_validation": {
     "effective": false,
     "status": "insufficient_or_failed",
@@ -1745,7 +1787,7 @@
       "diversified_60": {
         "completed_cycles": 0,
         "required_completed_cycles": 20,
-        "positive_excess_benchmarks": 0,
+        "positive_excess_benchmarks": 3,
         "required_positive_excess_benchmarks": 3,
         "effective": false
       }
@@ -1753,32 +1795,8 @@
     "warning": "Paper trading is observational evidence and does not authorize live orders."
   },
   "last_events": {
-    "large_cap_22": [
-      {
-        "type": "opened",
-        "entry_date": "2026-08-11",
-        "codes": [
-          "LLY",
-          "XOM",
-          "JPM",
-          "JNJ",
-          "HD"
-        ]
-      }
-    ],
-    "diversified_60": [
-      {
-        "type": "opened",
-        "entry_date": "2026-08-11",
-        "codes": [
-          "BAC",
-          "XOM",
-          "LLY",
-          "JPM",
-          "GE"
-        ]
-      }
-    ]
+    "large_cap_22": [],
+    "diversified_60": []
   },
   "scorecard_version": "us_evidence_v2"
 }
