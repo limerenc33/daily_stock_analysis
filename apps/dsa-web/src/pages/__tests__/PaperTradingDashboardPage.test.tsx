@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import PaperTradingDashboardPage from '../PaperTradingDashboardPage';
@@ -151,5 +151,12 @@ describe('PaperTradingDashboardPage', () => {
     expect(screen.getByText('Longbridge')).toBeInTheDocument();
     expect(screen.getByText('0 / 20')).toBeInTheDocument();
     await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringMatching(/^https:\/\/limerenc33\.github\.io\/daily_stock_analysis\/paper-trading-state\.json\?t=\d+$/),
+      { cache: 'no-store' },
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: '刷新账本' }));
+    await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
   });
 });

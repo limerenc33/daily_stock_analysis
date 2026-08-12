@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Activity,
   AlertTriangle,
@@ -143,7 +143,9 @@ type PaperTradingState = {
   };
 };
 
-const DATA_URL = `${import.meta.env.BASE_URL}paper-trading-state.json`;
+const DEFAULT_DATA_URL = 'https://limerenc33.github.io/daily_stock_analysis/paper-trading-state.json';
+const DATA_URL = import.meta.env.VITE_PAPER_TRADING_DATA_URL?.trim() || DEFAULT_DATA_URL;
+const AUTO_REFRESH_MS = 60_000;
 const ACTIONS_URL = 'https://github.com/limerenc33/daily_stock_analysis/actions/workflows/us-paper-trading.yml';
 const REPOSITORY_URL = 'https://github.com/limerenc33/daily_stock_analysis';
 const PORTFOLIO_LABELS: Record<string, string> = {
@@ -262,7 +264,7 @@ const PaperTradingDashboardPage = () => {
   const [error, setError] = useState('');
   const [activePortfolio, setActivePortfolio] = useState('large_cap_22');
 
-  const loadState = async () => {
+  const loadState = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -276,12 +278,25 @@ const PaperTradingDashboardPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     document.title = '美股模拟交易看板 - DSA';
     void loadState();
-  }, []);
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === 'visible') {
+        void loadState();
+      }
+    };
+    const intervalId = window.setInterval(refreshWhenVisible, AUTO_REFRESH_MS);
+    window.addEventListener('focus', refreshWhenVisible);
+    document.addEventListener('visibilitychange', refreshWhenVisible);
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener('focus', refreshWhenVisible);
+      document.removeEventListener('visibilitychange', refreshWhenVisible);
+    };
+  }, [loadState]);
 
   const portfolioEntries = useMemo(() => Object.entries(state?.portfolios || {}), [state]);
   const portfolio = state?.portfolios[activePortfolio] || portfolioEntries[0]?.[1];
