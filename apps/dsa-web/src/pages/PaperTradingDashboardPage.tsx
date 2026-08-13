@@ -25,6 +25,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import './PaperTradingDashboardPage.css';
 
 type Candidate = {
   code: string;
@@ -459,8 +460,8 @@ const PaperTradingDashboardPage = () => {
     : latest.strategy_total_return_pct < 0 ? 'negative' : 'neutral';
 
   return (
-    <div className="min-h-screen bg-base text-foreground">
-      <header className="border-b border-border/70 bg-card/80 backdrop-blur">
+    <div className="paper-dashboard min-h-screen bg-base text-foreground">
+      <header className="paper-topbar border-b border-border/70 bg-card/80 backdrop-blur">
         <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
           <div className="flex min-w-0 items-center gap-3">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center border border-cyan/35 bg-cyan/10 text-cyan">
@@ -494,8 +495,8 @@ const PaperTradingDashboardPage = () => {
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
-        <section className="flex flex-col justify-between gap-5 border-b border-border/70 pb-6 lg:flex-row lg:items-end">
+      <main className="paper-main mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
+        <section className="paper-hero flex flex-col justify-between gap-5 border-b border-border/70 pb-6 lg:flex-row lg:items-end">
           <div>
             <div className="flex flex-wrap items-center gap-2 text-xs text-muted-text">
               <span className={`inline-flex items-center gap-1.5 border px-2 py-1 font-medium ${
@@ -531,7 +532,7 @@ const PaperTradingDashboardPage = () => {
           </a>
         </section>
 
-        <section className="py-5">
+        <section className="paper-tabs py-5">
           <div className="inline-flex max-w-full border border-border bg-card p-1" role="tablist" aria-label="股票池">
             {portfolioEntries.map(([name]) => (
               <button
@@ -552,14 +553,14 @@ const PaperTradingDashboardPage = () => {
           </div>
         </section>
 
-        <section className="grid divide-y divide-border border-y border-border bg-card sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:grid-cols-4">
+        <section className="paper-metrics grid divide-y divide-border border-y border-border bg-card sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:grid-cols-4">
           <Metric label="组合净值" value={formatMoney(latest.strategy_equity)} detail={`初始 ${formatMoney(state.config.initial_capital)}`} />
           <Metric label="累计收益" value={formatPercent(latest.strategy_total_return_pct)} detail={`当日 ${formatPercent(latest.strategy_daily_return_pct)}`} tone={returnTone} />
           <Metric label="最大回撤" value={formatPercent(latest.strategy_drawdown_pct)} detail="按每日组合净值计算" tone={latest.strategy_drawdown_pct < 0 ? 'negative' : 'neutral'} />
           <Metric label="当前周期" value={cycleLabel(cycle?.status)} detail={`${portfolio.closed_cycles.length} 个周期已完成`} />
         </section>
 
-        <section className="grid border-b border-border lg:grid-cols-[1.7fr_1fr] lg:divide-x lg:divide-border">
+        <section className="paper-section grid border-b border-border lg:grid-cols-[1.7fr_1fr] lg:divide-x lg:divide-border">
           <div className="min-w-0 py-7 lg:pr-7">
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
@@ -634,7 +635,7 @@ const PaperTradingDashboardPage = () => {
           </div>
         </section>
 
-        <section className="border-b border-border py-7">
+        <section className="paper-section border-b border-border py-7">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <div className="flex items-center gap-2">
@@ -701,7 +702,7 @@ const PaperTradingDashboardPage = () => {
           ) : null}
         </section>
 
-        <section className="border-b border-border py-7">
+        <section className="paper-section border-b border-border py-7">
           <div className="flex items-end justify-between gap-3">
             <div>
               <h2 className="text-[16px] font-semibold text-foreground">完整模拟交易流水</h2>
@@ -720,7 +721,7 @@ const PaperTradingDashboardPage = () => {
           </div>
         </section>
 
-        <section className="border-b border-border py-7">
+        <section className="paper-section border-b border-border py-7">
           <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
             <div>
               <h2 className="text-[16px] font-semibold text-foreground">累计收益轨迹</h2>
@@ -930,7 +931,7 @@ const PaperTradingDashboardPage = () => {
           </div>
         </section>
 
-        <section className="grid gap-0 border-b border-border lg:grid-cols-[1.4fr_1fr] lg:divide-x lg:divide-border">
+        <section className="paper-section grid gap-0 border-b border-border lg:grid-cols-[1.4fr_1fr] lg:divide-x lg:divide-border">
           <div className="py-7 lg:pr-7">
             <div className="flex items-center gap-2">
               {diagnostic?.effective ? <ShieldCheck className="h-5 w-5 text-emerald-400" /> : <Database className="h-5 w-5 text-amber-300" />}
