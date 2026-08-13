@@ -13,6 +13,12 @@ from src.services.screening.filter import apply_hard_filters
 from src.services.screening.scorer import compute_screen_scores
 from src.services.screening.strategy import load_all_strategies
 from src.services.screening.us_candidate_evidence import FACTOR_LABELS, build_us_candidate_evidence
+from src.services.screening.us_news_intelligence import (
+    INTELLIGENCE_SCORECARD_VERSION,
+    INTELLIGENCE_STRATEGY_VERSION,
+    YahooUSNewsIntelligenceProvider,
+    apply_intelligence_adjustment,
+)
 from src.services.screening.us_backtest import (
     _backtest_filters,
     _feature_row,
@@ -33,6 +39,9 @@ class USPaperTradingConfig:
     grid_step_pct: float = 3.0
     grid_take_profit_levels: int = 2
     grid_stop_loss_levels: int = 2
+    news_intelligence_enabled: bool = True
+    news_max_items: int = 8
+    news_max_workers: int = 4
 
 
 def _validate_config(config: USPaperTradingConfig) -> None:
@@ -46,6 +55,8 @@ def _validate_config(config: USPaperTradingConfig) -> None:
         raise ValueError("invalid grid configuration")
     if not 0.0 <= config.minimum_universe_coverage <= 1.0:
         raise ValueError("minimum_universe_coverage must be between 0 and 1")
+    if config.news_max_items <= 0 or config.news_max_workers <= 0:
+        raise ValueError("invalid news intelligence configuration")
 
 
 def create_paper_trading_state(
@@ -62,10 +73,22 @@ def create_paper_trading_state(
     return {
         "schema_version": 2,
         "strategy": config.strategy_name,
+        "strategy_version": "2.0",
         "scorecard_version": None,
         "research_status": "not_validated",
         "created_at": datetime.now(timezone.utc).isoformat(),
         "updated_at": None,
+        "news_intelligence": {
+            "status": "not_run",
+            "scorecard_version": INTELLIGENCE_SCORECARD_VERSION,
+            "effective_from": "next_cycle",
+            "market_digest": None,
+        },
+        "strategy_activation": {
+            "deployed_version": INTELLIGENCE_STRATEGY_VERSION,
+            "effective_from": "next_created_cycle",
+            "preserve_existing_cycle": True,
+        },
         "config": asdict(config),
         "benchmarks": list(dict.fromkeys(str(item) for item in benchmarks)),
         "portfolios": {
@@ -153,6 +176,7 @@ def advance_paper_trading_state(
     *,
     as_of: date | None = None,
     strategies_dir: Path | None = None,
+    news_provider: YahooUSNewsIntelligenceProvider | None = None,
 ) -> dict[str, object]:
     """Advance every portfolio through the latest completed market session."""
     upgrade_paper_trading_state(state)
@@ -173,9 +197,15 @@ def advance_paper_trading_state(
     events: dict[str, list[dict[str, object]]] = {}
     strategies_dir = strategies_dir or Path(__file__).with_name("strategies")
     strategy = load_all_strategies(strategies_dir)[config.strategy_name]
-    state["scorecard_version"] = str(
-        strategy.screening.scorecard_profile.get("version") or "us_evidence_v2"
+    state["scorecard_version"] = (
+        INTELLIGENCE_SCORECARD_VERSION
+        if config.news_intelligence_enabled and news_provider is not None
+        else str(strategy.screening.scorecard_profile.get("version") or "us_evidence_v2")
     )
+    if news_provider is not None and config.news_intelligence_enabled:
+        market_digest = news_provider.market_digest(as_of=effective_date)
+        state.setdefault("news_intelligence", {})["market_digest"] = market_digest
+        state["news_intelligence"]["status"] = str(market_digest.get("status") or "unavailable")
     for name, portfolio in dict(state["portfolios"]).items():
         migration_event = _ensure_active_cycle_evidence(
             portfolio,
@@ -183,6 +213,8 @@ def advance_paper_trading_state(
             config,
             strategies_dir=strategies_dir,
         )
+        if news_provider is not None and config.news_intelligence_enabled:
+            _refresh_active_cycle_news(portfolio, effective_date, news_provider)
         events[name] = _advance_portfolio(
             portfolio,
             normalized,
@@ -190,11 +222,18 @@ def advance_paper_trading_state(
             effective_date,
             config,
             strategies_dir=strategies_dir,
+            news_provider=news_provider if config.news_intelligence_enabled else None,
         )
         if migration_event is not None:
             events[name].insert(0, migration_event)
     state["updated_at"] = datetime.now(timezone.utc).isoformat()
     state["latest_market_date"] = effective_date.isoformat()
+    if config.news_intelligence_enabled and news_provider is not None:
+        state["strategy_version"] = INTELLIGENCE_STRATEGY_VERSION
+        state.setdefault("news_intelligence", {})["scorecard_version"] = INTELLIGENCE_SCORECARD_VERSION
+        state["news_intelligence"]["effective_from"] = "next_cycle"
+        state.setdefault("strategy_activation", {})["deployed_version"] = INTELLIGENCE_STRATEGY_VERSION
+        state["strategy_activation"]["effective_from"] = "next_created_cycle"
     state["live_validation"] = evaluate_live_validation(state)
     state["last_events"] = events
     return state
@@ -222,6 +261,18 @@ def upgrade_paper_trading_state(state: dict[str, object]) -> bool:
                 _initialize_position_grid(position, config)
                 position["last_evaluated_date"] = portfolio.get("last_processed_date")
                 changed = True
+    state.setdefault("news_intelligence", {
+        "status": "not_run",
+        "scorecard_version": INTELLIGENCE_SCORECARD_VERSION,
+        "effective_from": "next_cycle",
+        "market_digest": None,
+    })
+    state.setdefault("strategy_version", "2.0")
+    state.setdefault("strategy_activation", {
+        "deployed_version": INTELLIGENCE_STRATEGY_VERSION,
+        "effective_from": "next_created_cycle",
+        "preserve_existing_cycle": True,
+    })
     if state.get("schema_version") != 2:
         state["schema_version"] = 2
         changed = True
@@ -383,6 +434,7 @@ def _advance_portfolio(
     config: USPaperTradingConfig,
     *,
     strategies_dir: Path | None,
+    news_provider: YahooUSNewsIntelligenceProvider | None = None,
 ) -> list[dict[str, object]]:
     if portfolio.get("last_processed_date") == as_of.isoformat():
         return [{"type": "no_change", "market_date": as_of.isoformat()}]
@@ -438,14 +490,31 @@ def _advance_portfolio(
             config.strategy_name,
             {code: histories.get(code, pd.DataFrame()) for code in universe},
             as_of,
-            top_k=config.top_k,
+            top_k=max(config.top_k * 3, config.top_k),
             lookback_days=config.lookback_days,
             minimum_universe_coverage=config.minimum_universe_coverage,
             strategies_dir=strategies_dir,
         )
+        if news_provider is not None and ranked["selected"]:
+            selected, news_status = _apply_news_to_candidates(
+                list(ranked["selected"]),
+                as_of=as_of,
+                top_k=config.top_k,
+                provider=news_provider,
+            )
+            ranked["selected"] = selected
+            portfolio["latest_news_intelligence"] = news_status
+        else:
+            ranked["selected"] = list(ranked["selected"])[: config.top_k]
         portfolio["active_cycle"] = {
             "status": "pending",
             "signal_date": as_of.isoformat(),
+            "strategy_version": (
+                INTELLIGENCE_STRATEGY_VERSION if news_provider is not None else "2.0"
+            ),
+            "scorecard_version": (
+                INTELLIGENCE_SCORECARD_VERSION if news_provider is not None else "us_evidence_v2"
+            ),
             "selected": ranked["selected"],
             "coverage": {
                 "expected_count": ranked["universe_expected_count"],
@@ -468,6 +537,98 @@ def _advance_portfolio(
     if exit_events:
         portfolio["event_log"] = [*list(portfolio.get("event_log", [])), *exit_events][-200:]
     return events
+
+
+def _apply_news_to_candidates(
+    candidates: list[dict[str, object]],
+    *,
+    as_of: date,
+    top_k: int,
+    provider: YahooUSNewsIntelligenceProvider,
+) -> tuple[list[dict[str, object]], dict[str, object]]:
+    codes = [str(item.get("code") or "") for item in candidates]
+    intelligence = provider.collect(codes, as_of=as_of)
+    adjusted = []
+    excluded = []
+    audit_rows = []
+    for candidate in candidates:
+        item = dict(candidate)
+        item["signal_date"] = as_of.isoformat()
+        item["scorecard_version"] = INTELLIGENCE_SCORECARD_VERSION
+        apply_intelligence_adjustment(item, intelligence.get(str(item.get("code") or "")))
+        audit_rows.append({
+            "code": str(item.get("code") or ""),
+            "technical_screen_score": item.get("technical_screen_score"),
+            "intelligence_adjustment": item.get("intelligence_adjustment"),
+            "screen_score": item.get("screen_score"),
+            "hard_exclusion": bool(item.get("hard_exclusion")),
+            "risk_flags": list(item.get("risk_flags") or []),
+        })
+        if not item.get("hard_exclusion"):
+            adjusted.append(item)
+        else:
+            excluded.append(item)
+    adjusted.sort(key=lambda item: (-float(item.get("screen_score") or 0.0), str(item.get("code") or "")))
+    available = sum(
+        str(item.get("news_intelligence", {}).get("status")) in {"available", "partial"}
+        for item in adjusted
+    )
+    return adjusted[:top_k], {
+        "as_of": as_of.isoformat(),
+        "requested": len(codes),
+        "available": available,
+        "status": "available" if available else "unavailable",
+        "scorecard_version": INTELLIGENCE_SCORECARD_VERSION,
+        "items": {str(item.get("code")): item.get("news_intelligence") for item in adjusted[:top_k]},
+        "technical_candidates": audit_rows,
+        "excluded_candidates": [
+            {
+                "code": str(item.get("code") or ""),
+                "technical_screen_score": item.get("technical_screen_score"),
+                "intelligence_adjustment": item.get("intelligence_adjustment"),
+                "risk_flags": list(item.get("risk_flags") or []),
+                "news_intelligence": item.get("news_intelligence"),
+            }
+            for item in excluded
+        ],
+    }
+
+
+def _refresh_active_cycle_news(
+    portfolio: dict[str, object],
+    as_of: date,
+    provider: YahooUSNewsIntelligenceProvider,
+) -> None:
+    """Refresh daily evidence for display without changing an existing cycle."""
+    cycle = portfolio.get("active_cycle")
+    if not isinstance(cycle, dict):
+        return
+    selected = list(cycle.get("selected") or [])
+    positions = list(cycle.get("positions") or [])
+    codes = list(dict.fromkeys(
+        str(item.get("code") or "")
+        for item in [*selected, *positions]
+        if str(item.get("code") or "")
+    ))
+    if not codes:
+        return
+    intelligence = provider.collect(codes, as_of=as_of)
+    portfolio["latest_news_intelligence"] = {
+        "as_of": as_of.isoformat(),
+        "requested": len(codes),
+        "available": sum(
+            str(item.get("status")) in {"available", "partial"}
+            for item in intelligence.values()
+        ),
+        "status": "available" if any(
+            str(item.get("status")) in {"available", "partial"}
+            for item in intelligence.values()
+        ) else "unavailable",
+        "scorecard_version": INTELLIGENCE_SCORECARD_VERSION,
+        "items": intelligence,
+        "affects_current_cycle": False,
+    }
+    cycle["latest_news_intelligence"] = portfolio["latest_news_intelligence"]
 
 
 def _open_cycle(
@@ -839,8 +1000,9 @@ def render_paper_trading_report(state: Mapping[str, object]) -> str:
     lines = [
         f"# 美股模拟交易日报 - {latest_date}",
         "",
-        f"> 策略：`{strategy}`。仅用于研究验证，不构成投资建议，不连接券商或真实下单。",
+        f"> 策略：`{strategy}` {state.get('strategy_version', '2.0')}。仅用于研究验证，不构成投资建议，不连接券商或真实下单。",
         f"> 实时验证状态：**{'通过' if gate.get('effective') else '证据不足或未通过'}**。",
+        "> 新闻、财报和研报证据每日更新；新资讯策略只对部署后创建的下一周期生效，不改写当前持仓。",
         (
             f"> 网格风控：每格 {float(dict(state['config']).get('grid_step_pct') or 3.0):.1f}%，"
             f"上涨 {int(dict(state['config']).get('grid_take_profit_levels') or 2)} 格分批止盈，"
@@ -908,6 +1070,40 @@ def render_paper_trading_report(state: Mapping[str, object]) -> str:
                     f"数量 {float(event.get('quantity') or 0.0):.4f}。"
                 )
         lines.append("")
+    lines.extend(["## 每日重点资讯、财报与研报", ""])
+    market_digest = dict(dict(state.get("news_intelligence") or {}).get("market_digest") or {})
+    if market_digest:
+        lines.append(f"市场摘要：{market_digest.get('summary', '暂无可用市场资讯。')}")
+        lines.append("")
+    for name, portfolio in dict(state["portfolios"]).items():
+        latest_intel = dict(portfolio.get("latest_news_intelligence") or {})
+        lines.extend([f"### {name}", ""])
+        lines.append(
+            f"资讯日期 `{latest_intel.get('as_of', 'N/A')}`，可用标的 "
+            f"{int(latest_intel.get('available') or 0)}/{int(latest_intel.get('requested') or 0)}。"
+        )
+        if latest_intel.get("affects_current_cycle") is False:
+            lines.append("当前持仓周期仅展示资讯证据，不据此改仓；调整从下一周期选股开始。")
+        items = dict(latest_intel.get("items") or {})
+        for code, intel_value in items.items():
+            intel = dict(intel_value or {})
+            lines.append(
+                f"- **{code}**：{intel.get('summary', '暂无摘要')}"
+                + (f" 风险：{', '.join(str(item) for item in intel.get('risk_flags', []))}。" if intel.get("risk_flags") else "")
+            )
+            for evidence in list(intel.get("items") or [])[:3]:
+                title = str(evidence.get("title") or "未命名资料")
+                source = str(evidence.get("source") or "公开来源")
+                url = str(evidence.get("url") or "")
+                lines.append(f"  - [{title}]({url}) · {source}" if url else f"  - {title} · {source}")
+        excluded = list(latest_intel.get("excluded_candidates") or [])
+        if excluded:
+            lines.append("")
+            lines.append(
+                "资讯风险排除：" + "、".join(str(item.get("code") or "N/A") for item in excluded)
+                + "。候选保留在审计记录中，但不会进入下一周期持仓。"
+            )
+        lines.append("")
     lines.extend(["## 多基准比较", ""])
     for name, portfolio in dict(state["portfolios"]).items():
         latest = list(portfolio.get("snapshots", []))[-1]
@@ -924,6 +1120,10 @@ def render_paper_trading_report(state: Mapping[str, object]) -> str:
         active = portfolio.get("active_cycle") or {}
         selected = list(active.get("selected", []))
         lines.extend(["", f"当前周期：`{active.get('status', 'idle')}`，信号日 `{active.get('signal_date', 'N/A')}`。"])
+        lines.append(
+            f"周期策略版本：`{active.get('strategy_version', '2.0')}`；"
+            f"评分卡：`{active.get('scorecard_version', state.get('scorecard_version', 'N/A'))}`。"
+        )
         if selected:
             lines.append("候选：" + "、".join(f"{item['code']} ({float(item['screen_score']):.1f})" for item in selected))
         else:
@@ -975,6 +1175,12 @@ def render_paper_trading_report(state: Mapping[str, object]) -> str:
                 )
             )
             lines.append("- 数据来源：" + _join_report_items(item.get("data_sources"), "未记录"))
+            if item.get("technical_screen_score") is not None:
+                lines.append(
+                    f"- 分数拆分：技术 {float(item.get('technical_screen_score') or 0.0):.1f}，"
+                    f"资讯调整 {float(item.get('intelligence_adjustment') or 0.0):+.1f}，"
+                    f"最终 {float(item.get('screen_score') or 0.0):.1f}"
+                )
             lines.extend([
                 "- 分数说明："
                 + str(

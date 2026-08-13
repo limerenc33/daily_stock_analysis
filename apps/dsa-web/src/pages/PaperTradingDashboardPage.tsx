@@ -42,6 +42,51 @@ type Candidate = {
   invalidation_conditions?: string[];
   data_sources?: string[];
   data_gaps?: string[];
+  technical_screen_score?: number;
+  intelligence_adjustment?: number;
+  news_intelligence?: NewsIntelligence;
+};
+
+type IntelligenceItem = {
+  category: string;
+  title: string;
+  url?: string;
+  source: string;
+  published_at?: string | null;
+};
+
+type NewsIntelligence = {
+  code: string;
+  as_of: string;
+  status: string;
+  summary: string;
+  items: IntelligenceItem[];
+  score_adjustment: number;
+  risk_flags: string[];
+  hard_exclusion: boolean;
+};
+
+type PortfolioNewsIntelligence = {
+  as_of: string;
+  requested: number;
+  available: number;
+  status: string;
+  affects_current_cycle?: boolean;
+  items: Record<string, NewsIntelligence>;
+  technical_candidates?: Array<{
+    code: string;
+    technical_screen_score?: number;
+    intelligence_adjustment?: number;
+    screen_score?: number;
+    hard_exclusion?: boolean;
+    risk_flags?: string[];
+  }>;
+  excluded_candidates?: Array<{
+    code: string;
+    technical_screen_score?: number;
+    intelligence_adjustment?: number;
+    risk_flags?: string[];
+  }>;
 };
 
 type Snapshot = {
@@ -98,6 +143,9 @@ type ActiveCycle = {
     covered_count: number;
     ratio: number;
   };
+  strategy_version?: string;
+  scorecard_version?: string;
+  latest_news_intelligence?: PortfolioNewsIntelligence;
 };
 
 type Portfolio = {
@@ -106,6 +154,7 @@ type Portfolio = {
   closed_cycles: unknown[];
   snapshots: Snapshot[];
   event_log?: GridEvent[];
+  latest_news_intelligence?: PortfolioNewsIntelligence;
 };
 
 type ValidationDiagnostic = {
@@ -118,6 +167,7 @@ type ValidationDiagnostic = {
 
 type PaperTradingState = {
   strategy: string;
+  strategy_version?: string;
   scorecard_version?: string;
   research_status: string;
   updated_at: string;
@@ -133,6 +183,7 @@ type PaperTradingState = {
     grid_step_pct?: number;
     grid_take_profit_levels?: number;
     grid_stop_loss_levels?: number;
+    news_intelligence_enabled?: boolean;
   };
   portfolios: Record<string, Portfolio>;
   live_validation: {
@@ -140,6 +191,11 @@ type PaperTradingState = {
     status: string;
     diagnostics: Record<string, ValidationDiagnostic>;
     warning: string;
+  };
+  news_intelligence?: {
+    status: string;
+    effective_from: string;
+    market_digest?: NewsIntelligence | null;
   };
 };
 
@@ -305,6 +361,8 @@ const PaperTradingDashboardPage = () => {
   const cycle = portfolio?.active_cycle || null;
   const candidates = cycle?.selected || [];
   const positions = cycle?.positions || [];
+  const latestNews = portfolio?.latest_news_intelligence || cycle?.latest_news_intelligence;
+  const newsItems = Object.entries(latestNews?.items || {});
   const recentGridEvents = (portfolio?.event_log || []).slice(-6).reverse();
   const diagnostic = state?.live_validation.diagnostics[portfolioName];
   const chartData = useMemo(() => (portfolio?.snapshots || []).map((snapshot) => ({
@@ -528,6 +586,66 @@ const PaperTradingDashboardPage = () => {
         </section>
 
         <section className="border-b border-border py-7">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <Database className="h-4 w-4 text-cyan" />
+                <h2 className="text-[16px] font-semibold text-foreground">每日重点资讯、财报与研报</h2>
+              </div>
+              <p className="mt-1 text-xs text-muted-text">
+                {latestNews?.as_of ? `数据日 ${latestNews.as_of}` : '尚未生成资讯快照'}
+                {latestNews ? ` · 可用 ${latestNews.available}/${latestNews.requested}` : ''}
+              </p>
+            </div>
+            <span className="text-xs text-muted-text">
+              {latestNews?.affects_current_cycle === false
+                ? '当前周期仅观察，下一周期生效'
+                : `周期策略 ${cycle?.strategy_version || '2.0'}`}
+            </span>
+          </div>
+          {state.news_intelligence?.market_digest?.summary ? (
+            <p className="mt-4 border-l-2 border-cyan/60 px-3 text-sm leading-6 text-secondary-text">
+              {state.news_intelligence.market_digest.summary}
+            </p>
+          ) : null}
+          <div className="mt-4 divide-y divide-border/70">
+            {newsItems.map(([code, intel]) => (
+              <article key={code} className="grid gap-4 py-5 lg:grid-cols-[10rem_1fr]">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-semibold">{code}</h3>
+                    <span className={`text-xs tabular-nums ${intel.score_adjustment > 0 ? 'text-emerald-400' : intel.score_adjustment < 0 ? 'text-rose-400' : 'text-muted-text'}`}>
+                      {intel.status === 'unavailable' ? '未评分' : `资讯 ${intel.score_adjustment >= 0 ? '+' : ''}${intel.score_adjustment.toFixed(1)}`}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-xs leading-5 text-muted-text">{intel.summary}</p>
+                </div>
+                <div className="min-w-0 divide-y divide-border/50">
+                  {(intel.items || []).slice(0, 3).map((item, index) => (
+                    <div key={`${code}-${item.title}-${index}`} className="py-2 first:pt-0">
+                      {item.url ? (
+                        <a href={item.url} target="_blank" rel="noreferrer" className="inline-flex max-w-full items-center gap-1.5 text-sm text-secondary-text hover:text-cyan">
+                          <span className="truncate">{item.title}</span><ExternalLink className="h-3.5 w-3.5 shrink-0" />
+                        </a>
+                      ) : <p className="text-sm text-secondary-text">{item.title}</p>}
+                      <p className="mt-1 text-xs text-muted-text">{item.source} · {item.category}</p>
+                    </div>
+                  ))}
+                  {!intel.items?.length ? <p className="py-2 text-sm text-muted-text">没有可核验的近期资料，不做资讯加减分</p> : null}
+                </div>
+              </article>
+            ))}
+            {!newsItems.length ? <p className="py-5 text-sm text-muted-text">资讯任务尚未生成结果</p> : null}
+          </div>
+          {latestNews?.excluded_candidates?.length ? (
+            <p className="mt-4 border-l-2 border-rose-400/60 px-3 text-xs leading-5 text-muted-text">
+              资讯风险排除：{latestNews.excluded_candidates.map((item) => item.code).join('、')}。
+              这些标的保留在审计记录中，但不会进入下一周期持仓。
+            </p>
+          ) : null}
+        </section>
+
+        <section className="border-b border-border py-7">
           <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
             <div>
               <h2 className="text-[16px] font-semibold text-foreground">累计收益轨迹</h2>
@@ -610,6 +728,11 @@ const PaperTradingDashboardPage = () => {
                             <span className="block h-full bg-cyan" style={{ width: `${Math.min(candidate.screen_score, 100)}%` }} />
                           </span>
                         </div>
+                        {candidate.technical_screen_score != null ? (
+                          <div className="mt-1 text-[11px] tabular-nums text-muted-text">
+                            技术 {candidate.technical_screen_score.toFixed(1)} · 资讯 {(candidate.intelligence_adjustment || 0) >= 0 ? '+' : ''}{(candidate.intelligence_adjustment || 0).toFixed(1)}
+                          </div>
+                        ) : null}
                       </td>
                       <td className="max-w-[20rem] py-3 pr-4 text-xs leading-5 text-secondary-text">
                         {candidate.selection_thesis || '旧周期暂无结构化理由'}
@@ -665,7 +788,7 @@ const PaperTradingDashboardPage = () => {
               <h2 className="text-[16px] font-semibold text-foreground">候选证据卡</h2>
               <p className="mt-1 text-xs text-muted-text">规则证据、风险与数据缺口随交易账本保存</p>
             </div>
-            <span className="text-xs text-muted-text">{state.scorecard_version || candidates[0]?.scorecard_version || '旧版账本'}</span>
+            <span className="text-xs text-muted-text">{cycle?.scorecard_version || candidates[0]?.scorecard_version || state.scorecard_version || '旧版账本'}</span>
           </div>
           <div className="mt-3 divide-y divide-border/70">
             {candidates.map((candidate, index) => {

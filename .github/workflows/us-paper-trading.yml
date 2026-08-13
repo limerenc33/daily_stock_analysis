@@ -49,6 +49,9 @@ jobs:
           US_GRID_STEP_PCT: ${{ vars.US_GRID_STEP_PCT || '3.0' }}
           US_GRID_TAKE_PROFIT_LEVELS: ${{ vars.US_GRID_TAKE_PROFIT_LEVELS || '2' }}
           US_GRID_STOP_LOSS_LEVELS: ${{ vars.US_GRID_STOP_LOSS_LEVELS || '2' }}
+          US_NEWS_INTELLIGENCE_ENABLED: ${{ vars.US_NEWS_INTELLIGENCE_ENABLED || 'true' }}
+          US_NEWS_MAX_ITEMS: ${{ vars.US_NEWS_MAX_ITEMS || '8' }}
+          US_NEWS_MAX_WORKERS: ${{ vars.US_NEWS_MAX_WORKERS || '4' }}
           WECHAT_WEBHOOK_URL: ${{ secrets.WECHAT_WEBHOOK_URL }}
           DINGTALK_WEBHOOK_URL: ${{ secrets.DINGTALK_WEBHOOK_URL }}
           DINGTALK_SECRET: ${{ secrets.DINGTALK_SECRET }}

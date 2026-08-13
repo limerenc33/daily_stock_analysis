@@ -1,6 +1,6 @@
 # 美股策略每日模拟交易
 
-该任务使用 `us_quality_momentum` 2.0 作为研究对照，但不把它标记为已验证策略。2.0 参考 UZI-Skill 的“结论、证据、风险、数据缺口”组织方式，把每日选股保持为确定性规则，不在定时任务中调用 LLM 或生成不可复现的投资人观点。它同时运行两个正式股票池，并比较 `SPY`、`QQQ`、`IWM`、`DIA`、`RSP`，避免把“只跑赢 SPY”当成有效。
+该任务使用 `us_quality_momentum` 2.1 作为研究对照，但不把它标记为已验证策略。2.1 参考 UZI-Skill 的“结论、证据、风险、数据缺口”组织方式，将公开新闻、SEC 财报/披露与分析师评级变化加入可审计证据层。定时任务不调用 LLM，不生成不可复现的投资人观点。它同时运行两个正式股票池，并比较 `SPY`、`QQQ`、`IWM`、`DIA`、`RSP`，避免把“只跑赢 SPY”当成有效。
 
 ## 选股要素与分数
 
@@ -18,6 +18,21 @@
 总分范围为 0-100，只用于同一交易日、同一股票池内排序，不是上涨概率、目标收益或买入置信度。流动性和相对强度使用截面排名，因此同一只股票在不同股票池中的分数可以不同。
 
 当前 Yahoo 日线回放没有 point-in-time PE、PB、市值和财务质量数据。2.0 将这些字段明确标记为“未评分”，不再用缺失值默认分参与排名。每个候选同时保存因子分与权重、入选证据、观察项、风险标记、失效条件、数据来源和数据缺口；这些字段会随开仓和关闭交易一起保留。
+
+## 每日资讯、财报与研报层
+
+每日收盘任务通过 yfinance 的 Yahoo Finance 搜索、SEC filing 索引和公开分析师评级变更抓取资料，按公司新闻、财报、监管披露、分析师研究分类，并把标题、来源、发布时间和 URL 原样写入账本。资讯源不可用时记录为 `unavailable`，不把缺失数据解释为中性或利好。
+
+2.1 对选股的影响采用保守、可复现规则：原技术 Top 15 进入资讯核验，最终选择 Top 5；明确的业绩超预期、上调指引、评级上调和股东回报事件最多增加 4 分，业绩不及预期、下调指引和评级下调扣分，监管、财务困境或会计风险最多扣 8 分；同一标的出现至少两类严重风险证据时排除。研报观点权重低于 SEC 披露，且没有 URL 的评级变化仍会注明来源。
+
+这项影响在交易语义上有严格版本边界：部署时已经 `open` 或 `awaiting_settlement` 的周期只更新资讯展示，不改变候选、持仓、网格价或卖出规则；该周期结束后创建的下一 `pending` 周期才固化 2.1 的资讯调整。周期自身保存 `strategy_version` 与 `scorecard_version`，因此后续可以将 2.0 和 2.1 的模拟结果分开评估。
+
+本次调研参考了以下公开实现，但没有直接复制其交易逻辑：
+
+- [OpenBB](https://github.com/OpenBB-finance/OpenBB)：成熟的多提供方金融数据与 SEC 接口架构，适合作为未来数据源扩展参考。
+- [FinBERT](https://github.com/ProsusAI/finBERT)：金融文本情绪模型；本版不直接采用，因为定时 Actions 的模型体积、推理可重复性和点时回测数据尚未验证。
+- [FinGPT](https://github.com/AI4Finance-Foundation/FinGPT)：金融 LLM 与数据管线参考；本版只采用“证据与判断分层”的思路，不引入生成式交易决策。
+- [StockSentimentTrading](https://github.com/jasonyip184/StockSentimentTrading) 与 [LSTMppo-DRL-StockTrader](https://github.com/MahanVeisi8/LSTMppo-DRL-StockTrader)：证明新闻情绪可以作为实验特征，但前者只有单次 Notebook 提交，后者属于 DRL 研究原型，都不足以直接进入当前可审计模拟账本。
 
 ## 交易规则
 
@@ -54,6 +69,9 @@ python scripts/run_us_paper_trading.py --notify
 US_GRID_STEP_PCT=3.0
 US_GRID_TAKE_PROFIT_LEVELS=2
 US_GRID_STOP_LOSS_LEVELS=2
+US_NEWS_INTELLIGENCE_ENABLED=true
+US_NEWS_MAX_ITEMS=8
+US_NEWS_MAX_WORKERS=4
 ```
 
 已开仓持仓会把实际网格价格固化到账本中，之后修改配置不会改写其历史成交。
@@ -85,4 +103,4 @@ US_GRID_STOP_LOSS_LEVELS=2
 
 ## 版本与验证边界
 
-2026-08-10 及以前的原综合历史回测使用 `us_quality_momentum` 1.0 权重，不能证明 2.0 有效。2.0 已使用相同的 2015-2025 Yahoo 数据重新完成多股票池、多基准、成本压力、样本外和统计置信度验证，但综合门槛仍未通过：中位 Sharpe 0.4587、跨行业池持有期与 50 bps 成本压力失败、bootstrap 正下界 0/10。2.0 从 2026-08-10 的待成交信号开始重新计算候选并保持 `not_validated`，不得产生真实购买建议或连接券商下单。完整结果见 [`us-strategy-backtest-results.md`](./us-strategy-backtest-results.md)。
+2026-08-10 及以前的原综合历史回测使用 `us_quality_momentum` 1.0 权重，不能证明 2.0 或 2.1 有效。2.0 已使用相同的 2015-2025 Yahoo 数据重新完成多股票池、多基准、成本压力、样本外和统计置信度验证，但综合门槛仍未通过：中位 Sharpe 0.4587、跨行业池持有期与 50 bps 成本压力失败、bootstrap 正下界 0/10。2.1 的资讯特征缺少无幸存者偏差、带准确发布时间的历史资料集，因此不能用当前价格历史回测证明有效；它必须从下一周期开始与 2.0 分版本积累前向模拟证据，继续保持 `not_validated`。不得产生真实购买建议或连接券商下单。完整价格策略结果见 [`us-strategy-backtest-results.md`](./us-strategy-backtest-results.md)。

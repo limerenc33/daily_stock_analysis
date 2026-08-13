@@ -1,7 +1,7 @@
 name: us_quality_momentum
 display_name: 美股趋势质量
 description: 面向美股大盘股的趋势质量策略，兼顾流动性、趋势确认和回撤控制
-version: "2.0"
+version: "2.1"
 category: trend
 tags: [us, momentum, quality, trend, large_cap]
 analysis_skills: [bull_trend, growth_quality]
@@ -66,6 +66,20 @@ screening:
     version: us_evidence_v2
     valuation_status: not_scored
     source: yahoo_adjusted_daily
+    intelligence_status: research_only
+    intelligence_adjustment_cap: 4.0
+    intelligence_risk_floor: -8.0
+  event_profile:
+    preferred_event_tags: [earnings_beat, guidance_raise, analyst_upgrade, shareholder_return]
+    avoided_event_tags: [earnings_miss, guidance_cut, analyst_downgrade]
+    preferred_announcement_categories: [earnings, analyst_research]
+    avoided_announcement_categories: [regulatory_risk, financial_distress, accounting_risk]
+    source_weights:
+      earnings: 1.0
+      filing: 1.0
+      analyst_research: 0.6
+      company_news: 0.4
+    notes: "资讯只影响下一周期候选排序；资讯缺失不加分，高风险证据达到门槛才排除候选。"
   ranking_hints: |
     优先选择趋势确认、动量质量、回撤控制和流动性均有日线证据的美股大盘股。
     PE/PB、市值和财务质量在当前 Yahoo 日线回放中不可得，因此明确标记为未评分，不使用缺失值默认分参与排名。

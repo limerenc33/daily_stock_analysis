@@ -24,6 +24,8 @@ from src.services.screening.us_paper_trading import (
     create_paper_trading_state,
     render_paper_trading_report,
 )
+from src.services.screening.strategy import load_all_strategies
+from src.services.screening.us_news_intelligence import YahooUSNewsIntelligenceProvider
 
 
 def _parse_date(value: str) -> date:
@@ -131,6 +133,18 @@ def _optional_env_int(name: str) -> int | None:
     return int(value) if value not in {None, ""} else None
 
 
+def _optional_env_bool(name: str) -> bool | None:
+    value = os.getenv(name)
+    if value in {None, ""}:
+        return None
+    normalized = str(value).strip().lower()
+    if normalized in {"1", "true", "yes", "on"}:
+        return True
+    if normalized in {"0", "false", "no", "off"}:
+        return False
+    raise ValueError(f"{name} must be a boolean value")
+
+
 def _write_atomic(path: Path, content: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_suffix(path.suffix + ".tmp")
@@ -178,6 +192,13 @@ def main() -> int:
         type=int,
         default=_optional_env_int("US_GRID_STOP_LOSS_LEVELS"),
     )
+    parser.add_argument(
+        "--news-intelligence-enabled",
+        action=argparse.BooleanOptionalAction,
+        default=_optional_env_bool("US_NEWS_INTELLIGENCE_ENABLED"),
+    )
+    parser.add_argument("--news-max-items", type=int, default=_optional_env_int("US_NEWS_MAX_ITEMS"))
+    parser.add_argument("--news-max-workers", type=int, default=_optional_env_int("US_NEWS_MAX_WORKERS"))
     parser.add_argument("--notify", action="store_true")
     args = parser.parse_args()
     if args.history_days < 240 or args.batch_size <= 0:
@@ -189,6 +210,9 @@ def main() -> int:
             "grid_step_pct": args.grid_step_pct,
             "grid_take_profit_levels": args.grid_take_profit_levels,
             "grid_stop_loss_levels": args.grid_stop_loss_levels,
+            "news_intelligence_enabled": args.news_intelligence_enabled,
+            "news_max_items": args.news_max_items,
+            "news_max_workers": args.news_max_workers,
         }.items()
         if value is not None
     }
@@ -212,7 +236,25 @@ def main() -> int:
     missing = sorted(set(tickers) - set(histories))
     if missing:
         print(f"warning: missing histories: {', '.join(missing)}", file=sys.stderr)
-    advance_paper_trading_state(state, histories, as_of=args.as_of)
+    news_provider = (
+        YahooUSNewsIntelligenceProvider(
+            news_count=int(state.get("config", {}).get("news_max_items") or 8),
+            max_workers=int(state.get("config", {}).get("news_max_workers") or 4),
+            source_weights=(
+                load_all_strategies(Path("src/services/screening/strategies"))
+                [str(state.get("strategy") or "us_quality_momentum")]
+                .screening.event_profile.get("source_weights")
+            ),
+        )
+        if bool(state.get("config", {}).get("news_intelligence_enabled", True))
+        else None
+    )
+    advance_paper_trading_state(
+        state,
+        histories,
+        as_of=args.as_of,
+        news_provider=news_provider,
+    )
     report = render_paper_trading_report(state)
     _write_atomic(args.state, json.dumps(state, ensure_ascii=False, indent=2))
     _write_atomic(args.report, report)

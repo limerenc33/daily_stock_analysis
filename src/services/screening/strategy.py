@@ -172,6 +172,9 @@ _SCORECARD_PROFILE_KEYS = {
     "llm_risk_penalty",
     "llm_risk_penalty_cap",
     "score_delta_cap",
+    "intelligence_status",
+    "intelligence_adjustment_cap",
+    "intelligence_risk_floor",
 }
 _EVENT_PROFILE_KEYS = {
     "preferred_event_tags",

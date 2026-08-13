@@ -19,6 +19,14 @@ from src.services.screening.us_paper_trading import (
 )
 from src.services.screening.strategy import load_all_strategies
 from src.services.screening.us_candidate_evidence import build_us_candidate_evidence
+from src.services.screening.us_news_intelligence import (
+    INTELLIGENCE_SCORECARD_VERSION,
+    YahooUSNewsIntelligenceProvider,
+    _summarize_items,
+    _normalize_analyst_actions,
+    apply_intelligence_adjustment,
+    unavailable_intelligence,
+)
 
 
 def _history(*, start: float = 100.0, step: float = 0.5, points: int = 180) -> pd.DataFrame:
@@ -368,6 +376,174 @@ def test_candidate_evidence_surfaces_near_limit_risks():
     assert any("overbought" in item for item in evidence["risk_flags"])
     assert any("接近上限" in item for item in evidence["risk_flags"])
     assert any("动量过热" in item for item in evidence["reasons_watch"])
+
+
+def test_news_adjustment_is_bounded_and_auditable():
+    candidate = {
+        "code": "AAA",
+        "screen_score": 80.0,
+        "data_sources": [],
+        "data_gaps": [],
+        "risk_flags": [],
+    }
+
+    apply_intelligence_adjustment(candidate, {
+        "status": "available",
+        "score_adjustment": 3.5,
+        "summary": "财报与评级证据可用。",
+        "risk_flags": [],
+        "hard_exclusion": False,
+        "items": [{"title": "AAA raises guidance", "url": "https://example.com/aaa"}],
+    })
+
+    assert candidate["technical_screen_score"] == 80.0
+    assert candidate["intelligence_adjustment"] == 3.5
+    assert candidate["screen_score"] == 83.5
+    assert candidate["scorecard_version"] == INTELLIGENCE_SCORECARD_VERSION
+    assert candidate["news_intelligence"]["items"][0]["url"] == "https://example.com/aaa"
+
+
+def test_unavailable_news_does_not_create_a_neutral_score():
+    candidate = {
+        "code": "AAA",
+        "screen_score": 80.0,
+        "data_sources": [],
+        "data_gaps": [],
+        "risk_flags": [],
+    }
+
+    apply_intelligence_adjustment(
+        candidate,
+        unavailable_intelligence("AAA", date(2026, 8, 13), "offline"),
+    )
+
+    assert candidate["screen_score"] == 80.0
+    assert candidate["intelligence_adjustment"] == 0.0
+    assert any("未参与" in item for item in candidate["data_gaps"])
+
+
+def test_severe_risk_exclusion_requires_distinct_risk_types():
+    repeated_regulatory = _summarize_items(
+        "AAA",
+        date(2026, 8, 13),
+        [
+            {"category": "company_news", "title": "AAA faces SEC charges"},
+            {"category": "company_news", "title": "AAA faces regulatory probe"},
+        ],
+    )
+    distinct_risks = _summarize_items(
+        "AAA",
+        date(2026, 8, 13),
+        [
+            {"category": "company_news", "title": "AAA faces SEC charges"},
+            {"category": "earnings", "title": "AAA reports accounting restatement"},
+        ],
+    )
+
+    assert repeated_regulatory["hard_exclusion"] is False
+    assert distinct_risks["hard_exclusion"] is True
+
+
+def test_news_source_weights_are_applied_from_strategy_configuration():
+    provider = YahooUSNewsIntelligenceProvider(source_weights={"company_news": 0.0})
+    result = _summarize_items(
+        "AAA",
+        date(2026, 8, 13),
+        [{"category": "company_news", "title": "AAA raises guidance"}],
+        source_weights=provider.source_weights,
+    )
+
+    assert result["score_adjustment"] == 0.0
+
+
+def test_analyst_action_codes_are_normalized_for_scoring():
+    class _Frame:
+        def reset_index(self):
+            return self
+
+        def to_dict(self, mode):
+            assert mode == "records"
+            return [{
+                "GradeDate": date(2026, 8, 12),
+                "Firm": "Example Research",
+                "Action": "up",
+                "FromGrade": "Hold",
+                "ToGrade": "Buy",
+            }]
+
+    items = _normalize_analyst_actions(_Frame(), as_of=date(2026, 8, 13))
+    assert "analyst upgrade" in items[0]["title"]
+
+
+class _FakeNewsProvider:
+    def collect(self, tickers, *, as_of):
+        return {
+            ticker: {
+                "code": ticker,
+                "status": "available",
+                "summary": "可审计资讯 1 条，资讯调整 +1.0 分。",
+                "items": [{
+                    "category": "earnings",
+                    "title": f"{ticker} raises guidance",
+                    "url": f"https://example.com/{ticker}",
+                    "source": "test",
+                }],
+                "score_adjustment": 1.0,
+                "risk_flags": [],
+                "hard_exclusion": False,
+            }
+            for ticker in tickers
+        }
+
+    def market_digest(self, *, as_of):
+        return {
+            "code": "US_MARKET",
+            "status": "available",
+            "summary": "市场摘要可用。",
+            "items": [],
+            "score_adjustment": 0.0,
+            "risk_flags": [],
+            "hard_exclusion": False,
+        }
+
+
+def test_news_strategy_preserves_open_cycle_and_starts_with_next_cycle():
+    histories = {"AAA": _history(step=0.1), "SPY": _history(step=0.1)}
+    dates = [value.date() for value in histories["SPY"]["date"]]
+    state = create_paper_trading_state(
+        {"test_universe": ["AAA"]},
+        benchmarks=("SPY",),
+        config=USPaperTradingConfig(top_k=1, minimum_universe_coverage=1.0),
+    )
+    advance_paper_trading_state(state, histories, as_of=dates[100])
+    advance_paper_trading_state(state, histories, as_of=dates[101])
+    cycle = state["portfolios"]["test_universe"]["active_cycle"]
+    original_score = cycle["selected"][0]["screen_score"]
+    original_entry = cycle["positions"][0]["entry_open"]
+
+    advance_paper_trading_state(
+        state,
+        histories,
+        as_of=dates[102],
+        news_provider=_FakeNewsProvider(),
+    )
+
+    cycle = state["portfolios"]["test_universe"]["active_cycle"]
+    assert cycle["selected"][0]["screen_score"] == original_score
+    assert cycle["positions"][0]["entry_open"] == original_entry
+    assert cycle["latest_news_intelligence"]["affects_current_cycle"] is False
+
+    advance_paper_trading_state(
+        state,
+        histories,
+        as_of=dates[110],
+        news_provider=_FakeNewsProvider(),
+    )
+    next_cycle = state["portfolios"]["test_universe"]["active_cycle"]
+    assert next_cycle["status"] == "pending"
+    assert next_cycle["strategy_version"] == "2.1"
+    assert next_cycle["scorecard_version"] == INTELLIGENCE_SCORECARD_VERSION
+    assert next_cycle["selected"][0]["intelligence_adjustment"] == 1.0
 
 
 def test_report_keeps_live_validation_and_all_benchmarks_visible():
