@@ -476,6 +476,18 @@ def test_news_items_keep_auditable_summary_and_impact_annotations():
     assert items[0]["impact_channels"] == ["盈利预期"]
 
 
+def test_news_normalization_rejects_explicitly_unrelated_tickers():
+    from src.services.screening.us_news_intelligence import _normalize_yahoo_news
+
+    items = _normalize_yahoo_news([
+        {"title": "ABBV stock update", "relatedTickers": ["ABBV"]},
+        {"title": "LLY raises guidance", "relatedTickers": ["LLY"]},
+        {"title": "LLY market story"},
+    ], as_of=date(2026, 8, 13), code="LLY")
+
+    assert [item["title"] for item in items] == ["LLY raises guidance", "LLY market story"]
+
+
 def test_archive_snapshot_does_not_overwrite_existing_market_date(tmp_path):
     state_path = tmp_path / "state.json"
     report_path = tmp_path / "latest.md"

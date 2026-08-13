@@ -122,7 +122,7 @@ class YahooUSNewsIntelligenceProvider:
                 lists_count=0,
                 recommended=0,
             )
-            items.extend(_normalize_yahoo_news(getattr(search, "news", []), as_of=as_of))
+            items.extend(_normalize_yahoo_news(getattr(search, "news", []), as_of=as_of, code=code))
         except Exception as exc:
             errors.append(f"news: {exc}")
 
@@ -317,7 +317,12 @@ def _summarize_items(
     }
 
 
-def _normalize_yahoo_news(raw_items: object, *, as_of: date) -> list[dict[str, object]]:
+def _normalize_yahoo_news(
+    raw_items: object,
+    *,
+    as_of: date,
+    code: str | None = None,
+) -> list[dict[str, object]]:
     if not isinstance(raw_items, list):
         return []
     output = []
@@ -325,6 +330,8 @@ def _normalize_yahoo_news(raw_items: object, *, as_of: date) -> list[dict[str, o
         if not isinstance(raw, Mapping):
             continue
         content = raw.get("content") if isinstance(raw.get("content"), Mapping) else raw
+        if code and not _news_item_matches_code(raw, content, code):
+            continue
         title = str(content.get("title") or "").strip()
         if not title:
             continue
@@ -356,6 +363,39 @@ def _normalize_yahoo_news(raw_items: object, *, as_of: date) -> list[dict[str, o
             **annotations,
         })
     return output
+
+
+def _news_item_matches_code(
+    raw: Mapping[str, object],
+    content: Mapping[str, object],
+    code: str,
+) -> bool:
+    """Reject explicitly unrelated Yahoo stories before scoring them."""
+    normalized_code = code.upper().strip()
+    metadata_values: list[object] = []
+    for payload in (raw, content):
+        metadata_values.extend([
+            payload.get("relatedTickers"),
+            payload.get("related_tickers"),
+            payload.get("tickerSymbols"),
+            payload.get("ticker_symbols"),
+            payload.get("symbol"),
+            payload.get("ticker"),
+        ])
+        finance = payload.get("finance")
+        if isinstance(finance, Mapping):
+            metadata_values.extend([
+                finance.get("tickerSymbols"),
+                finance.get("ticker_symbols"),
+            ])
+    explicit_symbols: set[str] = set()
+    for value in metadata_values:
+        values = value if isinstance(value, (list, tuple, set)) else [value]
+        for item in values:
+            text = str(item or "").strip().upper()
+            if text:
+                explicit_symbols.add(text)
+    return not explicit_symbols or normalized_code in explicit_symbols
 
 
 def _normalize_sec_filings(raw: object, *, as_of: date) -> list[dict[str, object]]:
