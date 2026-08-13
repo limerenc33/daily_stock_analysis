@@ -50,6 +50,13 @@ type Candidate = {
 type IntelligenceItem = {
   category: string;
   title: string;
+  summary?: string;
+  sentiment?: string;
+  tags?: string[];
+  analysis?: string;
+  expected_impact?: string;
+  impact_horizon?: string;
+  impact_channels?: string[];
   url?: string;
   source: string;
   published_at?: string | null;
@@ -60,6 +67,10 @@ type NewsIntelligence = {
   as_of: string;
   status: string;
   summary: string;
+  analysis?: string;
+  expected_impact?: string;
+  impact_horizon?: string;
+  impact_channels?: string[];
   items: IntelligenceItem[];
   score_adjustment: number;
   risk_flags: string[];
@@ -131,6 +142,21 @@ type GridEvent = GridFill & {
   remaining_quantity: number;
 };
 
+type TradeLogEntry = {
+  trade_id: string;
+  side: 'buy' | 'sell';
+  reason: string;
+  code: string;
+  date: string;
+  observed_at?: string | null;
+  price: number;
+  trigger_price?: number;
+  quantity: number;
+  gross_notional?: number;
+  net_proceeds?: number;
+  source: string;
+};
+
 type ActiveCycle = {
   status: string;
   signal_date?: string;
@@ -154,6 +180,7 @@ type Portfolio = {
   closed_cycles: unknown[];
   snapshots: Snapshot[];
   event_log?: GridEvent[];
+  trade_log?: TradeLogEntry[];
   latest_news_intelligence?: PortfolioNewsIntelligence;
 };
 
@@ -172,6 +199,13 @@ type PaperTradingState = {
   research_status: string;
   updated_at: string;
   latest_market_date: string;
+  time_semantics?: {
+    market_timezone: string;
+    display_timezone: string;
+    timestamp_timezone: string;
+    market_date_definition: string;
+    data_cutoff_definition: string;
+  };
   benchmarks: string[];
   config: {
     initial_capital: number;
@@ -242,6 +276,20 @@ const formatUpdatedAt = (value: string) => {
   }
   return new Intl.DateTimeFormat('zh-CN', {
     timeZone: 'Asia/Shanghai',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).format(parsed);
+};
+
+const formatTimestamp = (value: string, timeZone: string) => {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return value || '未知';
+  return new Intl.DateTimeFormat('zh-CN', {
+    timeZone,
+    year: 'numeric',
     month: '2-digit',
     day: '2-digit',
     hour: '2-digit',
@@ -364,6 +412,7 @@ const PaperTradingDashboardPage = () => {
   const latestNews = portfolio?.latest_news_intelligence || cycle?.latest_news_intelligence;
   const newsItems = Object.entries(latestNews?.items || {});
   const recentGridEvents = (portfolio?.event_log || []).slice(-6).reverse();
+  const recentTrades = (portfolio?.trade_log || []).slice(-12).reverse();
   const diagnostic = state?.live_validation.diagnostics[portfolioName];
   const chartData = useMemo(() => (portfolio?.snapshots || []).map((snapshot) => ({
     date: snapshot.date.slice(5),
@@ -460,10 +509,10 @@ const PaperTradingDashboardPage = () => {
                 {state.live_validation.effective ? '验证通过' : '证据不足或未通过'}
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <CalendarDays className="h-3.5 w-3.5" /> 数据日 {state.latest_market_date}
+                <CalendarDays className="h-3.5 w-3.5" /> 美股交易日 {state.latest_market_date}（纽约）
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <Clock3 className="h-3.5 w-3.5" /> 北京时间 {formatUpdatedAt(state.updated_at)} 更新
+                <Clock3 className="h-3.5 w-3.5" /> 更新时间 {formatTimestamp(state.updated_at, 'UTC')} UTC / {formatUpdatedAt(state.updated_at)} 北京
               </span>
             </div>
             <h1 className="mt-4 text-2xl font-semibold sm:text-3xl">模拟组合收益与候选追踪</h1>
@@ -608,6 +657,7 @@ const PaperTradingDashboardPage = () => {
               {state.news_intelligence.market_digest.summary}
             </p>
           ) : null}
+          {!latestNews ? <p className="mt-4 border-l-2 border-amber-300/60 px-3 text-sm leading-6 text-muted-text">当前账本尚未包含资讯快照。下一次每日任务会写入新闻、财报和评级资料；来源不可用时会明确显示不可用原因，不会静默留空。</p> : null}
           <div className="mt-4 divide-y divide-border/70">
             {newsItems.map(([code, intel]) => (
               <article key={code} className="grid gap-4 py-5 lg:grid-cols-[10rem_1fr]">
@@ -619,6 +669,9 @@ const PaperTradingDashboardPage = () => {
                     </span>
                   </div>
                   <p className="mt-2 text-xs leading-5 text-muted-text">{intel.summary}</p>
+                  {intel.analysis ? <p className="mt-2 text-xs leading-5 text-secondary-text">分析：{intel.analysis}</p> : null}
+                  {intel.expected_impact ? <p className="mt-2 text-xs leading-5 text-secondary-text">预期影响：{intel.expected_impact}</p> : null}
+                  {intel.impact_channels?.length ? <p className="mt-2 text-xs text-muted-text">影响面：{intel.impact_channels.join('、')} · {intel.impact_horizon === 'short_term' ? '短期' : '中期'}</p> : null}
                 </div>
                 <div className="min-w-0 divide-y divide-border/50">
                   {(intel.items || []).slice(0, 3).map((item, index) => (
@@ -628,7 +681,10 @@ const PaperTradingDashboardPage = () => {
                           <span className="truncate">{item.title}</span><ExternalLink className="h-3.5 w-3.5 shrink-0" />
                         </a>
                       ) : <p className="text-sm text-secondary-text">{item.title}</p>}
-                      <p className="mt-1 text-xs text-muted-text">{item.source} · {item.category}</p>
+                      <p className="mt-1 text-xs text-muted-text">{item.source} · {item.category} · {item.published_at || '日期未知'} · {item.sentiment || '待核验'}</p>
+                      {item.summary ? <p className="mt-1 text-xs leading-5 text-secondary-text">原文摘要：{item.summary}</p> : null}
+                      {item.analysis ? <p className="mt-1 text-xs leading-5 text-secondary-text">条目分析：{item.analysis}</p> : null}
+                      {item.expected_impact ? <p className="mt-1 text-xs leading-5 text-secondary-text">预期影响：{item.expected_impact}</p> : null}
                     </div>
                   ))}
                   {!intel.items?.length ? <p className="py-2 text-sm text-muted-text">没有可核验的近期资料，不做资讯加减分</p> : null}
@@ -643,6 +699,25 @@ const PaperTradingDashboardPage = () => {
               这些标的保留在审计记录中，但不会进入下一周期持仓。
             </p>
           ) : null}
+        </section>
+
+        <section className="border-b border-border py-7">
+          <div className="flex items-end justify-between gap-3">
+            <div>
+              <h2 className="text-[16px] font-semibold text-foreground">完整模拟交易流水</h2>
+              <p className="mt-1 text-xs text-muted-text">包含开仓买入、网格卖出、止损和到期退出；价格均为规则模拟成交价</p>
+            </div>
+            <span className="text-xs text-muted-text">已记录 {portfolio?.trade_log?.length || 0} 笔</span>
+          </div>
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full min-w-[52rem] text-left text-sm">
+              <thead className="border-y border-border/70 text-xs text-muted-text"><tr><th className="py-2">日期</th><th className="py-2">方向</th><th className="py-2">代码</th><th className="py-2 text-right">价格</th><th className="py-2 text-right">数量</th><th className="py-2">原因</th><th className="py-2">来源</th></tr></thead>
+              <tbody className="divide-y divide-border/50">
+                {recentTrades.map((trade) => <tr key={trade.trade_id}><td className="py-2">{trade.date}</td><td className={trade.side === 'buy' ? 'py-2 text-cyan' : 'py-2 text-amber-300'}>{trade.side === 'buy' ? '买入' : '卖出'}</td><td className="py-2 font-semibold">{trade.code}</td><td className="py-2 text-right tabular-nums">{formatMoney(trade.price)}</td><td className="py-2 text-right tabular-nums">{trade.quantity.toFixed(4)}</td><td className="py-2 text-secondary-text">{trade.reason}</td><td className="py-2 text-xs text-muted-text">{trade.source}</td></tr>)}
+                {!recentTrades.length ? <tr><td className="py-4 text-muted-text" colSpan={7}>尚无交易流水</td></tr> : null}
+              </tbody>
+            </table>
+          </div>
         </section>
 
         <section className="border-b border-border py-7">

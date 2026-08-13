@@ -90,6 +90,7 @@ jobs:
           path: |
             data/us_paper_trading/state.json
             data/us_paper_trading/latest.md
+            data/us_paper_trading/archive
           retention-days: 90
 
       - name: Update the daily GitHub issue
@@ -130,6 +131,6 @@ jobs:
           mkdir -p data/us_paper_trading
           cp /tmp/us-paper-state.json data/us_paper_trading/state.json
           cp /tmp/us-paper-latest.md data/us_paper_trading/latest.md
-          git add -f data/us_paper_trading/state.json data/us_paper_trading/latest.md
+          git add -f data/us_paper_trading/state.json data/us_paper_trading/latest.md data/us_paper_trading/archive
           git commit -m "chore: update US paper trading state ${GITHUB_RUN_ID}" || exit 0
           git push origin HEAD:paper-trading-state

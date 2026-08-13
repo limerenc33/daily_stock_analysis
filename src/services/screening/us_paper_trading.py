@@ -25,6 +25,10 @@ from src.services.screening.us_backtest import (
     normalize_price_history,
 )
 
+MARKET_TIMEZONE = "America/New_York"
+DISPLAY_TIMEZONE = "Asia/Shanghai"
+UTC_TIMEZONE = "UTC"
+
 
 @dataclass(frozen=True)
 class USPaperTradingConfig:
@@ -78,6 +82,13 @@ def create_paper_trading_state(
         "research_status": "not_validated",
         "created_at": datetime.now(timezone.utc).isoformat(),
         "updated_at": None,
+        "time_semantics": {
+            "market_timezone": MARKET_TIMEZONE,
+            "display_timezone": DISPLAY_TIMEZONE,
+            "timestamp_timezone": UTC_TIMEZONE,
+            "market_date_definition": "US trading session date in America/New_York",
+            "data_cutoff_definition": "latest completed common US market date; daily bars use session OHLC",
+        },
         "news_intelligence": {
             "status": "not_run",
             "scorecard_version": INTELLIGENCE_SCORECARD_VERSION,
@@ -101,6 +112,8 @@ def create_paper_trading_state(
                 "active_cycle": None,
                 "closed_cycles": [],
                 "snapshots": [],
+                "event_log": [],
+                "trade_log": [],
                 "last_processed_date": None,
             }
             for name, tickers in universes.items()
@@ -226,6 +239,7 @@ def advance_paper_trading_state(
         )
         if migration_event is not None:
             events[name].insert(0, migration_event)
+        _ensure_trade_log(portfolio)
     state["updated_at"] = datetime.now(timezone.utc).isoformat()
     state["latest_market_date"] = effective_date.isoformat()
     if config.news_intelligence_enabled and news_provider is not None:
@@ -253,6 +267,8 @@ def upgrade_paper_trading_state(state: dict[str, object]) -> bool:
     _validate_config(config)
     for portfolio in dict(state.get("portfolios") or {}).values():
         portfolio.setdefault("event_log", [])
+        portfolio.setdefault("trade_log", [])
+        _ensure_trade_log(portfolio)
         cycle = portfolio.get("active_cycle")
         if not isinstance(cycle, dict) or cycle.get("status") not in {"open", "awaiting_settlement"}:
             continue
@@ -267,6 +283,13 @@ def upgrade_paper_trading_state(state: dict[str, object]) -> bool:
         "effective_from": "next_cycle",
         "market_digest": None,
     })
+    state.setdefault("time_semantics", {
+        "market_timezone": MARKET_TIMEZONE,
+        "display_timezone": DISPLAY_TIMEZONE,
+        "timestamp_timezone": UTC_TIMEZONE,
+        "market_date_definition": "US trading session date in America/New_York",
+        "data_cutoff_definition": "latest completed common US market date; daily bars use session OHLC",
+    })
     state.setdefault("strategy_version", "2.0")
     state.setdefault("strategy_activation", {
         "deployed_version": INTELLIGENCE_STRATEGY_VERSION,
@@ -277,6 +300,78 @@ def upgrade_paper_trading_state(state: dict[str, object]) -> bool:
         state["schema_version"] = 2
         changed = True
     return changed
+
+
+def _ensure_trade_log(portfolio: dict[str, object]) -> None:
+    """Backfill a complete, idempotent buy/sell ledger from existing state."""
+    trade_log = list(portfolio.get("trade_log") or [])
+    known = {str(item.get("trade_id")) for item in trade_log}
+
+    def add(item: dict[str, object]) -> None:
+        trade_id = str(item["trade_id"])
+        if trade_id not in known:
+            trade_log.append(item)
+            known.add(trade_id)
+
+    active = portfolio.get("active_cycle")
+    if isinstance(active, dict):
+        cycle_key = str(active.get("signal_date") or "unknown")
+        for position in list(active.get("positions") or []):
+            code = str(position.get("code") or "")
+            if not code or position.get("entry_open") is None:
+                continue
+            add({
+                "trade_id": f"{cycle_key}:{code}:entry",
+                "side": "buy",
+                "reason": "cycle_entry",
+                "code": code,
+                "date": str(position.get("entry_date") or cycle_key),
+                "price": float(position.get("entry_open") or 0.0),
+                "quantity": float(position.get("quantity") or 0.0),
+                "gross_notional": float(position.get("allocated_capital") or 0.0),
+                "source": "US daily open simulation",
+                "market_timezone": MARKET_TIMEZONE,
+            })
+            for fill in list(position.get("fills") or []):
+                add(_trade_from_fill(fill, code, cycle_key))
+    for cycle in list(portfolio.get("closed_cycles") or []):
+        cycle_key = str(cycle.get("signal_date") or cycle.get("entry_date") or "unknown")
+        for trade in list(cycle.get("trades") or []):
+            code = str(trade.get("code") or "")
+            if code and trade.get("entry_open") is not None:
+                add({
+                    "trade_id": f"{cycle_key}:{code}:entry",
+                    "side": "buy",
+                    "reason": "cycle_entry",
+                    "code": code,
+                    "date": str(trade.get("entry_date") or cycle.get("entry_date") or cycle_key),
+                    "price": float(trade.get("entry_open") or 0.0),
+                    "quantity": float(trade.get("quantity") or 0.0),
+                    "gross_notional": float(trade.get("allocated_capital") or 0.0),
+                    "source": "US daily open simulation",
+                    "market_timezone": MARKET_TIMEZONE,
+                })
+            for fill in list(trade.get("fills") or []):
+                add(_trade_from_fill(fill, code, cycle_key))
+    trade_log.sort(key=lambda item: (str(item.get("date") or ""), str(item.get("trade_id") or "")))
+    portfolio["trade_log"] = trade_log
+
+
+def _trade_from_fill(fill: Mapping[str, object], code: str, cycle_key: str) -> dict[str, object]:
+    return {
+        "trade_id": f"{cycle_key}:{code}:{fill.get('date')}:{fill.get('reason')}:{fill.get('grid_level') or 0}",
+        "side": "sell",
+        "reason": str(fill.get("reason") or "exit"),
+        "code": code,
+        "date": str(fill.get("date") or "unknown"),
+        "observed_at": fill.get("observed_at"),
+        "price": float(fill.get("fill_price") or 0.0),
+        "trigger_price": float(fill.get("trigger_price") or 0.0),
+        "quantity": float(fill.get("quantity") or 0.0),
+        "net_proceeds": float(fill.get("net_proceeds") or 0.0),
+        "source": str(fill.get("source") or "unknown"),
+        "market_timezone": MARKET_TIMEZONE,
+    }
 
 
 def apply_realtime_grid_quotes(
@@ -351,6 +446,8 @@ def apply_realtime_grid_quotes(
             portfolio["event_log"] = [*list(portfolio.get("event_log", [])), *events][-200:]
             events_by_portfolio[str(name)] = events
     if events_by_portfolio:
+        for portfolio in dict(state.get("portfolios") or {}).values():
+            _ensure_trade_log(portfolio)
         state["updated_at"] = datetime.now(timezone.utc).isoformat()
         state["last_realtime_check"] = observed_at.isoformat()
         state["last_events"] = events_by_portfolio
@@ -1003,6 +1100,7 @@ def render_paper_trading_report(state: Mapping[str, object]) -> str:
         f"> 策略：`{strategy}` {state.get('strategy_version', '2.0')}。仅用于研究验证，不构成投资建议，不连接券商或真实下单。",
         f"> 实时验证状态：**{'通过' if gate.get('effective') else '证据不足或未通过'}**。",
         "> 新闻、财报和研报证据每日更新；新资讯策略只对部署后创建的下一周期生效，不改写当前持仓。",
+        "> 时间口径：美股交易日按 `America/New_York`；行情截止为最近完成的共同美股交易日；时间戳以 UTC 存储，页面同时换算为北京时间。",
         (
             f"> 网格风控：每格 {float(dict(state['config']).get('grid_step_pct') or 3.0):.1f}%，"
             f"上涨 {int(dict(state['config']).get('grid_take_profit_levels') or 2)} 格分批止盈，"
@@ -1073,35 +1171,65 @@ def render_paper_trading_report(state: Mapping[str, object]) -> str:
     lines.extend(["## 每日重点资讯、财报与研报", ""])
     market_digest = dict(dict(state.get("news_intelligence") or {}).get("market_digest") or {})
     if market_digest:
-        lines.append(f"市场摘要：{market_digest.get('summary', '暂无可用市场资讯。')}")
+        lines.append(f"- 市场摘要：{market_digest.get('summary', '无可用摘要')}")
         lines.append("")
     for name, portfolio in dict(state["portfolios"]).items():
-        latest_intel = dict(portfolio.get("latest_news_intelligence") or {})
+        news = dict(portfolio.get("latest_news_intelligence") or {})
         lines.extend([f"### {name}", ""])
+        if not news:
+            lines.extend(["尚未生成资讯快照；来源不可用时会明确记录原因，不会作为中性分。", ""])
+            continue
         lines.append(
-            f"资讯日期 `{latest_intel.get('as_of', 'N/A')}`，可用标的 "
-            f"{int(latest_intel.get('available') or 0)}/{int(latest_intel.get('requested') or 0)}。"
+            f"资讯日期 `{news.get('as_of', 'N/A')}`，可用标的 "
+            f"{int(news.get('available') or 0)}/{int(news.get('requested') or 0)}。"
         )
-        if latest_intel.get("affects_current_cycle") is False:
+        if news.get("affects_current_cycle") is False:
             lines.append("当前持仓周期仅展示资讯证据，不据此改仓；调整从下一周期选股开始。")
-        items = dict(latest_intel.get("items") or {})
-        for code, intel_value in items.items():
-            intel = dict(intel_value or {})
-            lines.append(
-                f"- **{code}**：{intel.get('summary', '暂无摘要')}"
-                + (f" 风险：{', '.join(str(item) for item in intel.get('risk_flags', []))}。" if intel.get("risk_flags") else "")
-            )
-            for evidence in list(intel.get("items") or [])[:3]:
-                title = str(evidence.get("title") or "未命名资料")
-                source = str(evidence.get("source") or "公开来源")
-                url = str(evidence.get("url") or "")
-                lines.append(f"  - [{title}]({url}) · {source}" if url else f"  - {title} · {source}")
-        excluded = list(latest_intel.get("excluded_candidates") or [])
-        if excluded:
+        lines.append("")
+        for code, intelligence_payload in dict(news.get("items") or {}).items():
+            intelligence = dict(intelligence_payload or {})
+            lines.extend([
+                f"#### {code}",
+                "",
+                f"- 汇总：{intelligence.get('summary', '无')}",
+                f"- 分析：{intelligence.get('analysis', '无')}",
+                f"- 预期影响：{intelligence.get('expected_impact', '无')}",
+                f"- 影响面：{'、'.join(intelligence.get('impact_channels') or []) or '待核验'}；期限：{intelligence.get('impact_horizon', 'unknown')}",
+            ])
+            items = list(intelligence.get("items") or [])
+            if not items:
+                lines.append("- 资料：没有可核验的近期资料。")
+            for item in items[:5]:
+                title = str(item.get("title") or "无标题")
+                url = str(item.get("url") or "").strip()
+                source = str(item.get("source") or "来源未知")
+                published = str(item.get("published_at") or "日期未知")
+                lines.append(f"- 资料：[{title}]({url})（{source}，{published}）" if url else f"- 资料：{title}（{source}，{published}）")
+                if item.get("summary"):
+                    lines.append(f"  - 原文摘要：{item['summary']}")
+                if item.get("analysis"):
+                    lines.append(f"  - 条目分析：{item['analysis']}")
+                if item.get("expected_impact"):
+                    lines.append(f"  - 条目预期影响：{item['expected_impact']}")
             lines.append("")
+        excluded = list(news.get("excluded_candidates") or [])
+        if excluded:
             lines.append(
                 "资讯风险排除：" + "、".join(str(item.get("code") or "N/A") for item in excluded)
                 + "。候选保留在审计记录中，但不会进入下一周期持仓。"
+            )
+            lines.append("")
+    lines.extend(["## 完整模拟交易流水", ""])
+    for name, portfolio in dict(state["portfolios"]).items():
+        lines.extend([f"### {name}", "", "| 日期 | 方向 | 代码 | 价格 | 数量 | 原因 | 来源 |", "| --- | --- | --- | ---: | ---: | --- | --- |"])
+        trade_log = list(portfolio.get("trade_log") or [])
+        if not trade_log:
+            lines.append("| N/A | - | - | - | - | 尚无流水 | - |")
+        for trade in trade_log:
+            lines.append(
+                f"| {trade.get('date', 'N/A')} | {'买入' if trade.get('side') == 'buy' else '卖出'} | "
+                f"{trade.get('code', 'N/A')} | {float(trade.get('price') or 0.0):.2f} | "
+                f"{float(trade.get('quantity') or 0.0):.4f} | {trade.get('reason', 'N/A')} | {trade.get('source', 'N/A')} |"
             )
         lines.append("")
     lines.extend(["## 多基准比较", ""])

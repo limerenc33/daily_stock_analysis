@@ -6,6 +6,7 @@ import pytest
 import yaml
 
 from scripts.run_us_paper_trading import split_yfinance_download
+from scripts.run_us_paper_trading import _write_archive_snapshot
 from src.services.screening.us_paper_trading import (
     USPaperTradingConfig,
     advance_paper_trading_state,
@@ -456,6 +457,36 @@ def test_news_source_weights_are_applied_from_strategy_configuration():
     assert result["score_adjustment"] == 0.0
 
 
+def test_news_items_keep_auditable_summary_and_impact_annotations():
+    from src.services.screening.us_news_intelligence import _normalize_yahoo_news
+
+    items = _normalize_yahoo_news([{
+        "content": {
+            "title": "AAA raises guidance",
+            "description": "Management raised full-year outlook.",
+            "pubDate": "2026-08-12T12:00:00Z",
+            "provider": {"displayName": "Example News"},
+            "canonicalUrl": {"url": "https://example.com/aaa"},
+        },
+    }], as_of=date(2026, 8, 13))
+
+    assert items[0]["summary"] == "Management raised full-year outlook."
+    assert items[0]["sentiment"] == "偏正面"
+    assert "guidance_raise" in items[0]["tags"]
+    assert items[0]["impact_channels"] == ["盈利预期"]
+
+
+def test_archive_snapshot_does_not_overwrite_existing_market_date(tmp_path):
+    state_path = tmp_path / "state.json"
+    report_path = tmp_path / "latest.md"
+    state = {"latest_market_date": "2026-08-13", "value": 1}
+    first = _write_archive_snapshot(state_path, report_path, state, "first")
+    _write_archive_snapshot(state_path, report_path, {**state, "value": 2}, "second")
+
+    assert first.joinpath("state.json").read_text() == '{\n  "latest_market_date": "2026-08-13",\n  "value": 1\n}'
+    assert first.joinpath("latest.md").read_text() == "first"
+
+
 def test_analyst_action_codes_are_normalized_for_scoring():
     class _Frame:
         def reset_index(self):
@@ -574,6 +605,7 @@ def test_report_keeps_live_validation_and_all_benchmarks_visible():
     assert "入选证据" in report
     assert "分数说明" in report
     assert "网格风控与成交" in report
+    assert "每日重点资讯、财报与研报" in report
     assert "每格 3.0%" in report
     for benchmark in ("SPY", "QQQ", "IWM", "DIA", "RSP"):
         assert benchmark in report

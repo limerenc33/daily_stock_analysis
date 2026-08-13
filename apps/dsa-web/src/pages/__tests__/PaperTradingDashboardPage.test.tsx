@@ -92,6 +92,50 @@ const state = {
         remaining_quantity: 20,
         source: 'Longbridge',
       }],
+      trade_log: [{
+        trade_id: '2026-08-10:LLY:entry',
+        side: 'buy',
+        reason: 'cycle_entry',
+        code: 'LLY',
+        date: '2026-08-11',
+        price: 1240,
+        quantity: 40,
+        gross_notional: 49600,
+        source: 'US daily open simulation',
+      }],
+      latest_news_intelligence: {
+        as_of: '2026-08-11',
+        requested: 1,
+        available: 1,
+        status: 'available',
+        affects_current_cycle: false,
+        items: {
+          LLY: {
+            code: 'LLY',
+            as_of: '2026-08-11',
+            status: 'available',
+            summary: '近期待核验资料 1 条，资讯调整 +1.5 分。',
+            analysis: '规则化分析：识别到指引上调。',
+            expected_impact: '资讯层偏正面，但不保证价格上涨。',
+            impact_horizon: 'short_term',
+            impact_channels: ['盈利预期'],
+            score_adjustment: 1.5,
+            risk_flags: [],
+            hard_exclusion: false,
+            items: [{
+              category: 'earnings',
+              title: 'LLY raises guidance',
+              summary: 'Management raised its full-year outlook.',
+              url: 'https://example.com/lly-guidance',
+              source: 'Example News',
+              published_at: '2026-08-11T12:00:00Z',
+              sentiment: '偏正面',
+              analysis: '规则化识别到正面标签：guidance_raise。',
+              expected_impact: '短期可能改善盈利预期。',
+            }],
+          },
+        },
+      },
       snapshots: [{
         date: '2026-08-10',
         strategy_equity: 100000,
@@ -135,7 +179,7 @@ describe('PaperTradingDashboardPage', () => {
 
     expect(await screen.findByRole('heading', { name: '模拟组合收益与候选追踪' })).toBeInTheDocument();
     expect(screen.getByText('证据不足或未通过')).toBeInTheDocument();
-    expect(screen.getAllByText('LLY')).toHaveLength(3);
+    expect(screen.getAllByText('LLY')).toHaveLength(5);
     expect(screen.getAllByText('71.3')).toHaveLength(2);
     expect(screen.getByRole('heading', { name: '候选证据卡' })).toBeInTheDocument();
     expect(screen.getAllByText(/趋势确认、动量质量贡献居前/)).toHaveLength(2);
@@ -149,6 +193,17 @@ describe('PaperTradingDashboardPage', () => {
     expect(screen.getByText('最近网格成交')).toBeInTheDocument();
     expect(screen.getByText('LLY · 网格止盈')).toBeInTheDocument();
     expect(screen.getByText('Longbridge')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '每日重点资讯、财报与研报' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /LLY raises guidance/ })).toHaveAttribute(
+      'href',
+      'https://example.com/lly-guidance',
+    );
+    expect(screen.getByText(/原文摘要：Management raised its full-year outlook/)).toBeInTheDocument();
+    expect(screen.getByText(/条目分析：规则化识别到正面标签/)).toBeInTheDocument();
+    expect(screen.getAllByText(/预期影响：/).length).toBeGreaterThan(1);
+    expect(screen.getByText(/影响面：盈利预期 · 短期/)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '完整模拟交易流水' })).toBeInTheDocument();
+    expect(screen.getByText('US daily open simulation')).toBeInTheDocument();
     expect(screen.getByText('0 / 20')).toBeInTheDocument();
     await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
     expect(fetch).toHaveBeenCalledWith(

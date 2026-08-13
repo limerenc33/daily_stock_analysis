@@ -169,6 +169,10 @@ def unavailable_intelligence(
         "as_of": as_of.isoformat(),
         "status": "unavailable",
         "summary": "公开资讯源不可用，本次不做资讯加减分。",
+        "analysis": "由于公开来源未返回可核验资料，无法判断该标的近期事件方向；技术排序保持原值。",
+        "expected_impact": "暂无可验证的事件影响，下一周期不因资讯缺失改变候选。",
+        "impact_horizon": "unknown",
+        "impact_channels": [],
         "items": [],
         "category_counts": {},
         "positive_tags": [],
@@ -257,6 +261,10 @@ def _summarize_items(
     status = "available" if normalized else "unavailable"
     if status == "unavailable":
         summary = "未检索到可核验的近期公开资讯，本次不做资讯加减分。"
+        analysis = "没有可核验的近期新闻、披露或评级资料，不能据此推断利好或利空。"
+        expected_impact = "对下一周期选股无资讯加减分影响；仍需依赖技术证据。"
+        impact_horizon = "unknown"
+        impact_channels: list[str] = []
     else:
         summary = (
             f"近期待核验资料 {len(normalized)} 条，"
@@ -264,12 +272,41 @@ def _summarize_items(
             f"研报/评级 {category_counts.get('analyst_research', 0)} 条，"
             f"资讯调整 {adjustment:+.1f} 分。"
         )
+        risk_text = "、".join(dict.fromkeys(risk_flags)) or "未识别规则化负面标签"
+        positive_text = "、".join(dict.fromkeys(positive_tags)) or "未识别规则化正面标签"
+        analysis = (
+            f"规则化分析：正面标签为{positive_text}；风险标签为{risk_text}；"
+            f"资料覆盖 {', '.join(sorted(category_counts)) or '无'}。"
+        )
+        if adjustment > 0:
+            expected_impact = "资讯层偏正面，下一新周期最多提高排序分至 +4 分；不直接保证价格上涨。"
+        elif adjustment < 0:
+            expected_impact = "资讯层偏负面，下一新周期降低排序分；若出现多类严重风险则排除候选。"
+        else:
+            expected_impact = "资讯层未形成净调整，候选仍主要由技术证据排序。"
+        impact_horizon = "short_term" if any(
+            tag in positive_tags or tag in risk_flags
+            for tag in ["earnings_beat", "earnings_miss", "guidance_raise", "guidance_cut", "regulatory_risk"]
+        ) else "medium_term"
+        combined_tags = positive_tags + risk_flags
+        impact_channels = [
+            label for label, enabled in (
+                ("盈利预期", any(tag in combined_tags for tag in ["earnings_beat", "earnings_miss", "guidance_raise", "guidance_cut"])),
+                ("估值与资金偏好", any(tag in combined_tags for tag in ["analyst_upgrade", "analyst_downgrade"])),
+                ("监管与治理风险", any(tag in risk_flags for tag in _SEVERE_NEGATIVE_TAGS)),
+                ("股东回报", "shareholder_return" in positive_tags),
+            ) if enabled
+        ]
     return {
         "code": code,
         "scope": scope,
         "as_of": as_of.isoformat(),
         "status": status,
         "summary": summary,
+        "analysis": analysis,
+        "expected_impact": expected_impact,
+        "impact_horizon": impact_horizon,
+        "impact_channels": impact_channels,
         "items": normalized[:12],
         "category_counts": category_counts,
         "positive_tags": list(dict.fromkeys(positive_tags)),
@@ -308,12 +345,15 @@ def _normalize_yahoo_news(raw_items: object, *, as_of: date) -> list[dict[str, o
             category = "earnings"
         if any(term in lower for term in _RESEARCH_TERMS):
             category = "analyst_research"
+        annotations = _item_annotations(title, category)
         output.append({
             "category": category,
             "title": title[:300],
+            "summary": _first_text(content.get("description"), content.get("summary"), content.get("text")),
             "url": url,
             "source": source[:120],
             "published_at": published_at.isoformat() if published_at else None,
+            **annotations,
         })
     return output
 
@@ -336,12 +376,15 @@ def _normalize_sec_filings(raw: object, *, as_of: date) -> list[dict[str, object
         if filed and (filed > as_of or filed < as_of - timedelta(days=45)):
             continue
         title = str(item.get("title") or item.get("description") or f"SEC {form} filing")
+        annotations = _item_annotations(title, "earnings" if form in {"10-Q", "10-K", "20-F"} else "filing")
         output.append({
             "category": "earnings" if form in {"10-Q", "10-K", "20-F"} else "filing",
             "title": f"{form}: {title}"[:300],
+            "summary": str(item.get("description") or "").strip()[:800],
             "url": _first_url(item.get("edgarUrl"), item.get("url"), item.get("link")),
             "source": "SEC EDGAR",
             "published_at": filed.isoformat() if filed else None,
+            **annotations,
         })
     return output
 
@@ -369,14 +412,60 @@ def _normalize_analyst_actions(raw: object, *, as_of: date) -> list[dict[str, ob
         from_grade = str(item.get("FromGrade") or item.get("fromGrade") or "").strip()
         to_grade = str(item.get("ToGrade") or item.get("toGrade") or "").strip()
         title = " ".join(value for value in [firm, action, from_grade, "to" if from_grade and to_grade else "", to_grade] if value)
+        annotations = _item_annotations(title, "analyst_research")
         output.append({
             "category": "analyst_research",
             "title": title[:300],
+            "summary": "公开分析师评级变更记录；具体观点以来源页面为准。",
             "url": "",
             "source": "Yahoo Finance analyst actions",
             "published_at": action_date.isoformat() if action_date else None,
+            **annotations,
         })
     return output
+
+
+def _first_text(*values: object) -> str:
+    for value in values:
+        text = str(value or "").strip()
+        if text:
+            return text[:800]
+    return ""
+
+
+def _item_annotations(title: str, category: str) -> dict[str, object]:
+    """Attach deterministic, item-level interpretation without inventing facts."""
+    lower = title.lower()
+    positive = [tag for tag, terms in _POSITIVE_TERMS.items() if any(term in lower for term in terms)]
+    negative = [tag for tag, terms in _NEGATIVE_TERMS.items() if any(term in lower for term in terms)]
+    tags = positive + negative
+    channels = [label for label, enabled in (
+        ("盈利预期", any(tag in tags for tag in ("earnings_beat", "earnings_miss", "guidance_raise", "guidance_cut"))),
+        ("估值与资金偏好", any(tag in tags for tag in ("analyst_upgrade", "analyst_downgrade"))),
+        ("监管与治理风险", any(tag in negative for tag in _SEVERE_NEGATIVE_TAGS)),
+        ("股东回报", "shareholder_return" in positive),
+        ("披露透明度", category in {"filing", "earnings"} and not tags),
+    ) if enabled]
+    if negative:
+        sentiment = "偏负面"
+        analysis = f"规则化识别到负面标签：{'、'.join(negative)}；仅作为事件证据，不代表价格必然下跌。"
+        expected = "短期可能压制风险偏好或盈利预期，需结合后续价格和公司原文复核。"
+    elif positive:
+        sentiment = "偏正面"
+        analysis = f"规则化识别到正面标签：{'、'.join(positive)}；仅作为事件证据，不代表价格必然上涨。"
+        expected = "短期可能改善盈利预期、估值或资金偏好，实际影响取决于市场定价。"
+    else:
+        sentiment = "中性/待核验"
+        analysis = "标题未命中预设正负面词表，未对事实作额外推断。"
+        expected = "暂不改变排序分，等待原文、后续披露和价格反应。"
+    return {
+        "sentiment": sentiment,
+        "tags": tags,
+        "analysis": analysis,
+        "expected_impact": expected,
+        "impact_channels": channels,
+        "impact_horizon": "short_term" if any(tag in tags for tag in ("earnings_beat", "earnings_miss", "guidance_raise", "guidance_cut", "regulatory_risk")) else "medium_term",
+    }
 
 
 def _iso_datetime(value: object) -> datetime | None:

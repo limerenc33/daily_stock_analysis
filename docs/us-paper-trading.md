@@ -61,7 +61,9 @@ python scripts/run_us_paper_trading.py
 python scripts/run_us_paper_trading.py --notify
 ```
 
-默认状态写入 `data/us_paper_trading/state.json`，日报写入 `data/us_paper_trading/latest.md`。相同市场日期重复执行是幂等的，不会重复成交或累计收益。
+默认状态写入 `data/us_paper_trading/state.json`，日报写入 `data/us_paper_trading/latest.md`；本地运行也会在 `data/us_paper_trading/archive/YYYY-MM-DD/{state.json,latest.md}` 保存历史快照。每次 GitHub Actions 成功运行还会把这些快照写入 `paper-trading-state` 分支，保留每个美股交易日的不可变副本。相同市场日期重复执行是幂等的，不会重复成交或累计收益。
+
+时间口径固定为：`latest_market_date` 是最近完成的共同美股交易日（`America/New_York`）；日线 OHLC 使用该交易日的美股 session；`created_at`、`updated_at` 和盘中 `observed_at` 以 UTC ISO-8601 保存；看板额外显示北京时间（`Asia/Shanghai`）。
 
 可通过环境变量或 GitHub Repository Variables 调整后续新开仓使用的网格参数：
 

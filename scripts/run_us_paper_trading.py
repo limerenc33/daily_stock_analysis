@@ -152,6 +152,21 @@ def _write_atomic(path: Path, content: str) -> None:
     temporary.replace(path)
 
 
+def _write_archive_snapshot(state_path: Path, report_path: Path, state: dict[str, object], report: str) -> Path:
+    """Persist an immutable per-market-date copy beside the rolling files."""
+    market_date = str(state.get("latest_market_date") or "").strip()
+    if not market_date:
+        raise ValueError("paper-trading state has no latest_market_date")
+    archive_dir = state_path.parent / "archive" / market_date
+    archived_state = archive_dir / "state.json"
+    archived_report = archive_dir / "latest.md"
+    if not archived_state.exists():
+        _write_atomic(archived_state, json.dumps(state, ensure_ascii=False, indent=2))
+    if not archived_report.exists():
+        _write_atomic(archived_report, report)
+    return archive_dir
+
+
 def _send_notification(report: str, market_date: str) -> dict[str, object]:
     from src.notification import NotificationService
 
@@ -258,6 +273,7 @@ def main() -> int:
     report = render_paper_trading_report(state)
     _write_atomic(args.state, json.dumps(state, ensure_ascii=False, indent=2))
     _write_atomic(args.report, report)
+    archive_dir = _write_archive_snapshot(args.state, args.report, state, report)
     notification = None
     if args.notify:
         notification = _send_notification(report, str(state["latest_market_date"]))
@@ -265,6 +281,7 @@ def main() -> int:
     print(report)
     print(f"state={args.state}")
     print(f"report={args.report}")
+    print(f"archive={archive_dir}")
     return 0
 
 
