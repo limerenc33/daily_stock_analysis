@@ -42,6 +42,10 @@ jobs:
             if git show origin/paper-trading-state:data/us_paper_trading/state.json > /tmp/us-paper-state.json; then
               mv /tmp/us-paper-state.json data/us_paper_trading/state.json
             fi
+            # Keep immutable per-session snapshots when the state branch is
+            # rebuilt from the main checkout on each scheduled run.
+            git archive origin/paper-trading-state data/us_paper_trading/archive \
+              | tar -x --no-same-owner 2>/dev/null || true
           fi
 
       - name: Advance portfolios and publish notifications
