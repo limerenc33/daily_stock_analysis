@@ -138,11 +138,11 @@ const state = {
       },
       snapshots: [{
         date: '2026-08-10',
-        strategy_equity: 100000,
-        strategy_total_return_pct: 0,
-        strategy_daily_return_pct: 0,
-        strategy_drawdown_pct: 0,
-        benchmark_total_return_pct: { SPY: 0, QQQ: 0, IWM: 0, DIA: 0, RSP: 0 },
+        strategy_equity: 99500,
+        strategy_total_return_pct: -0.5,
+        strategy_daily_return_pct: -0.5,
+        strategy_drawdown_pct: -0.5,
+        benchmark_total_return_pct: { SPY: 0, QQQ: 0, IWM: 0, DIA: -1, RSP: 0 },
       }],
     },
   },
@@ -205,6 +205,7 @@ describe('PaperTradingDashboardPage', () => {
     expect(screen.getByRole('heading', { name: '完整模拟交易流水' })).toBeInTheDocument();
     expect(screen.getByText('US daily open simulation')).toBeInTheDocument();
     expect(screen.getByText('0 / 20')).toBeInTheDocument();
+    expect(screen.getByText('1 / 3')).toBeInTheDocument();
     await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
     expect(fetch).toHaveBeenCalledWith(
       expect.stringMatching(/^https:\/\/limerenc33\.github\.io\/daily_stock_analysis\/paper-trading-state\.json\?t=\d+$/),

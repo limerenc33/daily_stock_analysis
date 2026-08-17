@@ -1065,14 +1065,18 @@ def evaluate_live_validation(state: Mapping[str, object]) -> dict[str, object]:
         strategy_return = float(latest.get("strategy_total_return_pct") or 0.0)
         benchmark_returns = dict(latest.get("benchmark_total_return_pct") or {})
         positive_excess = sum(
-            strategy_return > 0.0 and strategy_return > float(benchmark_returns.get(item, 0.0))
+            strategy_return > float(benchmark_returns.get(item, 0.0))
             for item in benchmarks
         )
         completed = sum(
             cycle.get("exit_model") == "grid_v1"
             for cycle in portfolio.get("closed_cycles", [])
         )
-        universe_pass = completed >= config.minimum_completed_cycles and positive_excess >= 3
+        universe_pass = (
+            completed >= config.minimum_completed_cycles
+            and strategy_return > 0.0
+            and positive_excess >= 3
+        )
         checks.append(universe_pass)
         diagnostics[name] = {
             "completed_cycles": completed,

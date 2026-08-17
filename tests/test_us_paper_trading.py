@@ -254,6 +254,31 @@ def test_live_validation_does_not_count_legacy_fixed_hold_cycles():
     assert validation["effective"] is False
 
 
+def test_live_validation_reports_outperformance_progress_before_profitability():
+    state = create_paper_trading_state(
+        {"test_universe": ["AAA"]},
+        benchmarks=("SPY", "QQQ"),
+        config=USPaperTradingConfig(
+            top_k=1,
+            minimum_universe_coverage=1.0,
+            minimum_completed_cycles=1,
+        ),
+    )
+    portfolio = state["portfolios"]["test_universe"]
+    portfolio["closed_cycles"] = [{"exit_model": "grid_v1"}]
+    portfolio["snapshots"] = [{
+        "strategy_total_return_pct": -0.5,
+        "benchmark_total_return_pct": {"SPY": -1.0, "QQQ": 0.5},
+    }]
+
+    validation = evaluate_live_validation(state)
+
+    diagnostic = validation["diagnostics"]["test_universe"]
+    assert diagnostic["positive_excess_benchmarks"] == 1
+    assert diagnostic["effective"] is False
+    assert validation["effective"] is False
+
+
 def test_legacy_pending_signal_is_upgraded_on_idempotent_run():
     histories = {
         "AAA": _history(step=0.7),

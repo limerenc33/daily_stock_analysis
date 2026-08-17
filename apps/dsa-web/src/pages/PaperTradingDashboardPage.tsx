@@ -415,6 +415,12 @@ const PaperTradingDashboardPage = () => {
   const recentGridEvents = (portfolio?.event_log || []).slice(-6).reverse();
   const recentTrades = (portfolio?.trade_log || []).slice(-12).reverse();
   const diagnostic = state?.live_validation.diagnostics[portfolioName];
+  const positiveExcessBenchmarks = latest && state
+    ? state.benchmarks.filter((benchmark) => (
+      latest.strategy_total_return_pct > (latest.benchmark_total_return_pct[benchmark] ?? 0)
+    )).length
+    : diagnostic?.positive_excess_benchmarks ?? 0;
+  const requiredPositiveExcessBenchmarks = diagnostic?.required_positive_excess_benchmarks ?? 3;
   const chartData = useMemo(() => (portfolio?.snapshots || []).map((snapshot) => ({
     date: snapshot.date.slice(5),
     strategy: snapshot.strategy_total_return_pct,
@@ -950,12 +956,12 @@ const PaperTradingDashboardPage = () => {
               <div>
                 <div className="flex justify-between text-xs">
                   <span className="text-muted-text">跑赢基准</span>
-                  <span className="tabular-nums">{diagnostic?.positive_excess_benchmarks || 0} / {diagnostic?.required_positive_excess_benchmarks || 3}</span>
+                  <span className="tabular-nums">{positiveExcessBenchmarks} / {requiredPositiveExcessBenchmarks}</span>
                 </div>
                 <div className="mt-2 h-2 overflow-hidden bg-hover">
                   <div
                     className="h-full bg-cyan"
-                    style={{ width: `${Math.min((diagnostic?.positive_excess_benchmarks || 0) / (diagnostic?.required_positive_excess_benchmarks || 3) * 100, 100)}%` }}
+                    style={{ width: `${Math.min(positiveExcessBenchmarks / requiredPositiveExcessBenchmarks * 100, 100)}%` }}
                   />
                 </div>
               </div>
