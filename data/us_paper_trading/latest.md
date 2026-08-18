@@ -22,10 +22,11 @@
 | LLY | 1230.65 | 1156.81 | 1267.57 | 100% | open |
 | XOM | 159.65 | 150.08 | 169.23 | 50% | open |
 | JPM | 360.05 | 338.45 | 370.85 | 100% | open |
-| JNJ | 261.23 | 245.56 | 269.07 | 100% | open |
+| JNJ | 261.23 | 245.56 | 276.90 | 50% | open |
 | HD | 352.29 | 331.15 | 362.86 | 100% | open |
 
 最近成交：
+- `2026-08-18` JNJ 网格止盈，触发 269.07，成交 269.95，数量 38.2804。
 - `2026-08-18` XOM 网格止盈，触发 164.44，成交 164.85，数量 62.6351。
 
 ### diversified_60
@@ -285,6 +286,7 @@
 | 2026-08-11 | 买入 | JPM | 360.05 | 55.5478 | cycle_entry | US daily open simulation |
 | 2026-08-11 | 买入 | LLY | 1230.65 | 16.2516 | cycle_entry | US daily open simulation |
 | 2026-08-11 | 买入 | XOM | 159.65 | 125.2701 | cycle_entry | US daily open simulation |
+| 2026-08-18 | 卖出 | JNJ | 269.95 | 38.2804 | grid_take_profit | fallback |
 | 2026-08-18 | 卖出 | XOM | 164.85 | 62.6351 | grid_take_profit | fallback |
 
 ### diversified_60
