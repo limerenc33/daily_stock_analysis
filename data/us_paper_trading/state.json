@@ -3,7 +3,7 @@
   "strategy": "us_quality_momentum",
   "research_status": "not_validated",
   "created_at": "2026-08-11T03:12:22.409161+00:00",
-  "updated_at": "2026-08-17T22:47:35.531620+00:00",
+  "updated_at": "2026-08-18T13:33:58.028265+00:00",
   "config": {
     "strategy_name": "us_quality_momentum",
     "top_k": 5,
@@ -551,11 +551,23 @@
             "allocated_capital": 20000.0,
             "quantity": 125.27011464,
             "status": "open",
-            "remaining_quantity": 125.27011464,
-            "realized_value": 0.0,
-            "fills": [],
-            "last_price": 161.460007,
-            "last_evaluated_date": "2026-08-17",
+            "remaining_quantity": 62.63505732,
+            "realized_value": 10304.738802,
+            "fills": [
+              {
+                "date": "2026-08-18",
+                "observed_at": "2026-08-18T13:33:52.872106+00:00",
+                "reason": "grid_take_profit",
+                "grid_level": 1,
+                "trigger_price": 164.444649,
+                "fill_price": 164.850006,
+                "quantity": 62.63505732,
+                "net_proceeds": 10304.738802,
+                "source": "fallback"
+              }
+            ],
+            "last_price": 164.850006,
+            "last_evaluated_date": "2026-08-18",
             "grid": {
               "step_pct": 3.0,
               "take_profit_prices": [
@@ -563,7 +575,9 @@
                 169.234299
               ],
               "stop_loss_price": 150.075699,
-              "completed_take_profit_levels": []
+              "completed_take_profit_levels": [
+                1
+              ]
             }
           },
           {
@@ -1906,7 +1920,22 @@
         }
       ],
       "last_processed_date": "2026-08-17",
-      "event_log": [],
+      "event_log": [
+        {
+          "type": "grid_take_profit",
+          "code": "XOM",
+          "date": "2026-08-18",
+          "observed_at": "2026-08-18T13:33:52.872106+00:00",
+          "reason": "grid_take_profit",
+          "grid_level": 1,
+          "trigger_price": 164.444649,
+          "fill_price": 164.850006,
+          "quantity": 62.63505732,
+          "net_proceeds": 10304.738802,
+          "source": "fallback",
+          "remaining_quantity": 62.63505732
+        }
+      ],
       "trade_log": [
         {
           "trade_id": "2026-08-10:HD:entry",
@@ -1966,6 +1995,20 @@
           "quantity": 125.27011464,
           "gross_notional": 20000.0,
           "source": "US daily open simulation",
+          "market_timezone": "America/New_York"
+        },
+        {
+          "trade_id": "2026-08-10:XOM:2026-08-18:grid_take_profit:1",
+          "side": "sell",
+          "reason": "grid_take_profit",
+          "code": "XOM",
+          "date": "2026-08-18",
+          "observed_at": "2026-08-18T13:33:52.872106+00:00",
+          "price": 164.850006,
+          "trigger_price": 164.444649,
+          "quantity": 62.63505732,
+          "net_proceeds": 10304.738802,
+          "source": "fallback",
           "market_timezone": "America/New_York"
         }
       ],
@@ -3493,11 +3536,23 @@
             "allocated_capital": 20000.0,
             "quantity": 125.27011464,
             "status": "open",
-            "remaining_quantity": 125.27011464,
-            "realized_value": 0.0,
-            "fills": [],
-            "last_price": 161.460007,
-            "last_evaluated_date": "2026-08-17",
+            "remaining_quantity": 62.63505732,
+            "realized_value": 10304.738802,
+            "fills": [
+              {
+                "date": "2026-08-18",
+                "observed_at": "2026-08-18T13:33:52.872106+00:00",
+                "reason": "grid_take_profit",
+                "grid_level": 1,
+                "trigger_price": 164.444649,
+                "fill_price": 164.850006,
+                "quantity": 62.63505732,
+                "net_proceeds": 10304.738802,
+                "source": "fallback"
+              }
+            ],
+            "last_price": 164.850006,
+            "last_evaluated_date": "2026-08-18",
             "grid": {
               "step_pct": 3.0,
               "take_profit_prices": [
@@ -3505,7 +3560,9 @@
                 169.234299
               ],
               "stop_loss_price": 150.075699,
-              "completed_take_profit_levels": []
+              "completed_take_profit_levels": [
+                1
+              ]
             }
           },
           {
@@ -4711,7 +4768,22 @@
         }
       ],
       "last_processed_date": "2026-08-17",
-      "event_log": [],
+      "event_log": [
+        {
+          "type": "grid_take_profit",
+          "code": "XOM",
+          "date": "2026-08-18",
+          "observed_at": "2026-08-18T13:33:52.872106+00:00",
+          "reason": "grid_take_profit",
+          "grid_level": 1,
+          "trigger_price": 164.444649,
+          "fill_price": 164.850006,
+          "quantity": 62.63505732,
+          "net_proceeds": 10304.738802,
+          "source": "fallback",
+          "remaining_quantity": 62.63505732
+        }
+      ],
       "trade_log": [
         {
           "trade_id": "2026-08-10:BAC:entry",
@@ -4771,6 +4843,20 @@
           "quantity": 125.27011464,
           "gross_notional": 20000.0,
           "source": "US daily open simulation",
+          "market_timezone": "America/New_York"
+        },
+        {
+          "trade_id": "2026-08-10:XOM:2026-08-18:grid_take_profit:1",
+          "side": "sell",
+          "reason": "grid_take_profit",
+          "code": "XOM",
+          "date": "2026-08-18",
+          "observed_at": "2026-08-18T13:33:52.872106+00:00",
+          "price": 164.850006,
+          "trigger_price": 164.444649,
+          "quantity": 62.63505732,
+          "net_proceeds": 10304.738802,
+          "source": "fallback",
           "market_timezone": "America/New_York"
         }
       ],
@@ -5624,8 +5710,38 @@
     "warning": "Paper trading is observational evidence and does not authorize live orders."
   },
   "last_events": {
-    "large_cap_22": [],
-    "diversified_60": []
+    "large_cap_22": [
+      {
+        "type": "grid_take_profit",
+        "code": "XOM",
+        "date": "2026-08-18",
+        "observed_at": "2026-08-18T13:33:52.872106+00:00",
+        "reason": "grid_take_profit",
+        "grid_level": 1,
+        "trigger_price": 164.444649,
+        "fill_price": 164.850006,
+        "quantity": 62.63505732,
+        "net_proceeds": 10304.738802,
+        "source": "fallback",
+        "remaining_quantity": 62.63505732
+      }
+    ],
+    "diversified_60": [
+      {
+        "type": "grid_take_profit",
+        "code": "XOM",
+        "date": "2026-08-18",
+        "observed_at": "2026-08-18T13:33:52.872106+00:00",
+        "reason": "grid_take_profit",
+        "grid_level": 1,
+        "trigger_price": 164.444649,
+        "fill_price": 164.850006,
+        "quantity": 62.63505732,
+        "net_proceeds": 10304.738802,
+        "source": "fallback",
+        "remaining_quantity": 62.63505732
+      }
+    ]
   },
   "scorecard_version": "us_evidence_news_v3",
   "news_intelligence": {
@@ -5663,5 +5779,6 @@
     "deployed_version": "2.1",
     "effective_from": "next_created_cycle",
     "preserve_existing_cycle": true
-  }
+  },
+  "last_realtime_check": "2026-08-18T13:33:52.872106+00:00"
 }
