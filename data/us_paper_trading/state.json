@@ -3,7 +3,7 @@
   "strategy": "us_quality_momentum",
   "research_status": "not_validated",
   "created_at": "2026-08-11T03:12:22.409161+00:00",
-  "updated_at": "2026-08-18T22:47:45.998693+00:00",
+  "updated_at": "2026-08-19T14:17:10.263413+00:00",
   "config": {
     "strategy_name": "us_quality_momentum",
     "top_k": 5,
@@ -470,11 +470,23 @@
             "allocated_capital": 20000.0,
             "quantity": 16.25157405,
             "status": "open",
-            "remaining_quantity": 16.25157405,
-            "realized_value": 0.0,
-            "fills": [],
-            "last_price": 1225.72998,
-            "last_evaluated_date": "2026-08-18",
+            "remaining_quantity": 8.12578703,
+            "realized_value": 10414.183849,
+            "fills": [
+              {
+                "date": "2026-08-19",
+                "observed_at": "2026-08-19T14:17:02.183037+00:00",
+                "reason": "grid_take_profit",
+                "grid_level": 1,
+                "trigger_price": 1267.569525,
+                "fill_price": 1284.189941,
+                "quantity": 8.12578702,
+                "net_proceeds": 10414.183849,
+                "source": "fallback"
+              }
+            ],
+            "last_price": 1284.189941,
+            "last_evaluated_date": "2026-08-19",
             "grid": {
               "step_pct": 3.0,
               "take_profit_prices": [
@@ -482,7 +494,9 @@
                 1304.489025
               ],
               "stop_loss_price": 1156.811023,
-              "completed_take_profit_levels": []
+              "completed_take_profit_levels": [
+                1
+              ]
             }
           },
           {
@@ -1946,6 +1960,20 @@
           "net_proceeds": 18762.399998,
           "source": "Yahoo Finance daily OHLC",
           "remaining_quantity": 0.0
+        },
+        {
+          "type": "grid_take_profit",
+          "code": "LLY",
+          "date": "2026-08-19",
+          "observed_at": "2026-08-19T14:17:02.183037+00:00",
+          "reason": "grid_take_profit",
+          "grid_level": 1,
+          "trigger_price": 1267.569525,
+          "fill_price": 1284.189941,
+          "quantity": 8.12578702,
+          "net_proceeds": 10414.183849,
+          "source": "fallback",
+          "remaining_quantity": 8.12578703
         }
       ],
       "trade_log": [
@@ -2048,6 +2076,20 @@
           "trigger_price": 164.444649,
           "quantity": 62.63505732,
           "net_proceeds": 10304.738802,
+          "source": "fallback",
+          "market_timezone": "America/New_York"
+        },
+        {
+          "trade_id": "2026-08-10:LLY:2026-08-19:grid_take_profit:1",
+          "side": "sell",
+          "reason": "grid_take_profit",
+          "code": "LLY",
+          "date": "2026-08-19",
+          "observed_at": "2026-08-19T14:17:02.183037+00:00",
+          "price": 1284.189941,
+          "trigger_price": 1267.569525,
+          "quantity": 8.12578702,
+          "net_proceeds": 10414.183849,
           "source": "fallback",
           "market_timezone": "America/New_York"
         }
@@ -3605,11 +3647,23 @@
             "allocated_capital": 20000.0,
             "quantity": 16.25157405,
             "status": "open",
-            "remaining_quantity": 16.25157405,
-            "realized_value": 0.0,
-            "fills": [],
-            "last_price": 1225.72998,
-            "last_evaluated_date": "2026-08-18",
+            "remaining_quantity": 8.12578703,
+            "realized_value": 10414.183849,
+            "fills": [
+              {
+                "date": "2026-08-19",
+                "observed_at": "2026-08-19T14:17:02.183037+00:00",
+                "reason": "grid_take_profit",
+                "grid_level": 1,
+                "trigger_price": 1267.569525,
+                "fill_price": 1284.189941,
+                "quantity": 8.12578702,
+                "net_proceeds": 10414.183849,
+                "source": "fallback"
+              }
+            ],
+            "last_price": 1284.189941,
+            "last_evaluated_date": "2026-08-19",
             "grid": {
               "step_pct": 3.0,
               "take_profit_prices": [
@@ -3617,7 +3671,9 @@
                 1304.489025
               ],
               "stop_loss_price": 1156.811023,
-              "completed_take_profit_levels": []
+              "completed_take_profit_levels": [
+                1
+              ]
             }
           },
           {
@@ -4821,6 +4877,20 @@
           "net_proceeds": 10304.738802,
           "source": "fallback",
           "remaining_quantity": 62.63505732
+        },
+        {
+          "type": "grid_take_profit",
+          "code": "LLY",
+          "date": "2026-08-19",
+          "observed_at": "2026-08-19T14:17:02.183037+00:00",
+          "reason": "grid_take_profit",
+          "grid_level": 1,
+          "trigger_price": 1267.569525,
+          "fill_price": 1284.189941,
+          "quantity": 8.12578702,
+          "net_proceeds": 10414.183849,
+          "source": "fallback",
+          "remaining_quantity": 8.12578703
         }
       ],
       "trade_log": [
@@ -4895,6 +4965,20 @@
           "trigger_price": 164.444649,
           "quantity": 62.63505732,
           "net_proceeds": 10304.738802,
+          "source": "fallback",
+          "market_timezone": "America/New_York"
+        },
+        {
+          "trade_id": "2026-08-10:LLY:2026-08-19:grid_take_profit:1",
+          "side": "sell",
+          "reason": "grid_take_profit",
+          "code": "LLY",
+          "date": "2026-08-19",
+          "observed_at": "2026-08-19T14:17:02.183037+00:00",
+          "price": 1284.189941,
+          "trigger_price": 1267.569525,
+          "quantity": 8.12578702,
+          "net_proceeds": 10414.183849,
           "source": "fallback",
           "market_timezone": "America/New_York"
         }
@@ -5797,21 +5881,36 @@
   "last_events": {
     "large_cap_22": [
       {
-        "type": "grid_stop_loss",
-        "code": "HD",
-        "date": "2026-08-18",
-        "observed_at": null,
-        "reason": "grid_stop_loss",
-        "grid_level": null,
-        "trigger_price": 331.152608,
-        "fill_price": 331.152608,
-        "quantity": 56.77140854,
-        "net_proceeds": 18762.399998,
-        "source": "Yahoo Finance daily OHLC",
-        "remaining_quantity": 0.0
+        "type": "grid_take_profit",
+        "code": "LLY",
+        "date": "2026-08-19",
+        "observed_at": "2026-08-19T14:17:02.183037+00:00",
+        "reason": "grid_take_profit",
+        "grid_level": 1,
+        "trigger_price": 1267.569525,
+        "fill_price": 1284.189941,
+        "quantity": 8.12578702,
+        "net_proceeds": 10414.183849,
+        "source": "fallback",
+        "remaining_quantity": 8.12578703
       }
     ],
-    "diversified_60": []
+    "diversified_60": [
+      {
+        "type": "grid_take_profit",
+        "code": "LLY",
+        "date": "2026-08-19",
+        "observed_at": "2026-08-19T14:17:02.183037+00:00",
+        "reason": "grid_take_profit",
+        "grid_level": 1,
+        "trigger_price": 1267.569525,
+        "fill_price": 1284.189941,
+        "quantity": 8.12578702,
+        "net_proceeds": 10414.183849,
+        "source": "fallback",
+        "remaining_quantity": 8.12578703
+      }
+    ]
   },
   "scorecard_version": "us_evidence_news_v3",
   "news_intelligence": {
@@ -5850,5 +5949,5 @@
     "effective_from": "next_created_cycle",
     "preserve_existing_cycle": true
   },
-  "last_realtime_check": "2026-08-18T14:16:53.047411+00:00"
+  "last_realtime_check": "2026-08-19T14:17:02.183037+00:00"
 }
