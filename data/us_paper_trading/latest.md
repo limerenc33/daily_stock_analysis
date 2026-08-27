@@ -126,13 +126,10 @@
 
 #### CRM
 
-- 汇总：近期待核验资料 18 条，财报/披露 8 条，研报/评级 10 条，资讯调整 +1.5 分。
+- 汇总：近期待核验资料 17 条，财报/披露 7 条，研报/评级 10 条，资讯调整 +1.5 分。
 - 分析：规则化分析：正面标签为guidance_raise；风险标签为未识别规则化负面标签；资料覆盖 analyst_research, earnings, filing。
 - 预期影响：资讯层偏正面，下一新周期最多提高排序分至 +4 分；不直接保证价格上涨。
 - 影响面：盈利预期；期限：short_term
-- 资料：[Salesforce Q2 Earnings Call Highlights](https://finance.yahoo.com/m/ba1693df-2db2-3ac0-8a5a-63f8f928ad31/salesforce-q2-earnings-call.html)（MarketBeat，2026-08-26T23:04:18+00:00）
-  - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
-  - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
 - 资料：[CRM Stock Soars 13% After-Hours — Salesforce Crushes Earnings, Raises Guidance And Expands Partnership With Anthropic’s Claude](https://finance.yahoo.com/m/ff130896-db9b-304e-8bcf-578085efc87a/crm-stock-soars-13%25.html)（Stocktwits，2026-08-26T22:03:23+00:00）
   - 条目分析：规则化识别到正面标签：guidance_raise；仅作为事件证据，不代表价格必然上涨。
   - 条目预期影响：短期可能改善盈利预期、估值或资金偏好，实际影响取决于市场定价。
@@ -143,6 +140,9 @@
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
 - 资料：[Salesforce jumps 11% following earnings blowout and upgraded outlook](https://finance.yahoo.com/markets/stocks/articles/salesforce-jumps-11-following-earnings-204109309.html)（Investing.com，2026-08-26T20:41:09+00:00）
+  - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
+  - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
+- 资料：[Salesforce’s (NYSE:CRM) Q2 CY2026 Earnings Results: Non-GAAP EPS Beats Expectations, Stock Jumps 11.8%](https://finance.yahoo.com/markets/stocks/articles/salesforce-nyse-crm-q2-cy2026-201707878.html)（StockStory，2026-08-26T20:17:07+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
 

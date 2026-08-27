@@ -3,7 +3,7 @@
   "strategy": "us_quality_momentum",
   "research_status": "not_validated",
   "created_at": "2026-08-11T03:12:22.409161+00:00",
-  "updated_at": "2026-08-27T02:33:16.470446+00:00",
+  "updated_at": "2026-08-27T03:25:26.749568+00:00",
   "config": {
     "strategy_name": "us_quality_momentum",
     "top_k": 5,
@@ -1978,7 +1978,7 @@
               "scope": "company",
               "as_of": "2026-08-26",
               "status": "available",
-              "summary": "近期待核验资料 18 条，财报/披露 8 条，研报/评级 10 条，资讯调整 +1.5 分。",
+              "summary": "近期待核验资料 17 条，财报/披露 7 条，研报/评级 10 条，资讯调整 +1.5 分。",
               "analysis": "规则化分析：正面标签为guidance_raise；风险标签为未识别规则化负面标签；资料覆盖 analyst_research, earnings, filing。",
               "expected_impact": "资讯层偏正面，下一新周期最多提高排序分至 +4 分；不直接保证价格上涨。",
               "impact_horizon": "short_term",
@@ -1986,22 +1986,6 @@
                 "盈利预期"
               ],
               "items": [
-                {
-                  "category": "earnings",
-                  "title": "Salesforce Q2 Earnings Call Highlights",
-                  "summary": "",
-                  "url": "https://finance.yahoo.com/m/ba1693df-2db2-3ac0-8a5a-63f8f928ad31/salesforce-q2-earnings-call.html",
-                  "source": "MarketBeat",
-                  "published_at": "2026-08-26T23:04:18+00:00",
-                  "sentiment": "中性/待核验",
-                  "tags": [],
-                  "analysis": "标题未命中预设正负面词表，未对事实作额外推断。",
-                  "expected_impact": "暂不改变排序分，等待原文、后续披露和价格反应。",
-                  "impact_channels": [
-                    "披露透明度"
-                  ],
-                  "impact_horizon": "medium_term"
-                },
                 {
                   "category": "earnings",
                   "title": "CRM Stock Soars 13% After-Hours — Salesforce Crushes Earnings, Raises Guidance And Expands Partnership With Anthropic’s Claude",
@@ -2169,10 +2153,24 @@
                   "expected_impact": "暂不改变排序分，等待原文、后续披露和价格反应。",
                   "impact_channels": [],
                   "impact_horizon": "medium_term"
+                },
+                {
+                  "category": "analyst_research",
+                  "title": "Guggenheim reit Buy to Buy",
+                  "summary": "公开分析师评级变更记录；具体观点以来源页面为准。",
+                  "url": "",
+                  "source": "Yahoo Finance analyst actions",
+                  "published_at": "2026-08-20",
+                  "sentiment": "中性/待核验",
+                  "tags": [],
+                  "analysis": "标题未命中预设正负面词表，未对事实作额外推断。",
+                  "expected_impact": "暂不改变排序分，等待原文、后续披露和价格反应。",
+                  "impact_channels": [],
+                  "impact_horizon": "medium_term"
                 }
               ],
               "category_counts": {
-                "earnings": 7,
+                "earnings": 6,
                 "analyst_research": 10,
                 "filing": 1
               },
@@ -5597,7 +5595,7 @@
             "scope": "company",
             "as_of": "2026-08-26",
             "status": "available",
-            "summary": "近期待核验资料 18 条，财报/披露 8 条，研报/评级 10 条，资讯调整 +1.5 分。",
+            "summary": "近期待核验资料 17 条，财报/披露 7 条，研报/评级 10 条，资讯调整 +1.5 分。",
             "analysis": "规则化分析：正面标签为guidance_raise；风险标签为未识别规则化负面标签；资料覆盖 analyst_research, earnings, filing。",
             "expected_impact": "资讯层偏正面，下一新周期最多提高排序分至 +4 分；不直接保证价格上涨。",
             "impact_horizon": "short_term",
@@ -5605,22 +5603,6 @@
               "盈利预期"
             ],
             "items": [
-              {
-                "category": "earnings",
-                "title": "Salesforce Q2 Earnings Call Highlights",
-                "summary": "",
-                "url": "https://finance.yahoo.com/m/ba1693df-2db2-3ac0-8a5a-63f8f928ad31/salesforce-q2-earnings-call.html",
-                "source": "MarketBeat",
-                "published_at": "2026-08-26T23:04:18+00:00",
-                "sentiment": "中性/待核验",
-                "tags": [],
-                "analysis": "标题未命中预设正负面词表，未对事实作额外推断。",
-                "expected_impact": "暂不改变排序分，等待原文、后续披露和价格反应。",
-                "impact_channels": [
-                  "披露透明度"
-                ],
-                "impact_horizon": "medium_term"
-              },
               {
                 "category": "earnings",
                 "title": "CRM Stock Soars 13% After-Hours — Salesforce Crushes Earnings, Raises Guidance And Expands Partnership With Anthropic’s Claude",
@@ -5788,10 +5770,24 @@
                 "expected_impact": "暂不改变排序分，等待原文、后续披露和价格反应。",
                 "impact_channels": [],
                 "impact_horizon": "medium_term"
+              },
+              {
+                "category": "analyst_research",
+                "title": "Guggenheim reit Buy to Buy",
+                "summary": "公开分析师评级变更记录；具体观点以来源页面为准。",
+                "url": "",
+                "source": "Yahoo Finance analyst actions",
+                "published_at": "2026-08-20",
+                "sentiment": "中性/待核验",
+                "tags": [],
+                "analysis": "标题未命中预设正负面词表，未对事实作额外推断。",
+                "expected_impact": "暂不改变排序分，等待原文、后续披露和价格反应。",
+                "impact_channels": [],
+                "impact_horizon": "medium_term"
               }
             ],
             "category_counts": {
-              "earnings": 7,
+              "earnings": 6,
               "analyst_research": 10,
               "filing": 1
             },
@@ -11993,8 +11989,18 @@
     "warning": "Paper trading is observational evidence and does not authorize live orders."
   },
   "last_events": {
-    "large_cap_22": [],
-    "diversified_60": []
+    "large_cap_22": [
+      {
+        "type": "no_change",
+        "market_date": "2026-08-26"
+      }
+    ],
+    "diversified_60": [
+      {
+        "type": "no_change",
+        "market_date": "2026-08-26"
+      }
+    ]
   },
   "scorecard_version": "us_evidence_news_v3",
   "news_intelligence": {
