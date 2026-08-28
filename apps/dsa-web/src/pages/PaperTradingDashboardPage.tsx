@@ -234,8 +234,10 @@ type PaperTradingState = {
   };
 };
 
-const DEFAULT_DATA_URL = 'https://limerenc33.github.io/daily_stock_analysis/paper-trading-state.json';
-const DATA_URL = import.meta.env.VITE_PAPER_TRADING_DATA_URL?.trim() || DEFAULT_DATA_URL;
+const LIVE_DATA_URL = 'https://raw.githubusercontent.com/limerenc33/daily_stock_analysis/paper-trading-state/data/us_paper_trading/state.json';
+const SNAPSHOT_DATA_URL = 'https://limerenc33.github.io/daily_stock_analysis/paper-trading-state.json';
+const CONFIGURED_DATA_URL = import.meta.env.VITE_PAPER_TRADING_DATA_URL?.trim();
+const DATA_URLS = CONFIGURED_DATA_URL ? [CONFIGURED_DATA_URL] : [LIVE_DATA_URL, SNAPSHOT_DATA_URL];
 const AUTO_REFRESH_MS = 60_000;
 const ACTIONS_URL = 'https://github.com/limerenc33/daily_stock_analysis/actions/workflows/us-paper-trading.yml';
 const REPOSITORY_URL = 'https://github.com/limerenc33/daily_stock_analysis';
@@ -373,11 +375,20 @@ const PaperTradingDashboardPage = () => {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(`${DATA_URL}?t=${Date.now()}`, { cache: 'no-store' });
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
+      const failures: string[] = [];
+      for (const dataUrl of DATA_URLS) {
+        try {
+          const response = await fetch(`${dataUrl}?t=${Date.now()}`, { cache: 'no-store' });
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+          setState(await response.json() as PaperTradingState);
+          return;
+        } catch (loadError) {
+          failures.push(loadError instanceof Error ? loadError.message : '未知错误');
+        }
       }
-      setState(await response.json() as PaperTradingState);
+      throw new Error(failures.join('；'));
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : '未知错误');
     } finally {

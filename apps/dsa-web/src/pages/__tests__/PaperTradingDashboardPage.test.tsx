@@ -208,11 +208,28 @@ describe('PaperTradingDashboardPage', () => {
     expect(screen.getByText('1 / 3')).toBeInTheDocument();
     await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
     expect(fetch).toHaveBeenCalledWith(
-      expect.stringMatching(/^https:\/\/limerenc33\.github\.io\/daily_stock_analysis\/paper-trading-state\.json\?t=\d+$/),
+      expect.stringMatching(/^https:\/\/raw\.githubusercontent\.com\/limerenc33\/daily_stock_analysis\/paper-trading-state\/data\/us_paper_trading\/state\.json\?t=\d+$/),
       { cache: 'no-store' },
     );
 
     fireEvent.click(screen.getByRole('button', { name: '刷新账本' }));
     await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
+  });
+
+  it('falls back to the deployed snapshot when the live state branch is unavailable', async () => {
+    vi.mocked(fetch)
+      .mockReset()
+      .mockResolvedValueOnce({ ok: false, status: 503 } as Response)
+      .mockResolvedValueOnce({ ok: true, json: async () => state } as Response);
+
+    render(<PaperTradingDashboardPage />);
+
+    expect(await screen.findByRole('heading', { name: '模拟组合收益与候选追踪' })).toBeInTheDocument();
+    await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
+    expect(fetch).toHaveBeenNthCalledWith(
+      2,
+      expect.stringMatching(/^https:\/\/limerenc33\.github\.io\/daily_stock_analysis\/paper-trading-state\.json\?t=\d+$/),
+      { cache: 'no-store' },
+    );
   });
 });

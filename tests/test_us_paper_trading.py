@@ -5,6 +5,7 @@ import pandas as pd
 import pytest
 import yaml
 
+import scripts.run_us_paper_trading as paper_trading_runner
 from scripts.run_us_paper_trading import split_yfinance_download
 from scripts.run_us_paper_trading import _write_archive_snapshot
 from src.services.screening.us_paper_trading import (
@@ -667,15 +668,56 @@ def test_split_yfinance_download_supports_both_multiindex_layouts(ticker_level):
     assert result["BBB"].iloc[-1]["close"] == 201.0
 
 
+def test_scheduled_runner_skips_write_and_notification_without_new_session(monkeypatch):
+    state = {
+        "latest_market_date": "2026-08-26",
+        "config": {"news_intelligence_enabled": False},
+    }
+    writes = []
+    notifications = []
+
+    monkeypatch.setattr(paper_trading_runner, "_load_or_create_state", lambda *args, **kwargs: state)
+    monkeypatch.setattr(paper_trading_runner, "download_yahoo_histories", lambda *args, **kwargs: {})
+    monkeypatch.setattr(
+        paper_trading_runner,
+        "advance_paper_trading_state",
+        lambda *args, **kwargs: state,
+    )
+    monkeypatch.setattr(
+        paper_trading_runner,
+        "_write_atomic",
+        lambda *args, **kwargs: writes.append(args),
+    )
+    monkeypatch.setattr(
+        paper_trading_runner,
+        "_send_notification",
+        lambda *args, **kwargs: notifications.append(args),
+    )
+    monkeypatch.setattr(
+        "sys.argv",
+        ["run_us_paper_trading.py", "--notify", "--skip-unchanged-session"],
+    )
+
+    assert paper_trading_runner.main() == 0
+    assert writes == []
+    assert notifications == []
+
+
 def test_paper_trading_workflow_persists_state_and_publishes_daily_report():
     workflow_path = Path(".github/workflows/us-paper-trading.yml")
     workflow = yaml.safe_load(workflow_path.read_text(encoding="utf-8"))
     triggers = workflow.get(True, workflow.get("on"))
     rendered = workflow_path.read_text(encoding="utf-8")
 
-    assert triggers["schedule"] == [{"cron": "30 22 * * 1-5"}]
+    assert triggers["schedule"] == [
+        {"cron": "17 22 * * 1-5"},
+        {"cron": "17 0 * * 2-6"},
+        {"cron": "17 3 * * 2-6"},
+    ]
     assert workflow["permissions"] == {"contents": "write", "issues": "write"}
-    assert "python scripts/run_us_paper_trading.py --notify" in rendered
+    assert "python scripts/run_us_paper_trading.py --notify --skip-unchanged-session" in rendered
+    assert "steps.advance.outputs.changed == 'true'" in rendered
+    assert "sha256sum data/us_paper_trading/state.json" in rendered
     assert "US_GRID_STEP_PCT" in rendered
     assert "paper-trading-state" in rendered
     assert "美股模拟交易日报" in rendered

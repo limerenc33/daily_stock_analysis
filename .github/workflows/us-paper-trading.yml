@@ -2,8 +2,11 @@ name: US Paper Trading Daily
 
 on:
   schedule:
-    # 22:30 UTC is after the US close in both EDT and EST (06:30 Beijing next day).
-    - cron: '30 22 * * 1-5'
+    # Redundant off-peak attempts compensate for delayed or dropped GitHub
+    # schedules. The script is a no-op after the first successful market date.
+    - cron: '17 22 * * 1-5'
+    - cron: '17 0 * * 2-6'
+    - cron: '17 3 * * 2-6'
   workflow_dispatch:
 
 permissions:
@@ -49,6 +52,7 @@ jobs:
           fi
 
       - name: Advance portfolios and publish notifications
+        id: advance
         env:
           US_GRID_STEP_PCT: ${{ vars.US_GRID_STEP_PCT || '3.0' }}
           US_GRID_TAKE_PROFIT_LEVELS: ${{ vars.US_GRID_TAKE_PROFIT_LEVELS || '2' }}
@@ -78,7 +82,15 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           NOTIFICATION_REPORT_CHANNELS: ${{ vars.NOTIFICATION_REPORT_CHANNELS || secrets.NOTIFICATION_REPORT_CHANNELS }}
           NOTIFICATION_TIMEZONE: Asia/Shanghai
-        run: python scripts/run_us_paper_trading.py --notify
+        run: |
+          before_hash="$(sha256sum data/us_paper_trading/state.json 2>/dev/null | cut -d' ' -f1)"
+          python scripts/run_us_paper_trading.py --notify --skip-unchanged-session
+          after_hash="$(sha256sum data/us_paper_trading/state.json 2>/dev/null | cut -d' ' -f1)"
+          if [ -n "$after_hash" ] && [ "$after_hash" != "$before_hash" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Add report to workflow summary
         if: always()
@@ -88,6 +100,7 @@ jobs:
           fi
 
       - name: Upload auditable state and report
+        if: steps.advance.outputs.changed == 'true'
         uses: actions/upload-artifact@v6
         with:
           name: us-paper-trading-${{ github.run_id }}
@@ -98,6 +111,7 @@ jobs:
           retention-days: 90
 
       - name: Update the daily GitHub issue
+        if: steps.advance.outputs.changed == 'true'
         continue-on-error: true
         uses: actions/github-script@v8
         with:
@@ -121,6 +135,7 @@ jobs:
             }
 
       - name: Persist state on a dedicated branch
+        if: steps.advance.outputs.changed == 'true'
         run: |
           cp data/us_paper_trading/state.json /tmp/us-paper-state.json
           cp data/us_paper_trading/latest.md /tmp/us-paper-latest.md

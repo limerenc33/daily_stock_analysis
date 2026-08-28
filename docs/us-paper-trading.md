@@ -61,7 +61,7 @@ python scripts/run_us_paper_trading.py
 python scripts/run_us_paper_trading.py --notify
 ```
 
-默认状态写入 `data/us_paper_trading/state.json`，日报写入 `data/us_paper_trading/latest.md`；本地运行也会在 `data/us_paper_trading/archive/YYYY-MM-DD/{state.json,latest.md}` 保存历史快照。每次 GitHub Actions 成功运行还会把这些快照写入 `paper-trading-state` 分支，保留每个美股交易日的不可变副本。相同市场日期重复执行是幂等的，不会重复成交或累计收益。
+默认状态写入 `data/us_paper_trading/state.json`，日报写入 `data/us_paper_trading/latest.md`；本地运行也会在 `data/us_paper_trading/archive/YYYY-MM-DD/{state.json,latest.md}` 保存历史快照。每次 GitHub Actions 成功运行还会把这些快照写入 `paper-trading-state` 分支，保留每个美股交易日的不可变副本。相同市场日期重复执行是幂等的，不会重复成交或累计收益。定时任务额外启用 `--skip-unchanged-session`：如果行情源能提供的最近共同交易日没有晚于账本日期，任务不会重写滚动文件或重复发送日报通知。
 
 时间口径固定为：`latest_market_date` 是最近完成的共同美股交易日（`America/New_York`）；日线 OHLC 使用该交易日的美股 session；`created_at`、`updated_at` 和盘中 `observed_at` 以 UTC ISO-8601 保存；看板额外显示北京时间（`Asia/Shanghai`）。
 
@@ -80,7 +80,7 @@ US_NEWS_MAX_WORKERS=4
 
 ## GitHub Actions 部署
 
-`.github/workflows/us-paper-trading.yml` 在每个美股交易日收盘后运行，即北京时间周二至周六约 06:30。任务会：
+`.github/workflows/us-paper-trading.yml` 在每个美股交易日收盘后运行。为降低 GitHub Actions 定时事件延迟或丢失的影响，它在 UTC 22:17、次日 00:17 和 03:17 设置错峰补偿触发；同一交易日只有首个拿到新行情的任务会更新账本和发送通知，其余任务无变更退出。任务会：
 
 1. 从 `paper-trading-state` 分支恢复上次账本。
 2. 下载真实 Yahoo 复权日线并推进两个模拟组合。
@@ -99,7 +99,7 @@ US_NEWS_MAX_WORKERS=4
 
 ## 公开只读看板
 
-`.github/workflows/deploy-paper-trading-pages.yml` 将 Web 应用构建为不依赖后端 API 的只读模拟交易看板，并发布到 GitHub Pages。它在前端代码进入 `main` 后部署一次，也会在 `US Paper Trading Daily` 每次成功完成后，从 `paper-trading-state` 分支读取最新账本并重新部署。
+`.github/workflows/deploy-paper-trading-pages.yml` 将 Web 应用构建为不依赖后端 API 的只读模拟交易看板，并发布到 GitHub Pages。它在前端代码进入 `main` 后部署一次，也会在 `US Paper Trading Daily` 每次成功完成后，从 `paper-trading-state` 分支读取最新账本并重新部署。运行中的看板优先直接读取该状态分支，部署产物内的 JSON 快照仅作为网络或上游不可用时的降级，因此状态分支更新不再依赖 Pages 再部署才能显示。
 
 看板展示组合净值、收益、回撤、候选、五基准对比、验证进度，以及每只候选的核心理由、六维因子、观察项、风险和失效条件。开仓后还会展示入场价、止损线、下一止盈格、剩余仓位、最新记录价和最近网格成交；不开放设置、交易录入或真实下单。GitHub Pages 必须在仓库设置中启用并选择 GitHub Actions 作为发布来源。
 

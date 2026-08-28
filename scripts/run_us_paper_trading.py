@@ -215,6 +215,11 @@ def main() -> int:
     parser.add_argument("--news-max-items", type=int, default=_optional_env_int("US_NEWS_MAX_ITEMS"))
     parser.add_argument("--news-max-workers", type=int, default=_optional_env_int("US_NEWS_MAX_WORKERS"))
     parser.add_argument("--notify", action="store_true")
+    parser.add_argument(
+        "--skip-unchanged-session",
+        action="store_true",
+        help="exit without writing or notifying when no newer completed market session is available",
+    )
     args = parser.parse_args()
     if args.history_days < 240 or args.batch_size <= 0:
         parser.error("--history-days must be at least 240 and --batch-size must be positive")
@@ -233,6 +238,7 @@ def main() -> int:
     }
     initial_config = USPaperTradingConfig(**config_overrides)
     state = _load_or_create_state(args.state, config=initial_config)
+    previous_market_date = str(state.get("latest_market_date") or "").strip()
     if config_overrides:
         state.setdefault("config", {}).update(config_overrides)
     requested_end = args.as_of or date.today()
@@ -270,6 +276,17 @@ def main() -> int:
         as_of=args.as_of,
         news_provider=news_provider,
     )
+    current_market_date = str(state.get("latest_market_date") or "").strip()
+    if (
+        args.skip_unchanged_session
+        and previous_market_date
+        and current_market_date <= previous_market_date
+    ):
+        print(
+            "no newer completed market session; "
+            f"latest_market_date={previous_market_date}; skipping write and notification"
+        )
+        return 0
     report = render_paper_trading_report(state)
     _write_atomic(args.state, json.dumps(state, ensure_ascii=False, indent=2))
     _write_atomic(args.report, report)
