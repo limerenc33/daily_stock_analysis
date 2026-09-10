@@ -3,7 +3,7 @@
   "strategy": "us_quality_momentum",
   "research_status": "not_validated",
   "created_at": "2026-08-11T03:12:22.409161+00:00",
-  "updated_at": "2026-09-10T04:43:22.625688+00:00",
+  "updated_at": "2026-09-10T19:16:44.346208+00:00",
   "config": {
     "strategy_name": "us_quality_momentum",
     "top_k": 5,
@@ -2393,11 +2393,23 @@
             "allocated_capital": 20220.890594,
             "quantity": 64.0936043,
             "status": "open",
-            "remaining_quantity": 64.0936043,
-            "realized_value": 0.0,
-            "fills": [],
-            "last_price": 315.339996,
-            "last_evaluated_date": "2026-09-09",
+            "remaining_quantity": 32.04680215,
+            "realized_value": 10421.405705,
+            "fills": [
+              {
+                "date": "2026-09-10",
+                "observed_at": "2026-09-10T19:16:40.169748+00:00",
+                "reason": "grid_take_profit",
+                "grid_level": 1,
+                "trigger_price": 324.95469,
+                "fill_price": 325.845001,
+                "quantity": 32.04680215,
+                "net_proceeds": 10421.405705,
+                "source": "fallback"
+              }
+            ],
+            "last_price": 325.845001,
+            "last_evaluated_date": "2026-09-10",
             "grid": {
               "step_pct": 3.0,
               "take_profit_prices": [
@@ -2405,7 +2417,9 @@
                 334.419389
               ],
               "stop_loss_price": 296.560591,
-              "completed_take_profit_levels": []
+              "completed_take_profit_levels": [
+                1
+              ]
             }
           },
           {
@@ -6208,6 +6222,20 @@
           "net_proceeds": 18969.621854,
           "source": "Yahoo Finance daily OHLC",
           "remaining_quantity": 0.0
+        },
+        {
+          "type": "grid_take_profit",
+          "code": "AAPL",
+          "date": "2026-09-10",
+          "observed_at": "2026-09-10T19:16:40.169748+00:00",
+          "reason": "grid_take_profit",
+          "grid_level": 1,
+          "trigger_price": 324.95469,
+          "fill_price": 325.845001,
+          "quantity": 32.04680215,
+          "net_proceeds": 10421.405705,
+          "source": "fallback",
+          "remaining_quantity": 32.04680215
         }
       ],
       "trade_log": [
@@ -6613,6 +6641,20 @@
           "quantity": 49.90717458,
           "gross_notional": 20220.890594,
           "source": "US daily open simulation",
+          "market_timezone": "America/New_York"
+        },
+        {
+          "trade_id": "2026-09-08:AAPL:2026-09-10:grid_take_profit:1",
+          "side": "sell",
+          "reason": "grid_take_profit",
+          "code": "AAPL",
+          "date": "2026-09-10",
+          "observed_at": "2026-09-10T19:16:40.169748+00:00",
+          "price": 325.845001,
+          "trigger_price": 324.95469,
+          "quantity": 32.04680215,
+          "net_proceeds": 10421.405705,
+          "source": "fallback",
           "market_timezone": "America/New_York"
         }
       ],
@@ -10085,11 +10127,23 @@
             "allocated_capital": 19308.868018,
             "quantity": 61.20279126,
             "status": "open",
-            "remaining_quantity": 61.20279126,
-            "realized_value": 0.0,
-            "fills": [],
-            "last_price": 315.339996,
-            "last_evaluated_date": "2026-09-09",
+            "remaining_quantity": 30.60139563,
+            "realized_value": 9951.369173,
+            "fills": [
+              {
+                "date": "2026-09-10",
+                "observed_at": "2026-09-10T19:16:40.169748+00:00",
+                "reason": "grid_take_profit",
+                "grid_level": 1,
+                "trigger_price": 324.95469,
+                "fill_price": 325.845001,
+                "quantity": 30.60139563,
+                "net_proceeds": 9951.369173,
+                "source": "fallback"
+              }
+            ],
+            "last_price": 325.845001,
+            "last_evaluated_date": "2026-09-10",
             "grid": {
               "step_pct": 3.0,
               "take_profit_prices": [
@@ -10097,7 +10151,9 @@
                 334.419389
               ],
               "stop_loss_price": 296.560591,
-              "completed_take_profit_levels": []
+              "completed_take_profit_levels": [
+                1
+              ]
             }
           },
           {
@@ -13563,6 +13619,20 @@
           "net_proceeds": 19663.531804,
           "source": "Yahoo Finance daily close",
           "remaining_quantity": 0.0
+        },
+        {
+          "type": "grid_take_profit",
+          "code": "AAPL",
+          "date": "2026-09-10",
+          "observed_at": "2026-09-10T19:16:40.169748+00:00",
+          "reason": "grid_take_profit",
+          "grid_level": 1,
+          "trigger_price": 324.95469,
+          "fill_price": 325.845001,
+          "quantity": 30.60139563,
+          "net_proceeds": 9951.369173,
+          "source": "fallback",
+          "remaining_quantity": 30.60139563
         }
       ],
       "trade_log": [
@@ -13926,6 +13996,20 @@
           "quantity": 759.5935468,
           "gross_notional": 19308.868018,
           "source": "US daily open simulation",
+          "market_timezone": "America/New_York"
+        },
+        {
+          "trade_id": "2026-09-08:AAPL:2026-09-10:grid_take_profit:1",
+          "side": "sell",
+          "reason": "grid_take_profit",
+          "code": "AAPL",
+          "date": "2026-09-10",
+          "observed_at": "2026-09-10T19:16:40.169748+00:00",
+          "price": 325.845001,
+          "trigger_price": 324.95469,
+          "quantity": 30.60139563,
+          "net_proceeds": 9951.369173,
+          "source": "fallback",
           "market_timezone": "America/New_York"
         }
       ],
@@ -14766,42 +14850,34 @@
   "last_events": {
     "large_cap_22": [
       {
-        "type": "opened",
-        "entry_date": "2026-09-09",
-        "codes": [
-          "AAPL",
-          "JNJ",
-          "META",
-          "UNH",
-          "PG"
-        ]
-      },
-      {
-        "type": "grid_stop_loss",
-        "code": "UNH",
-        "date": "2026-09-09",
-        "observed_at": null,
-        "reason": "grid_stop_loss",
-        "grid_level": null,
-        "trigger_price": 380.859812,
-        "fill_price": 380.859812,
-        "quantity": 49.90717458,
-        "net_proceeds": 18969.621854,
-        "source": "Yahoo Finance daily OHLC",
-        "remaining_quantity": 0.0
+        "type": "grid_take_profit",
+        "code": "AAPL",
+        "date": "2026-09-10",
+        "observed_at": "2026-09-10T19:16:40.169748+00:00",
+        "reason": "grid_take_profit",
+        "grid_level": 1,
+        "trigger_price": 324.95469,
+        "fill_price": 325.845001,
+        "quantity": 32.04680215,
+        "net_proceeds": 10421.405705,
+        "source": "fallback",
+        "remaining_quantity": 32.04680215
       }
     ],
     "diversified_60": [
       {
-        "type": "opened",
-        "entry_date": "2026-09-09",
-        "codes": [
-          "CVX",
-          "AAPL",
-          "JNJ",
-          "T",
-          "GILD"
-        ]
+        "type": "grid_take_profit",
+        "code": "AAPL",
+        "date": "2026-09-10",
+        "observed_at": "2026-09-10T19:16:40.169748+00:00",
+        "reason": "grid_take_profit",
+        "grid_level": 1,
+        "trigger_price": 324.95469,
+        "fill_price": 325.845001,
+        "quantity": 30.60139563,
+        "net_proceeds": 9951.369173,
+        "source": "fallback",
+        "remaining_quantity": 30.60139563
       }
     ]
   },
@@ -14842,5 +14918,5 @@
     "effective_from": "next_created_cycle",
     "preserve_existing_cycle": true
   },
-  "last_realtime_check": "2026-08-20T18:19:12.733670+00:00"
+  "last_realtime_check": "2026-09-10T19:16:40.169748+00:00"
 }
