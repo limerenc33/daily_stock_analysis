@@ -1,4 +1,4 @@
-# 美股模拟交易日报 - 2026-10-09
+# 美股模拟交易日报 - 2026-10-12
 
 > 策略：`us_quality_momentum` 2.1。仅用于研究验证，不构成投资建议，不连接券商或真实下单。
 > 实时验证状态：**证据不足或未通过**。
@@ -10,8 +10,8 @@
 
 | 股票池 | 组合净值 | 累计收益 | 当日收益 | 最大回撤 | 完成周期 | 当前状态 |
 | --- | ---: | ---: | ---: | ---: | ---: | --- |
-| `large_cap_22` | 102,195.57 | +2.20% | +0.61% | -0.64% | 4 | open |
-| `diversified_60` | 95,292.63 | -4.71% | +0.61% | -5.71% | 4 | open |
+| `large_cap_22` | 102,992.06 | +2.99% | +0.78% | 0.00% | 4 | open |
+| `diversified_60` | 96,035.32 | -3.96% | +0.78% | -4.98% | 4 | open |
 
 ## 网格风控与成交
 
@@ -21,16 +21,16 @@
 | --- | ---: | ---: | ---: | ---: | --- |
 | MSFT | 528.24 | 496.55 | 544.09 | 100% | open |
 | NVDA | 233.84 | 219.81 | 240.86 | 100% | open |
-| AAPL | 331.70 | 311.80 | 341.65 | 100% | open |
-| V | 375.79 | 353.24 | 387.06 | 100% | open |
+| AAPL | 331.70 | 311.80 | 351.60 | 50% | open |
+| V | 375.79 | 353.24 | 398.34 | 50% | open |
 | XOM | 167.87 | 157.80 | 172.91 | 100% | open |
 
 最近成交：
+- `2026-10-12` V 网格止盈，触发 387.06，成交 387.06，数量 27.0309。
+- `2026-10-12` AAPL 网格止盈，触发 341.65，成交 341.65，数量 30.6239。
 - `2026-10-08` LLY 到期退出，触发 1169.60，成交 1169.60，数量 21.5495。
 - `2026-10-08` AAPL 到期退出，触发 340.42，成交 340.42，数量 76.0119。
 - `2026-10-05` NVDA 网格止盈，触发 238.64，成交 238.64，数量 56.7295。
-- `2026-10-02` JNJ 网格止损，触发 255.40，成交 255.40，数量 94.0119。
-- `2026-09-28` NVDA 网格止盈，触发 231.88，成交 231.88，数量 56.7295。
 
 ### diversified_60
 
@@ -38,16 +38,16 @@
 | --- | ---: | ---: | ---: | ---: | --- |
 | MSFT | 528.24 | 496.55 | 544.09 | 100% | open |
 | NVDA | 233.84 | 219.81 | 240.86 | 100% | open |
-| V | 375.79 | 353.24 | 387.06 | 100% | open |
-| AAPL | 331.70 | 311.80 | 341.65 | 100% | open |
+| V | 375.79 | 353.24 | 398.34 | 50% | open |
+| AAPL | 331.70 | 311.80 | 351.60 | 50% | open |
 | XOM | 167.87 | 157.80 | 172.91 | 100% | open |
 
 最近成交：
+- `2026-10-12` AAPL 网格止盈，触发 341.65，成交 341.65，数量 28.5554。
+- `2026-10-12` V 网格止盈，触发 387.06，成交 387.06，数量 25.2051。
 - `2026-10-08` TMO 网格止损，触发 636.88，成交 636.88，数量 28.7164。
 - `2026-10-08` AAPL 到期退出，触发 340.42，成交 340.42，数量 57.8985。
 - `2026-10-05` MRK 网格止损，触发 139.18，成交 139.18，数量 131.4076。
-- `2026-10-05` NVDA 网格止盈，触发 238.64，成交 238.64，数量 43.2111。
-- `2026-10-02` JNJ 网格止损，触发 255.40，成交 255.40，数量 71.6092。
 
 ## 每日重点资讯、财报与研报
 
@@ -55,95 +55,97 @@
 
 ### large_cap_22
 
-资讯日期 `2026-10-09`，可用标的 5/5。
+资讯日期 `2026-10-12`，可用标的 5/5。
 当前持仓周期仅展示资讯证据，不据此改仓；调整从下一周期选股开始。
 
 #### MSFT
 
-- 汇总：近期待核验资料 17 条，财报/披露 3 条，研报/评级 8 条，资讯调整 +0.6 分。
-- 分析：规则化分析：正面标签为analyst_upgrade；风险标签为未识别规则化负面标签；资料覆盖 analyst_research, company_news, earnings, filing。
+- 汇总：近期待核验资料 13 条，财报/披露 1 条，研报/评级 8 条，资讯调整 +0.6 分。
+- 分析：规则化分析：正面标签为analyst_upgrade；风险标签为未识别规则化负面标签；资料覆盖 analyst_research, company_news, filing。
 - 预期影响：资讯层偏正面，下一新周期最多提高排序分至 +4 分；不直接保证价格上涨。
 - 影响面：估值与资金偏好；期限：medium_term
-- 资料：[Fuji Electric’s Helical Fusion Partnership Could Be A Game Changer For Fuji Electric (TSE:6504)](https://finance.yahoo.com/energy/articles/fuji-electric-helical-fusion-partnership-231500646.html)（Simply Wall St.，2026-10-09T23:15:00+00:00）
+- 资料：[S&P 500, Nasdaq 100 End Lower On Chipmaker Weakness, While Salesforce Gains Aid Dow — META, MSFT, BMBL, CRM, SNAP In Focus](https://finance.yahoo.com/markets/stocks/articles/p-500-nasdaq-100-end-231018478.html)（Stocktwits，2026-10-12T23:10:18+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[S&P 500, Nasdaq 100, Dow End Week Higher With Traders Eyeing Earnings Season — MSFT, NFLX, SPCX, ASTS In Focus](https://finance.yahoo.com/markets/stocks/articles/p-500-nasdaq-100-dow-225311213.html)（Stocktwits，2026-10-09T22:53:11+00:00）
+- 资料：[Find Strong Cloud Stocks Using This Zacks Tool](https://finance.yahoo.com/technology/articles/strong-cloud-stocks-using-zacks-230000113.html)（Zacks，2026-10-12T23:00:00+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[Tech Edge Will be Onsite at Money20/20 2026 in Las Vegas](https://finance.yahoo.com/technology/ai/articles/tech-edge-onsite-money20-20-222106872.html)（Exec Edge，2026-10-09T22:21:06+00:00）
+- 资料：[Is Meta's Next Big Thing Already Here?](https://finance.yahoo.com/markets/stocks/articles/metas-next-big-thing-already-223840748.html)（Trefis，2026-10-12T22:38:40+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[How Rising Earnings Estimates At Fastenal (FAST) Have Changed Its Investment Story](https://finance.yahoo.com/markets/stocks/articles/rising-earnings-estimates-fastenal-fast-221403486.html)（Simply Wall St.，2026-10-09T22:14:03+00:00）
+- 资料：[What Are QBTS Stock Investors Overlooking?](https://finance.yahoo.com/markets/stocks/articles/qbts-stock-investors-overlooking-220727057.html)（Trefis，2026-10-12T22:07:27+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[JD Vance slams Microsoft, says it swapped 6,000 laid-off Americans for ‘foreign indentured servants.’ Microsoft responds](https://finance.yahoo.com/economy/policy/articles/jd-vance-slams-microsoft-says-214500533.html)（Moneywise，2026-10-09T21:45:00+00:00）
+- 资料：Evercore ISI Group main Outperform to Outperform（Yahoo Finance analyst actions，2026-10-07）
+  - 原文摘要：公开分析师评级变更记录；具体观点以来源页面为准。
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
 
 #### NVDA
 
-- 汇总：近期待核验资料 8 条，财报/披露 1 条，研报/评级 3 条，资讯调整 +0.0 分。
+- 汇总：近期待核验资料 5 条，财报/披露 1 条，研报/评级 2 条，资讯调整 +0.0 分。
 - 分析：规则化分析：正面标签为未识别规则化正面标签；风险标签为未识别规则化负面标签；资料覆盖 analyst_research, company_news, filing。
 - 预期影响：资讯层未形成净调整，候选仍主要由技术证据排序。
 - 影响面：待核验；期限：medium_term
-- 资料：[Why Quanta Services Stock Flew Higher on Friday](https://finance.yahoo.com/markets/stocks/articles/why-quanta-services-stock-flew-235015556.html)（Motley Fool，2026-10-09T23:50:15+00:00）
+- 资料：[$2.9 Billion Contract in Hand, Anduril May Already Be America's Second-Biggest Navy Warship Builder](https://finance.yahoo.com/markets/stocks/articles/2-9-billion-contract-hand-235000409.html)（Motley Fool，2026-10-12T23:50:00+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[Why CrowdStrike Holdings Stock Crushed it on Friday](https://finance.yahoo.com/markets/stocks/articles/why-crowdstrike-holdings-stock-crushed-231618997.html)（Motley Fool，2026-10-09T23:16:18+00:00）
-  - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
-  - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[Fuji Electric’s Helical Fusion Partnership Could Be A Game Changer For Fuji Electric (TSE:6504)](https://finance.yahoo.com/energy/articles/fuji-electric-helical-fusion-partnership-231500646.html)（Simply Wall St.，2026-10-09T23:15:00+00:00）
-  - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
-  - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[Should Qualcomm Stock Holders Look At First Solar Instead?](https://finance.yahoo.com/markets/stocks/articles/qualcomm-stock-holders-look-first-231309987.html)（Trefis，2026-10-09T23:13:09+00:00）
+- 资料：[Why Harmony Biosciences Stock Got Mashed on Monday](https://finance.yahoo.com/markets/stocks/articles/why-harmony-biosciences-stock-got-233632120.html)（Motley Fool，2026-10-12T23:36:32+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
 - 资料：Cantor Fitzgerald reit Overweight to Overweight（Yahoo Finance analyst actions，2026-10-01）
   - 原文摘要：公开分析师评级变更记录；具体观点以来源页面为准。
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
+- 资料：Rosenblatt main Buy to Buy（Yahoo Finance analyst actions，2026-09-29）
+  - 原文摘要：公开分析师评级变更记录；具体观点以来源页面为准。
+  - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
+  - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
+- 资料：[8-K: Corporate Changes & Voting Matters](https://finance.yahoo.com/sec-filing/NVDA/0001045810-26-000078_1045810)（SEC EDGAR，2026-09-03）
+  - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
+  - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
 
 #### AAPL
 
-- 汇总：近期待核验资料 14 条，财报/披露 0 条，研报/评级 8 条，资讯调整 +0.0 分。
+- 汇总：近期待核验资料 13 条，财报/披露 0 条，研报/评级 6 条，资讯调整 +0.0 分。
 - 分析：规则化分析：正面标签为未识别规则化正面标签；风险标签为未识别规则化负面标签；资料覆盖 analyst_research, company_news。
 - 预期影响：资讯层未形成净调整，候选仍主要由技术证据排序。
 - 影响面：待核验；期限：medium_term
-- 资料：[Why Apple (AAPL) Stock Is Trading Lower Today](https://finance.yahoo.com/markets/stocks/articles/why-apple-aapl-stock-trading-231510875.html)（StockStory，2026-10-09T23:15:10+00:00）
+- 资料：[Broadcom vs. Qualcomm: Which Chip Stock Is a Better Buy in 2026?](https://finance.yahoo.com/markets/stocks/articles/broadcom-vs-qualcomm-chip-stock-225101810.html)（Motley Fool，2026-10-12T22:51:01+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[Black British Business Awards 2026 winners revealed](https://finance.yahoo.com/small-business/articles/black-british-business-awards-2026-225431267.html)（The Telegraph，2026-10-09T22:54:31+00:00）
+- 资料：[Why Every Snap Investor Is Looking At This One Number](https://finance.yahoo.com/markets/stocks/articles/why-every-snap-investor-looking-220202311.html)（Trefis，2026-10-12T22:02:02+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[Is Dell Stock Paying You Enough For The Swings?](https://finance.yahoo.com/markets/stocks/articles/dell-stock-paying-enough-swings-214928451.html)（Trefis，2026-10-09T21:49:28+00:00）
+- 资料：[You Bought VOO to Own the S&P 500. On $500,000, One Chipmaker Is $40,400 of It](https://finance.yahoo.com/markets/stocks/articles/bought-voo-own-p-500-213332450.html)（24/7 Wall St.，2026-10-12T21:33:32+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[Apple’s App Store Growth Improved in September. What UBS Sees Coming in October Is Harder](https://finance.yahoo.com/markets/stocks/articles/apple-app-store-growth-improved-213848032.html)（Insider Monkey，2026-10-09T21:38:48+00:00）
+- 资料：[Apple Once Again Narrowly Misses a $5 Trillion Market Cap](https://finance.yahoo.com/m/48a0fefa-fed0-3469-a5d3-b9dc2f24872c/apple-once-again-narrowly.html)（The Wall Street Journal，2026-10-12T21:22:54+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[Stocks to Watch Recap: SpaceX, AT&T, Delta, Humana](https://finance.yahoo.com/m/8ce2c92f-3b72-3388-8894-8ac3678d4aba/stocks-to-watch-recap%3A.html)（The Wall Street Journal，2026-10-09T21:15:34+00:00）
+- 资料：[Apple Stock Scores Price-Target Hike Ahead Of Smart Home Launch](https://finance.yahoo.com/m/886e8958-bc43-3c4a-8917-56a03cff9b11/apple-stock-scores.html)（Investor's Business Daily，2026-10-12T20:35:14+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
 
 #### V
 
-- 汇总：近期待核验资料 9 条，财报/披露 2 条，研报/评级 1 条，资讯调整 +0.0 分。
-- 分析：规则化分析：正面标签为未识别规则化正面标签；风险标签为未识别规则化负面标签；资料覆盖 analyst_research, company_news, earnings, filing。
-- 预期影响：资讯层未形成净调整，候选仍主要由技术证据排序。
-- 影响面：待核验；期限：medium_term
-- 资料：[Visa (V) Beats Stock Market Upswing: What Investors Need to Know](https://finance.yahoo.com/markets/stocks/articles/visa-v-beats-stock-market-204507760.html)（Zacks，2026-10-09T20:45:07+00:00）
+- 汇总：近期待核验资料 9 条，财报/披露 2 条，研报/评级 2 条，资讯调整 +1.5 分。
+- 分析：规则化分析：正面标签为earnings_beat；风险标签为未识别规则化负面标签；资料覆盖 analyst_research, company_news, earnings, filing。
+- 预期影响：资讯层偏正面，下一新周期最多提高排序分至 +4 分；不直接保证价格上涨。
+- 影响面：盈利预期；期限：short_term
+- 资料：[2 Payment Stocks to Buy and Hold That Raised Their Dividends 14% in Their Latest Increases](https://finance.yahoo.com/markets/stocks/articles/2-payment-stocks-buy-hold-183500748.html)（Motley Fool，2026-10-12T18:35:00+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[Visa Stocks Gain 2.23% Although Trump Revives Routing Threat](https://finance.yahoo.com/markets/stocks/articles/visa-stocks-gain-2-23-193342006.html)（GuruFocus.com，2026-10-09T19:33:42+00:00）
+- 资料：[Stressed Consumers Are Still Spending—and These Stocks Could Benefit](https://finance.yahoo.com/m/70c014ea-3efc-361c-912f-2d33255bde19/stressed-consumers-are-still.html)（Barrons.com，2026-10-12T18:27:00+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[Baird Adjusts Price Target on Visa to $430 From $420](https://finance.yahoo.com/markets/stocks/articles/baird-adjusts-price-target-visa-153356674.html)（MT Newswires，2026-10-09T15:33:56+00:00）
+- 资料：[Will Visa (V) Beat Estimates Again in Its Next Earnings Report?](https://finance.yahoo.com/markets/stocks/articles/visa-v-beat-estimates-again-151001031.html)（Zacks，2026-10-12T15:10:01+00:00）
+  - 条目分析：规则化识别到正面标签：earnings_beat；仅作为事件证据，不代表价格必然上涨。
+  - 条目预期影响：短期可能改善盈利预期、估值或资金偏好，实际影响取决于市场定价。
+- 资料：[FII Institute Launches Report on Turning Enterprise AI Investment Into Business Value](https://finance.yahoo.com/technology/ai/articles/fii-institute-launches-report-turning-133800213.html)（ACCESS Newswire，2026-10-12T13:38:00+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[The Math for Making Meta Muse AI Profitable Doesn’t Make Sense](https://finance.yahoo.com/m/516748f2-dbd2-3f3c-afd9-47812faade94/the-math-for-making-meta-muse.html)（Barrons.com，2026-10-09T13:12:00+00:00）
-  - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
-  - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[Update: Mastercard CEO Says Cross-Border Payments Is Currently Stablecoin's Best Use Case](https://finance.yahoo.com/markets/crypto/articles/mastercard-ceo-says-cross-border-130950760.html)（MT Newswires，2026-10-09T13:09:50+00:00）
+- 资料：[Visa-Mastercard payouts top $631M](https://finance.yahoo.com/markets/stocks/articles/visa-mastercard-payouts-top-631m-131400949.html)（Payments Dive，2026-10-12T13:14:00+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
 
@@ -153,113 +155,115 @@
 - 分析：规则化分析：正面标签为未识别规则化正面标签；风险标签为analyst_downgrade；资料覆盖 analyst_research, company_news, filing。
 - 预期影响：资讯层偏负面，下一新周期降低排序分；若出现多类严重风险则排除候选。
 - 影响面：估值与资金偏好；期限：medium_term
-- 资料：[What Has To Happen Before ExxonMobil Stock Is A Buy?](https://finance.yahoo.com/markets/stocks/articles/happen-exxonmobil-stock-buy-225831800.html)（Trefis，2026-10-09T22:58:31+00:00）
+- 资料：[Exxon, Oil Giants Top Buy Points After Deadly Saudi Airport Attacks](https://finance.yahoo.com/m/74b3cc80-b63c-34db-8188-25b254ce30d7/exxon%2C-oil-giants-top-buy.html)（Investor's Business Daily，2026-10-12T20:17:37+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[What Could Go Wrong At Chevron From Here?](https://finance.yahoo.com/energy/articles/could-wrong-chevron-221359442.html)（Trefis，2026-10-09T22:13:59+00:00）
+- 资料：[ExxonMobil (XOM) Blocks $5.2 Billion Kashagan Fine Settlement](https://finance.yahoo.com/energy/articles/exxonmobil-xom-blocks-5-2-170859710.html)（Simply Wall St.，2026-10-12T17:08:59+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[Forget Chasing the Biggest Yield. These 5 Dividend Stocks Have Something Better](https://finance.yahoo.com/markets/stocks/articles/forget-chasing-biggest-yield-5-184550685.html)（24/7 Wall St.，2026-10-09T18:45:50+00:00）
+- 资料：[How Surging Guyana and Permian Output Will Impact ExxonMobil (XOM) Investors](https://finance.yahoo.com/energy/articles/surging-guyana-permian-output-impact-161112766.html)（Simply Wall St.，2026-10-12T16:11:12+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[Retirees Who Picked VIG Over VYM in 2022 Are Still $10,000 Behind on Every $100,000](https://finance.yahoo.com/markets/stocks/articles/retirees-picked-vig-over-vym-172431635.html)（24/7 Wall St.，2026-10-09T17:24:31+00:00）
+- 资料：[Helmerich & Payne Positioned for Steady Demand, Geothermal Growth, RBC Says](https://finance.yahoo.com/energy/articles/helmerich-payne-positioned-steady-demand-153921652.html)（MT Newswires，2026-10-12T15:39:21+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[BP is Undervalued: Should You Bet on the Stock Right Away?](https://finance.yahoo.com/markets/stocks/articles/bp-undervalued-bet-stock-away-133600812.html)（Zacks，2026-10-09T13:36:00+00:00）
+- 资料：[SEC closes CA100+ probe, signals increased scrutiny on climate groups](https://finance.yahoo.com/economy/policy/articles/sec-closes-ca100-probe-signals-152000899.html)（ESG Dive，2026-10-12T15:20:00+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
 
 ### diversified_60
 
-资讯日期 `2026-10-09`，可用标的 5/5。
+资讯日期 `2026-10-12`，可用标的 5/5。
 当前持仓周期仅展示资讯证据，不据此改仓；调整从下一周期选股开始。
 
 #### MSFT
 
-- 汇总：近期待核验资料 17 条，财报/披露 3 条，研报/评级 8 条，资讯调整 +0.6 分。
-- 分析：规则化分析：正面标签为analyst_upgrade；风险标签为未识别规则化负面标签；资料覆盖 analyst_research, company_news, earnings, filing。
+- 汇总：近期待核验资料 13 条，财报/披露 1 条，研报/评级 8 条，资讯调整 +0.6 分。
+- 分析：规则化分析：正面标签为analyst_upgrade；风险标签为未识别规则化负面标签；资料覆盖 analyst_research, company_news, filing。
 - 预期影响：资讯层偏正面，下一新周期最多提高排序分至 +4 分；不直接保证价格上涨。
 - 影响面：估值与资金偏好；期限：medium_term
-- 资料：[Fuji Electric’s Helical Fusion Partnership Could Be A Game Changer For Fuji Electric (TSE:6504)](https://finance.yahoo.com/energy/articles/fuji-electric-helical-fusion-partnership-231500646.html)（Simply Wall St.，2026-10-09T23:15:00+00:00）
+- 资料：[S&P 500, Nasdaq 100 End Lower On Chipmaker Weakness, While Salesforce Gains Aid Dow — META, MSFT, BMBL, CRM, SNAP In Focus](https://finance.yahoo.com/markets/stocks/articles/p-500-nasdaq-100-end-231018478.html)（Stocktwits，2026-10-12T23:10:18+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[S&P 500, Nasdaq 100, Dow End Week Higher With Traders Eyeing Earnings Season — MSFT, NFLX, SPCX, ASTS In Focus](https://finance.yahoo.com/markets/stocks/articles/p-500-nasdaq-100-dow-225311213.html)（Stocktwits，2026-10-09T22:53:11+00:00）
+- 资料：[Find Strong Cloud Stocks Using This Zacks Tool](https://finance.yahoo.com/technology/articles/strong-cloud-stocks-using-zacks-230000113.html)（Zacks，2026-10-12T23:00:00+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[Tech Edge Will be Onsite at Money20/20 2026 in Las Vegas](https://finance.yahoo.com/technology/ai/articles/tech-edge-onsite-money20-20-222106872.html)（Exec Edge，2026-10-09T22:21:06+00:00）
+- 资料：[Is Meta's Next Big Thing Already Here?](https://finance.yahoo.com/markets/stocks/articles/metas-next-big-thing-already-223840748.html)（Trefis，2026-10-12T22:38:40+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[How Rising Earnings Estimates At Fastenal (FAST) Have Changed Its Investment Story](https://finance.yahoo.com/markets/stocks/articles/rising-earnings-estimates-fastenal-fast-221403486.html)（Simply Wall St.，2026-10-09T22:14:03+00:00）
+- 资料：[What Are QBTS Stock Investors Overlooking?](https://finance.yahoo.com/markets/stocks/articles/qbts-stock-investors-overlooking-220727057.html)（Trefis，2026-10-12T22:07:27+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[JD Vance slams Microsoft, says it swapped 6,000 laid-off Americans for ‘foreign indentured servants.’ Microsoft responds](https://finance.yahoo.com/economy/policy/articles/jd-vance-slams-microsoft-says-214500533.html)（Moneywise，2026-10-09T21:45:00+00:00）
+- 资料：Evercore ISI Group main Outperform to Outperform（Yahoo Finance analyst actions，2026-10-07）
+  - 原文摘要：公开分析师评级变更记录；具体观点以来源页面为准。
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
 
 #### NVDA
 
-- 汇总：近期待核验资料 8 条，财报/披露 1 条，研报/评级 3 条，资讯调整 +0.0 分。
+- 汇总：近期待核验资料 5 条，财报/披露 1 条，研报/评级 2 条，资讯调整 +0.0 分。
 - 分析：规则化分析：正面标签为未识别规则化正面标签；风险标签为未识别规则化负面标签；资料覆盖 analyst_research, company_news, filing。
 - 预期影响：资讯层未形成净调整，候选仍主要由技术证据排序。
 - 影响面：待核验；期限：medium_term
-- 资料：[Why Quanta Services Stock Flew Higher on Friday](https://finance.yahoo.com/markets/stocks/articles/why-quanta-services-stock-flew-235015556.html)（Motley Fool，2026-10-09T23:50:15+00:00）
+- 资料：[$2.9 Billion Contract in Hand, Anduril May Already Be America's Second-Biggest Navy Warship Builder](https://finance.yahoo.com/markets/stocks/articles/2-9-billion-contract-hand-235000409.html)（Motley Fool，2026-10-12T23:50:00+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[Why CrowdStrike Holdings Stock Crushed it on Friday](https://finance.yahoo.com/markets/stocks/articles/why-crowdstrike-holdings-stock-crushed-231618997.html)（Motley Fool，2026-10-09T23:16:18+00:00）
-  - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
-  - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[Fuji Electric’s Helical Fusion Partnership Could Be A Game Changer For Fuji Electric (TSE:6504)](https://finance.yahoo.com/energy/articles/fuji-electric-helical-fusion-partnership-231500646.html)（Simply Wall St.，2026-10-09T23:15:00+00:00）
-  - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
-  - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[Should Qualcomm Stock Holders Look At First Solar Instead?](https://finance.yahoo.com/markets/stocks/articles/qualcomm-stock-holders-look-first-231309987.html)（Trefis，2026-10-09T23:13:09+00:00）
+- 资料：[Why Harmony Biosciences Stock Got Mashed on Monday](https://finance.yahoo.com/markets/stocks/articles/why-harmony-biosciences-stock-got-233632120.html)（Motley Fool，2026-10-12T23:36:32+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
 - 资料：Cantor Fitzgerald reit Overweight to Overweight（Yahoo Finance analyst actions，2026-10-01）
   - 原文摘要：公开分析师评级变更记录；具体观点以来源页面为准。
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
+- 资料：Rosenblatt main Buy to Buy（Yahoo Finance analyst actions，2026-09-29）
+  - 原文摘要：公开分析师评级变更记录；具体观点以来源页面为准。
+  - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
+  - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
+- 资料：[8-K: Corporate Changes & Voting Matters](https://finance.yahoo.com/sec-filing/NVDA/0001045810-26-000078_1045810)（SEC EDGAR，2026-09-03）
+  - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
+  - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
 
 #### V
 
-- 汇总：近期待核验资料 9 条，财报/披露 2 条，研报/评级 1 条，资讯调整 +0.0 分。
-- 分析：规则化分析：正面标签为未识别规则化正面标签；风险标签为未识别规则化负面标签；资料覆盖 analyst_research, company_news, earnings, filing。
-- 预期影响：资讯层未形成净调整，候选仍主要由技术证据排序。
-- 影响面：待核验；期限：medium_term
-- 资料：[Visa (V) Beats Stock Market Upswing: What Investors Need to Know](https://finance.yahoo.com/markets/stocks/articles/visa-v-beats-stock-market-204507760.html)（Zacks，2026-10-09T20:45:07+00:00）
+- 汇总：近期待核验资料 9 条，财报/披露 2 条，研报/评级 2 条，资讯调整 +1.5 分。
+- 分析：规则化分析：正面标签为earnings_beat；风险标签为未识别规则化负面标签；资料覆盖 analyst_research, company_news, earnings, filing。
+- 预期影响：资讯层偏正面，下一新周期最多提高排序分至 +4 分；不直接保证价格上涨。
+- 影响面：盈利预期；期限：short_term
+- 资料：[2 Payment Stocks to Buy and Hold That Raised Their Dividends 14% in Their Latest Increases](https://finance.yahoo.com/markets/stocks/articles/2-payment-stocks-buy-hold-183500748.html)（Motley Fool，2026-10-12T18:35:00+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[Visa Stocks Gain 2.23% Although Trump Revives Routing Threat](https://finance.yahoo.com/markets/stocks/articles/visa-stocks-gain-2-23-193342006.html)（GuruFocus.com，2026-10-09T19:33:42+00:00）
+- 资料：[Stressed Consumers Are Still Spending—and These Stocks Could Benefit](https://finance.yahoo.com/m/70c014ea-3efc-361c-912f-2d33255bde19/stressed-consumers-are-still.html)（Barrons.com，2026-10-12T18:27:00+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[Baird Adjusts Price Target on Visa to $430 From $420](https://finance.yahoo.com/markets/stocks/articles/baird-adjusts-price-target-visa-153356674.html)（MT Newswires，2026-10-09T15:33:56+00:00）
+- 资料：[Will Visa (V) Beat Estimates Again in Its Next Earnings Report?](https://finance.yahoo.com/markets/stocks/articles/visa-v-beat-estimates-again-151001031.html)（Zacks，2026-10-12T15:10:01+00:00）
+  - 条目分析：规则化识别到正面标签：earnings_beat；仅作为事件证据，不代表价格必然上涨。
+  - 条目预期影响：短期可能改善盈利预期、估值或资金偏好，实际影响取决于市场定价。
+- 资料：[FII Institute Launches Report on Turning Enterprise AI Investment Into Business Value](https://finance.yahoo.com/technology/ai/articles/fii-institute-launches-report-turning-133800213.html)（ACCESS Newswire，2026-10-12T13:38:00+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[The Math for Making Meta Muse AI Profitable Doesn’t Make Sense](https://finance.yahoo.com/m/516748f2-dbd2-3f3c-afd9-47812faade94/the-math-for-making-meta-muse.html)（Barrons.com，2026-10-09T13:12:00+00:00）
-  - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
-  - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[Update: Mastercard CEO Says Cross-Border Payments Is Currently Stablecoin's Best Use Case](https://finance.yahoo.com/markets/crypto/articles/mastercard-ceo-says-cross-border-130950760.html)（MT Newswires，2026-10-09T13:09:50+00:00）
+- 资料：[Visa-Mastercard payouts top $631M](https://finance.yahoo.com/markets/stocks/articles/visa-mastercard-payouts-top-631m-131400949.html)（Payments Dive，2026-10-12T13:14:00+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
 
 #### AAPL
 
-- 汇总：近期待核验资料 14 条，财报/披露 0 条，研报/评级 8 条，资讯调整 +0.0 分。
+- 汇总：近期待核验资料 13 条，财报/披露 0 条，研报/评级 6 条，资讯调整 +0.0 分。
 - 分析：规则化分析：正面标签为未识别规则化正面标签；风险标签为未识别规则化负面标签；资料覆盖 analyst_research, company_news。
 - 预期影响：资讯层未形成净调整，候选仍主要由技术证据排序。
 - 影响面：待核验；期限：medium_term
-- 资料：[Why Apple (AAPL) Stock Is Trading Lower Today](https://finance.yahoo.com/markets/stocks/articles/why-apple-aapl-stock-trading-231510875.html)（StockStory，2026-10-09T23:15:10+00:00）
+- 资料：[Broadcom vs. Qualcomm: Which Chip Stock Is a Better Buy in 2026?](https://finance.yahoo.com/markets/stocks/articles/broadcom-vs-qualcomm-chip-stock-225101810.html)（Motley Fool，2026-10-12T22:51:01+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[Black British Business Awards 2026 winners revealed](https://finance.yahoo.com/small-business/articles/black-british-business-awards-2026-225431267.html)（The Telegraph，2026-10-09T22:54:31+00:00）
+- 资料：[Why Every Snap Investor Is Looking At This One Number](https://finance.yahoo.com/markets/stocks/articles/why-every-snap-investor-looking-220202311.html)（Trefis，2026-10-12T22:02:02+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[Is Dell Stock Paying You Enough For The Swings?](https://finance.yahoo.com/markets/stocks/articles/dell-stock-paying-enough-swings-214928451.html)（Trefis，2026-10-09T21:49:28+00:00）
+- 资料：[You Bought VOO to Own the S&P 500. On $500,000, One Chipmaker Is $40,400 of It](https://finance.yahoo.com/markets/stocks/articles/bought-voo-own-p-500-213332450.html)（24/7 Wall St.，2026-10-12T21:33:32+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[Apple’s App Store Growth Improved in September. What UBS Sees Coming in October Is Harder](https://finance.yahoo.com/markets/stocks/articles/apple-app-store-growth-improved-213848032.html)（Insider Monkey，2026-10-09T21:38:48+00:00）
+- 资料：[Apple Once Again Narrowly Misses a $5 Trillion Market Cap](https://finance.yahoo.com/m/48a0fefa-fed0-3469-a5d3-b9dc2f24872c/apple-once-again-narrowly.html)（The Wall Street Journal，2026-10-12T21:22:54+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[Stocks to Watch Recap: SpaceX, AT&T, Delta, Humana](https://finance.yahoo.com/m/8ce2c92f-3b72-3388-8894-8ac3678d4aba/stocks-to-watch-recap%3A.html)（The Wall Street Journal，2026-10-09T21:15:34+00:00）
+- 资料：[Apple Stock Scores Price-Target Hike Ahead Of Smart Home Launch](https://finance.yahoo.com/m/886e8958-bc43-3c4a-8917-56a03cff9b11/apple-stock-scores.html)（Investor's Business Daily，2026-10-12T20:35:14+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
 
@@ -269,19 +273,19 @@
 - 分析：规则化分析：正面标签为未识别规则化正面标签；风险标签为analyst_downgrade；资料覆盖 analyst_research, company_news, filing。
 - 预期影响：资讯层偏负面，下一新周期降低排序分；若出现多类严重风险则排除候选。
 - 影响面：估值与资金偏好；期限：medium_term
-- 资料：[What Has To Happen Before ExxonMobil Stock Is A Buy?](https://finance.yahoo.com/markets/stocks/articles/happen-exxonmobil-stock-buy-225831800.html)（Trefis，2026-10-09T22:58:31+00:00）
+- 资料：[Exxon, Oil Giants Top Buy Points After Deadly Saudi Airport Attacks](https://finance.yahoo.com/m/74b3cc80-b63c-34db-8188-25b254ce30d7/exxon%2C-oil-giants-top-buy.html)（Investor's Business Daily，2026-10-12T20:17:37+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[What Could Go Wrong At Chevron From Here?](https://finance.yahoo.com/energy/articles/could-wrong-chevron-221359442.html)（Trefis，2026-10-09T22:13:59+00:00）
+- 资料：[ExxonMobil (XOM) Blocks $5.2 Billion Kashagan Fine Settlement](https://finance.yahoo.com/energy/articles/exxonmobil-xom-blocks-5-2-170859710.html)（Simply Wall St.，2026-10-12T17:08:59+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[Forget Chasing the Biggest Yield. These 5 Dividend Stocks Have Something Better](https://finance.yahoo.com/markets/stocks/articles/forget-chasing-biggest-yield-5-184550685.html)（24/7 Wall St.，2026-10-09T18:45:50+00:00）
+- 资料：[How Surging Guyana and Permian Output Will Impact ExxonMobil (XOM) Investors](https://finance.yahoo.com/energy/articles/surging-guyana-permian-output-impact-161112766.html)（Simply Wall St.，2026-10-12T16:11:12+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[Retirees Who Picked VIG Over VYM in 2022 Are Still $10,000 Behind on Every $100,000](https://finance.yahoo.com/markets/stocks/articles/retirees-picked-vig-over-vym-172431635.html)（24/7 Wall St.，2026-10-09T17:24:31+00:00）
+- 资料：[Helmerich & Payne Positioned for Steady Demand, Geothermal Growth, RBC Says](https://finance.yahoo.com/energy/articles/helmerich-payne-positioned-steady-demand-153921652.html)（MT Newswires，2026-10-12T15:39:21+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[BP is Undervalued: Should You Bet on the Stock Right Away?](https://finance.yahoo.com/markets/stocks/articles/bp-undervalued-bet-stock-away-133600812.html)（Zacks，2026-10-09T13:36:00+00:00）
+- 资料：[SEC closes CA100+ probe, signals increased scrutiny on climate groups](https://finance.yahoo.com/economy/policy/articles/sec-closes-ca100-probe-signals-152000899.html)（ESG Dive，2026-10-12T15:20:00+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
 
@@ -342,6 +346,8 @@
 | 2026-10-09 | 买入 | NVDA | 233.84 | 86.8795 | cycle_entry | US daily open simulation |
 | 2026-10-09 | 买入 | V | 375.79 | 54.0619 | cycle_entry | US daily open simulation |
 | 2026-10-09 | 买入 | XOM | 167.87 | 121.0217 | cycle_entry | US daily open simulation |
+| 2026-10-12 | 卖出 | AAPL | 341.65 | 30.6239 | grid_take_profit | Yahoo Finance daily OHLC |
+| 2026-10-12 | 卖出 | V | 387.06 | 27.0309 | grid_take_profit | Yahoo Finance daily OHLC |
 
 ### diversified_60
 
@@ -399,6 +405,8 @@
 | 2026-10-09 | 买入 | NVDA | 233.84 | 81.0111 | cycle_entry | US daily open simulation |
 | 2026-10-09 | 买入 | V | 375.79 | 50.4102 | cycle_entry | US daily open simulation |
 | 2026-10-09 | 买入 | XOM | 167.87 | 112.8471 | cycle_entry | US daily open simulation |
+| 2026-10-12 | 卖出 | AAPL | 341.65 | 28.5554 | grid_take_profit | Yahoo Finance daily OHLC |
+| 2026-10-12 | 卖出 | V | 387.06 | 25.2051 | grid_take_profit | Yahoo Finance daily OHLC |
 
 ## 多基准比较
 
@@ -406,11 +414,11 @@
 
 | 基准 | 基准累计收益 | 策略超额 |
 | --- | ---: | ---: |
-| SPY | -0.29% | +2.48pp |
-| QQQ | +2.35% | -0.16pp |
-| IWM | -6.99% | +9.18pp |
-| DIA | -4.70% | +6.90pp |
-| RSP | -3.29% | +5.48pp |
+| SPY | -0.35% | +3.34pp |
+| QQQ | +1.64% | +1.35pp |
+| IWM | -7.33% | +10.33pp |
+| DIA | -4.37% | +7.36pp |
+| RSP | -3.22% | +6.21pp |
 
 当前周期：`open`，信号日 `2026-10-08`。
 周期策略版本：`2.1`；评分卡：`us_evidence_news_v3`。
@@ -420,11 +428,11 @@
 
 | 基准 | 基准累计收益 | 策略超额 |
 | --- | ---: | ---: |
-| SPY | -0.29% | -4.42pp |
-| QQQ | +2.35% | -7.06pp |
-| IWM | -6.99% | +2.28pp |
-| DIA | -4.70% | -0.01pp |
-| RSP | -3.29% | -1.42pp |
+| SPY | -0.35% | -3.62pp |
+| QQQ | +1.64% | -5.61pp |
+| IWM | -7.33% | +3.37pp |
+| DIA | -4.37% | +0.40pp |
+| RSP | -3.22% | -0.74pp |
 
 当前周期：`open`，信号日 `2026-10-08`。
 周期策略版本：`2.1`；评分卡：`us_evidence_news_v3`。
