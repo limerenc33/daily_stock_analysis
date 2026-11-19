@@ -1,4 +1,4 @@
-# 美股模拟交易日报 - 2026-11-05
+# 美股模拟交易日报 - 2026-11-18
 
 > 策略：`us_quality_momentum` 2.1。仅用于研究验证，不构成投资建议，不连接券商或真实下单。
 > 实时验证状态：**证据不足或未通过**。
@@ -10,32 +10,44 @@
 
 | 股票池 | 组合净值 | 累计收益 | 当日收益 | 最大回撤 | 完成周期 | 当前状态 |
 | --- | ---: | ---: | ---: | ---: | ---: | --- |
-| `large_cap_22` | 103,098.80 | +3.10% | -0.61% | -0.61% | 5 | pending |
-| `diversified_60` | 96,134.85 | -3.87% | -0.61% | -4.88% | 5 | pending |
+| `large_cap_22` | 106,126.96 | +6.13% | +2.94% | 0.00% | 5 | open |
+| `diversified_60` | 98,958.47 | -1.04% | +2.94% | -2.09% | 5 | open |
 
 ## 网格风控与成交
 
 ### large_cap_22
 
-当前尚未开仓，网格价将在下一交易日开盘成交后生成。
+| 代码 | 入场价 | 止损价 | 下一止盈格 | 剩余仓位 | 状态 |
+| --- | ---: | ---: | ---: | ---: | --- |
+| V | 413.71 | 388.89 | 438.54 | 50% | open |
+| MA | 642.25 | 603.72 | 680.78 | 50% | open |
+| COST | 1045.25 | 982.53 | 已完成 | 0% | closed |
+| PG | 162.36 | 152.62 | 已完成 | 0% | closed |
+| WMT | 124.00 | 116.56 | 131.44 | 50% | open |
 
 最近成交：
-- `2026-10-22` AAPL 到期退出，触发 348.22，成交 348.22，数量 30.6239。
-- `2026-10-22` MSFT 到期退出，触发 521.08，成交 521.08，数量 19.2298。
-- `2026-10-15` XOM 网格止盈，触发 177.94，成交 178.63，数量 60.5108。
-- `2026-10-15` V 网格止盈，触发 398.34，成交 398.34，数量 27.0309。
-- `2026-10-14` NVDA 网格止损，触发 219.81，成交 219.81，数量 86.8795。
+- `2026-11-16` PG 网格止盈，触发 172.10，成交 172.16，数量 63.5001。
+- `2026-11-13` WMT 网格止盈，触发 127.72，成交 127.72，数量 83.1442。
+- `2026-11-13` COST 网格止盈，触发 1107.96，成交 1107.96，数量 9.8636。
+- `2026-11-12` V 网格止盈，触发 426.13，成交 429.34，数量 24.9203。
+- `2026-11-11` COST 网格止盈，触发 1076.61，成交 1080.51，数量 9.8636。
 
 ### diversified_60
 
-当前尚未开仓，网格价将在下一交易日开盘成交后生成。
+| 代码 | 入场价 | 止损价 | 下一止盈格 | 剩余仓位 | 状态 |
+| --- | ---: | ---: | ---: | ---: | --- |
+| V | 413.71 | 388.89 | 438.54 | 50% | open |
+| MA | 642.25 | 603.72 | 680.78 | 50% | open |
+| PG | 162.36 | 152.62 | 已完成 | 0% | closed |
+| COST | 1045.25 | 982.53 | 已完成 | 0% | closed |
+| WMT | 124.00 | 116.56 | 131.44 | 50% | open |
 
 最近成交：
-- `2026-10-22` AAPL 到期退出，触发 348.22，成交 348.22，数量 28.5554。
-- `2026-10-22` MSFT 到期退出，触发 521.08，成交 521.08，数量 17.9309。
-- `2026-10-15` XOM 网格止盈，触发 177.94，成交 178.63，数量 56.4236。
-- `2026-10-15` V 网格止盈，触发 398.34，成交 398.34，数量 25.2051。
-- `2026-10-14` NVDA 网格止损，触发 219.81，成交 219.81，数量 81.0111。
+- `2026-11-16` PG 网格止盈，触发 172.10，成交 172.16，数量 59.2109。
+- `2026-11-13` WMT 网格止盈，触发 127.72，成交 127.72，数量 77.5281。
+- `2026-11-13` COST 网格止盈，触发 1107.96，成交 1107.96，数量 9.1973。
+- `2026-11-12` V 网格止盈，触发 426.13，成交 429.34，数量 23.2370。
+- `2026-11-11` COST 网格止盈，触发 1076.61，成交 1080.51，数量 9.1973。
 
 ## 每日重点资讯、财报与研报
 
@@ -43,237 +55,233 @@
 
 ### large_cap_22
 
-资讯日期 `2026-11-05`，可用标的 10/10。
+资讯日期 `2026-11-18`，可用标的 5/5。
+当前持仓周期仅展示资讯证据，不据此改仓；调整从下一周期选股开始。
 
 #### V
 
-- 汇总：近期待核验资料 24 条，财报/披露 6 条，研报/评级 15 条，资讯调整 +1.5 分。
-- 分析：规则化分析：正面标签为earnings_beat；风险标签为未识别规则化负面标签；资料覆盖 analyst_research, company_news, earnings, filing。
-- 预期影响：资讯层偏正面，下一新周期最多提高排序分至 +4 分；不直接保证价格上涨。
-- 影响面：盈利预期；期限：short_term
-- 资料：[US Fintech Weekly: Fiserv Bounces Post-Earnings, Crypto Brokers Suffer, And Federal Agencies Prepare Innovation Guidelines](https://finance.yahoo.com/markets/stocks/articles/us-fintech-weekly-fiserv-bounces-230925126.html)（Stocktwits，2026-11-05T23:09:25+00:00）
+- 汇总：近期待核验资料 23 条，财报/披露 2 条，研报/评级 16 条，资讯调整 +0.0 分。
+- 分析：规则化分析：正面标签为未识别规则化正面标签；风险标签为未识别规则化负面标签；资料覆盖 analyst_research, company_news, earnings, filing。
+- 预期影响：资讯层未形成净调整，候选仍主要由技术证据排序。
+- 影响面：待核验；期限：medium_term
+- 资料：[An $11 Billion Fund Dumps These 3 Stocks](https://finance.yahoo.com/markets/stocks/articles/11-billion-fund-dumps-3-193520397.html)（TIKR，2026-11-18T19:35:20+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[Visa Insider Sold Shares Worth $14,688,999, According to a Recent SEC Filing](https://finance.yahoo.com/markets/stocks/articles/visa-insider-sold-shares-worth-215433906.html)（MT Newswires，2026-11-05T21:54:33+00:00）
+- 资料：[Visa vs. American Express: Which Stock Has More Growth Potential?](https://finance.yahoo.com/markets/stocks/articles/visa-vs-american-express-stock-165900779.html)（Zacks，2026-11-18T16:59:00+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[BILL Reports First Quarter Fiscal Year 2027 Financial Results](https://finance.yahoo.com/markets/stocks/articles/bill-reports-first-quarter-fiscal-210100281.html)（Business Wire，2026-11-05T21:01:00+00:00）
+- 资料：[MEXC Shuts Down Crypto Card Three Months After Launch](https://finance.yahoo.com/markets/crypto/articles/mexc-shuts-down-crypto-card-151800371.html)（CryptoProwl，2026-11-18T15:18:00+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[Visa (V) Reports Record Earnings And Dividend Hike, Is The Stock Overvalued?](https://finance.yahoo.com/markets/stocks/articles/visa-v-reports-record-earnings-191119637.html)（Simply Wall St.，2026-11-05T19:11:19+00:00）
+- 资料：[Sezzle Launches Buy Now, Pay Later Monthly Subscription in Canada](https://finance.yahoo.com/markets/stocks/articles/sezzle-launches-buy-now-pay-144413056.html)（MT Newswires，2026-11-18T14:44:13+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[GPN Q3 Earnings Beat Estimates on Genius Growth, Margins Rise](https://finance.yahoo.com/markets/stocks/articles/gpn-q3-earnings-beat-estimates-180300069.html)（Zacks，2026-11-05T18:03:00+00:00）
-  - 条目分析：规则化识别到正面标签：earnings_beat；仅作为事件证据，不代表价格必然上涨。
-  - 条目预期影响：短期可能改善盈利预期、估值或资金偏好，实际影响取决于市场定价。
+- 资料：[Sezzle Anywhere Launches in Canada, Bringing BNPL Everywhere Visa Is Accepted](https://finance.yahoo.com/small-business/articles/sezzle-anywhere-launches-canada-bringing-140000922.html)（GlobeNewswire，2026-11-18T14:00:00+00:00）
+  - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
+  - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
 
 #### MA
 
-- 汇总：近期待核验资料 24 条，财报/披露 3 条，研报/评级 15 条，资讯调整 +1.5 分。
-- 分析：规则化分析：正面标签为earnings_beat；风险标签为未识别规则化负面标签；资料覆盖 analyst_research, company_news, earnings, filing。
-- 预期影响：资讯层偏正面，下一新周期最多提高排序分至 +4 分；不直接保证价格上涨。
-- 影响面：盈利预期；期限：short_term
-- 资料：[US Fintech Weekly: Fiserv Bounces Post-Earnings, Crypto Brokers Suffer, And Federal Agencies Prepare Innovation Guidelines](https://finance.yahoo.com/markets/stocks/articles/us-fintech-weekly-fiserv-bounces-230925126.html)（Stocktwits，2026-11-05T23:09:25+00:00）
+- 汇总：近期待核验资料 24 条，财报/披露 1 条，研报/评级 17 条，资讯调整 -1.2 分。
+- 分析：规则化分析：正面标签为未识别规则化正面标签；风险标签为analyst_downgrade；资料覆盖 analyst_research, company_news, filing。
+- 预期影响：资讯层偏负面，下一新周期降低排序分；若出现多类严重风险则排除候选。
+- 影响面：估值与资金偏好；期限：medium_term
+- 资料：[Ken Griffin Dumps SpaceX, Amazon; Buys ARKK and Bets Big on Marvell](https://finance.yahoo.com/markets/stocks/articles/ken-griffin-dumps-spacex-amazon-223005217.html)（Benzinga，2026-11-18T22:30:05+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[GPN Q3 Earnings Beat Estimates on Genius Growth, Margins Rise](https://finance.yahoo.com/markets/stocks/articles/gpn-q3-earnings-beat-estimates-180300069.html)（Zacks，2026-11-05T18:03:00+00:00）
-  - 条目分析：规则化识别到正面标签：earnings_beat；仅作为事件证据，不代表价格必然上涨。
-  - 条目预期影响：短期可能改善盈利预期、估值或资金偏好，实际影响取决于市场定价。
-- 资料：[Will a ‘blue wave’ push the CCCA?](https://finance.yahoo.com/economy/policy/articles/blue-wave-push-ccca-161900106.html)（Payments Dive，2026-11-05T16:19:00+00:00）
+- 资料：[A $2.6 Billion Fund Dumps These 3 Stocks](https://finance.yahoo.com/markets/stocks/articles/2-6-billion-fund-dumps-164608731.html)（TIKR，2026-11-18T16:46:08+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[Mastercard Stock Rose 22% in a Month. Here’s What Its Price Now Assumes](https://finance.yahoo.com/markets/stocks/articles/mastercard-stock-rose-22-month-144445238.html)（TIKR，2026-11-05T14:44:45+00:00）
+- 资料：[Temu and Mastercard Expand Collaboration on Digital Payments and Local Business Support](https://finance.yahoo.com/small-business/articles/temu-mastercard-expand-collaboration-digital-130000055.html)（PR Newswire，2026-11-18T13:00:00+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[Visa's Solid Q4 Masks Rising Incentives: Is V Still Worth Buying?](https://finance.yahoo.com/markets/stocks/articles/visas-solid-q4-masks-rising-140600930.html)（Zacks，2026-11-05T14:06:00+00:00）
+- 资料：[Why Is Global Payments Stock Falling?](https://finance.yahoo.com/markets/stocks/articles/why-global-payments-stock-falling-122450695.html)（Trefis，2026-11-18T12:24:50+00:00）
+  - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
+  - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
+- 资料：[What State Street Financial Select SPDR (XLF) Sold: Berkshire Leads on Monday](https://finance.yahoo.com/markets/stocks/articles/state-street-financial-select-spdr-110443770.html)（GuruFocus.com，2026-11-18T11:04:43+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
 
 #### COST
 
-- 汇总：近期待核验资料 6 条，财报/披露 2 条，研报/评级 4 条，资讯调整 +0.0 分。
-- 分析：规则化分析：正面标签为未识别规则化正面标签；风险标签为未识别规则化负面标签；资料覆盖 analyst_research, earnings, filing。
+- 汇总：近期待核验资料 8 条，财报/披露 2 条，研报/评级 3 条，资讯调整 +0.0 分。
+- 分析：规则化分析：正面标签为未识别规则化正面标签；风险标签为未识别规则化负面标签；资料覆盖 analyst_research, company_news, earnings, filing。
 - 预期影响：资讯层未形成净调整，候选仍主要由技术证据排序。
 - 影响面：待核验；期限：medium_term
-- 资料：JP Morgan main Overweight to Overweight（Yahoo Finance analyst actions，2026-11-05）
+- 资料：[Costco recalls food product that’s popular during the holidays](https://finance.yahoo.com/healthcare/articles/costco-recalls-food-product-popular-234500999.html)（TheStreet，2026-11-18T23:45:00+00:00）
+  - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
+  - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
+- 资料：[Costco generators sell out as tech outages spark panic buying](https://finance.yahoo.com/technology/articles/costco-generators-sell-tech-outages-232548429.html)（USA TODAY，2026-11-18T23:25:48+00:00）
+  - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
+  - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
+- 资料：[Food Processor Recovers $1.5M+ From Surplus MRO Inventory as Companies Reassess the Cost of Dead Stock, NRI Industrial Sales Analysis Finds](https://finance.yahoo.com/small-business/articles/food-processor-recovers-1-5m-222000521.html)（ACCESS Newswire，2026-11-18T22:20:00+00:00）
+  - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
+  - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
+- 资料：Bernstein main Outperform to Outperform（Yahoo Finance analyst actions，2026-11-11）
   - 原文摘要：公开分析师评级变更记录；具体观点以来源页面为准。
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：CICC initiated Outperform（Yahoo Finance analyst actions，2026-10-21）
-  - 原文摘要：公开分析师评级变更记录；具体观点以来源页面为准。
-  - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
-  - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[8-K: Corporate Changes & Voting Matters](https://finance.yahoo.com/sec-filing/COST/0000909832-26-000100_909832)（SEC EDGAR，2026-10-16）
-  - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
-  - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：Tigress Financial main Buy to Buy（Yahoo Finance analyst actions，2026-10-15）
-  - 原文摘要：公开分析师评级变更记录；具体观点以来源页面为准。
-  - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
-  - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：RBC Capital reit Sector Perform to Sector Perform（Yahoo Finance analyst actions，2026-10-09）
-  - 原文摘要：公开分析师评级变更记录；具体观点以来源页面为准。
+- 资料：[8-K: Corporate Changes & Voting Matters](https://finance.yahoo.com/sec-filing/COST/0000909832-26-000134_909832)（SEC EDGAR，2026-11-10）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
 
 #### PG
 
-- 汇总：近期待核验资料 23 条，财报/披露 4 条，研报/评级 14 条，资讯调整 +1.2 分。
+- 汇总：近期待核验资料 22 条，财报/披露 2 条，研报/评级 14 条，资讯调整 +0.6 分。
 - 分析：规则化分析：正面标签为analyst_upgrade；风险标签为未识别规则化负面标签；资料覆盖 analyst_research, company_news, earnings, filing。
 - 预期影响：资讯层偏正面，下一新周期最多提高排序分至 +4 分；不直接保证价格上涨。
 - 影响面：估值与资金偏好；期限：medium_term
-- 资料：[Procter & Gamble vs. Colgate-Palmolive: Which Dividend Stock Is Safer?](https://finance.yahoo.com/markets/stocks/articles/procter-gamble-vs-colgate-palmolive-184753134.html)（24/7 Wall St.，2026-11-05T18:47:53+00:00）
+- 资料：[Ken Griffin Dumps SpaceX, Amazon; Buys ARKK and Bets Big on Marvell](https://finance.yahoo.com/markets/stocks/articles/ken-griffin-dumps-spacex-amazon-223005217.html)（Benzinga，2026-11-18T22:30:05+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[General Mills Just Gained 15% in a Month: Take Profits, or Buy More?](https://finance.yahoo.com/markets/stocks/articles/general-mills-just-gained-15-152444047.html)（TIKR，2026-11-05T15:24:44+00:00）
+- 资料：[Invest $25,000 in These 4 Dividend Stocks to Start Building Retirement Income](https://finance.yahoo.com/markets/stocks/articles/invest-25-000-4-dividend-163053821.html)（24/7 Wall St.，2026-11-18T16:30:53+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[P&G to Webcast Presentation From P&G Investor Day 2026, November 19](https://finance.yahoo.com/markets/stocks/articles/p-g-webcast-presentation-p-120000780.html)（Business Wire，2026-11-05T14:55:00+00:00）
+- 资料：[Here’s How Much Passive Income $50,000 Generates in These 4 Dividend Aristocrats](https://finance.yahoo.com/markets/stocks/articles/much-passive-income-50-000-140219489.html)（24/7 Wall St.，2026-11-18T14:02:19+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[3 Dependable Dividend Stocks for a $250,000 Passive Income Strategy](https://finance.yahoo.com/markets/stocks/articles/3-dependable-dividend-stocks-250-144328197.html)（24/7 Wall St.，2026-11-05T14:43:28+00:00）
+- 资料：[Own P&G Stock For Safety? Watch Bond Yields](https://finance.yahoo.com/markets/stocks/articles/own-p-g-stock-safety-134156249.html)（Trefis，2026-11-18T13:41:56+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[Coca-Cola Is Up 39% This Year. How Much of That Is Earnings and How Much Is Multiple?](https://finance.yahoo.com/markets/stocks/articles/coca-cola-39-much-earnings-123914398.html)（TIKR，2026-11-05T12:39:14+00:00）
+- 资料：[Wells Fargo Adjusts Price Target on Procter & Gamble to $188 From $180](https://finance.yahoo.com/markets/stocks/articles/wells-fargo-adjusts-price-target-103500411.html)（MT Newswires，2026-11-18T10:35:00+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
 
 #### WMT
 
-- 汇总：近期待核验资料 10 条，财报/披露 3 条，研报/评级 2 条，资讯调整 +0.6 分。
-- 分析：规则化分析：正面标签为analyst_upgrade；风险标签为未识别规则化负面标签；资料覆盖 analyst_research, company_news, earnings, filing。
-- 预期影响：资讯层偏正面，下一新周期最多提高排序分至 +4 分；不直接保证价格上涨。
-- 影响面：估值与资金偏好；期限：medium_term
-- 资料：[Krispy Kreme, Inc. Q3 2026 Earnings Call Summary](https://finance.yahoo.com/markets/stocks/articles/krispy-kreme-inc-q3-2026-232035999.html)（Moby，2026-11-05T23:20:35+00:00）
+- 汇总：近期待核验资料 11 条，财报/披露 3 条，研报/评级 5 条，资讯调整 +0.0 分。
+- 分析：规则化分析：正面标签为未识别规则化正面标签；风险标签为未识别规则化负面标签；资料覆盖 analyst_research, company_news, earnings, filing。
+- 预期影响：资讯层未形成净调整，候选仍主要由技术证据排序。
+- 影响面：待核验；期限：medium_term
+- 资料：[What Moved Coupang Stock Over 5% Lower?](https://finance.yahoo.com/markets/stocks/articles/moved-coupang-stock-over-5-234256391.html)（Trefis，2026-11-18T23:42:56+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[Stock Market Today, Nov. 5: Amazon Shares Slide as Technology Selloff Erases Early Gains](https://finance.yahoo.com/markets/stocks/articles/stock-market-today-nov-5-225937741.html)（Motley Fool，2026-11-05T22:59:37+00:00）
+- 资料：[Earnings Calendar and Analysis for This Week](https://finance.yahoo.com/markets/stocks/articles/earnings-calendar-analysis-week-june-162434561.html)（Kiplinger，2026-11-18T21:17:46+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[Affirm delivers quarterly results and guidance beat, raises full-year GMV outlook](https://finance.yahoo.com/markets/stocks/articles/affirm-delivers-quarterly-results-guidance-215510525.html)（Investing.com，2026-11-05T21:55:10+00:00）
+- 资料：[Walmart Earnings Could Add to Its Winning Streak](https://finance.yahoo.com/m/e1b03594-d419-34dc-b0da-f74ff752b7cc/walmart-earnings-could-add-to.html)（Barrons.com，2026-11-18T21:15:00+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[Walmart (WMT) Stock Moves -1.12%: What You Should Know](https://finance.yahoo.com/markets/stocks/articles/walmart-wmt-stock-moves-1-214503535.html)（Zacks，2026-11-05T21:45:03+00:00）
+- 资料：[Pricey Walmart Stock Falls More Often, Not Harder](https://finance.yahoo.com/markets/stocks/articles/pricey-walmart-stock-falls-more-195556369.html)（Trefis，2026-11-18T19:55:56+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[Apple and Home Depot join list of objectors to tokenized stock plan pushed by NYSE owner](https://finance.yahoo.com/markets/crypto/articles/apple-home-depot-join-list-183416535.html)（Fortune，2026-11-05T18:34:16+00:00）
+- 资料：[In 2008, The “Walmart Recession Signal” Neared A Record As The Market Collapsed. One Economist Says It Is Starting To Rise Again](https://finance.yahoo.com/economy/policy/articles/2008-walmart-recession-signal-neared-195247774.html)（24/7 Wall St.，2026-11-18T19:52:47+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
 
 ### diversified_60
 
-资讯日期 `2026-11-05`，可用标的 15/15。
+资讯日期 `2026-11-18`，可用标的 5/5。
+当前持仓周期仅展示资讯证据，不据此改仓；调整从下一周期选股开始。
 
 #### V
 
-- 汇总：近期待核验资料 24 条，财报/披露 6 条，研报/评级 15 条，资讯调整 +1.5 分。
-- 分析：规则化分析：正面标签为earnings_beat；风险标签为未识别规则化负面标签；资料覆盖 analyst_research, company_news, earnings, filing。
-- 预期影响：资讯层偏正面，下一新周期最多提高排序分至 +4 分；不直接保证价格上涨。
-- 影响面：盈利预期；期限：short_term
-- 资料：[US Fintech Weekly: Fiserv Bounces Post-Earnings, Crypto Brokers Suffer, And Federal Agencies Prepare Innovation Guidelines](https://finance.yahoo.com/markets/stocks/articles/us-fintech-weekly-fiserv-bounces-230925126.html)（Stocktwits，2026-11-05T23:09:25+00:00）
+- 汇总：近期待核验资料 23 条，财报/披露 2 条，研报/评级 16 条，资讯调整 +0.0 分。
+- 分析：规则化分析：正面标签为未识别规则化正面标签；风险标签为未识别规则化负面标签；资料覆盖 analyst_research, company_news, earnings, filing。
+- 预期影响：资讯层未形成净调整，候选仍主要由技术证据排序。
+- 影响面：待核验；期限：medium_term
+- 资料：[An $11 Billion Fund Dumps These 3 Stocks](https://finance.yahoo.com/markets/stocks/articles/11-billion-fund-dumps-3-193520397.html)（TIKR，2026-11-18T19:35:20+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[Visa Insider Sold Shares Worth $14,688,999, According to a Recent SEC Filing](https://finance.yahoo.com/markets/stocks/articles/visa-insider-sold-shares-worth-215433906.html)（MT Newswires，2026-11-05T21:54:33+00:00）
+- 资料：[Visa vs. American Express: Which Stock Has More Growth Potential?](https://finance.yahoo.com/markets/stocks/articles/visa-vs-american-express-stock-165900779.html)（Zacks，2026-11-18T16:59:00+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[BILL Reports First Quarter Fiscal Year 2027 Financial Results](https://finance.yahoo.com/markets/stocks/articles/bill-reports-first-quarter-fiscal-210100281.html)（Business Wire，2026-11-05T21:01:00+00:00）
+- 资料：[MEXC Shuts Down Crypto Card Three Months After Launch](https://finance.yahoo.com/markets/crypto/articles/mexc-shuts-down-crypto-card-151800371.html)（CryptoProwl，2026-11-18T15:18:00+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[Visa (V) Reports Record Earnings And Dividend Hike, Is The Stock Overvalued?](https://finance.yahoo.com/markets/stocks/articles/visa-v-reports-record-earnings-191119637.html)（Simply Wall St.，2026-11-05T19:11:19+00:00）
+- 资料：[Sezzle Launches Buy Now, Pay Later Monthly Subscription in Canada](https://finance.yahoo.com/markets/stocks/articles/sezzle-launches-buy-now-pay-144413056.html)（MT Newswires，2026-11-18T14:44:13+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[GPN Q3 Earnings Beat Estimates on Genius Growth, Margins Rise](https://finance.yahoo.com/markets/stocks/articles/gpn-q3-earnings-beat-estimates-180300069.html)（Zacks，2026-11-05T18:03:00+00:00）
-  - 条目分析：规则化识别到正面标签：earnings_beat；仅作为事件证据，不代表价格必然上涨。
-  - 条目预期影响：短期可能改善盈利预期、估值或资金偏好，实际影响取决于市场定价。
+- 资料：[Sezzle Anywhere Launches in Canada, Bringing BNPL Everywhere Visa Is Accepted](https://finance.yahoo.com/small-business/articles/sezzle-anywhere-launches-canada-bringing-140000922.html)（GlobeNewswire，2026-11-18T14:00:00+00:00）
+  - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
+  - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
 
 #### MA
 
-- 汇总：近期待核验资料 24 条，财报/披露 3 条，研报/评级 15 条，资讯调整 +1.5 分。
-- 分析：规则化分析：正面标签为earnings_beat；风险标签为未识别规则化负面标签；资料覆盖 analyst_research, company_news, earnings, filing。
-- 预期影响：资讯层偏正面，下一新周期最多提高排序分至 +4 分；不直接保证价格上涨。
-- 影响面：盈利预期；期限：short_term
-- 资料：[US Fintech Weekly: Fiserv Bounces Post-Earnings, Crypto Brokers Suffer, And Federal Agencies Prepare Innovation Guidelines](https://finance.yahoo.com/markets/stocks/articles/us-fintech-weekly-fiserv-bounces-230925126.html)（Stocktwits，2026-11-05T23:09:25+00:00）
+- 汇总：近期待核验资料 24 条，财报/披露 1 条，研报/评级 17 条，资讯调整 -1.2 分。
+- 分析：规则化分析：正面标签为未识别规则化正面标签；风险标签为analyst_downgrade；资料覆盖 analyst_research, company_news, filing。
+- 预期影响：资讯层偏负面，下一新周期降低排序分；若出现多类严重风险则排除候选。
+- 影响面：估值与资金偏好；期限：medium_term
+- 资料：[Ken Griffin Dumps SpaceX, Amazon; Buys ARKK and Bets Big on Marvell](https://finance.yahoo.com/markets/stocks/articles/ken-griffin-dumps-spacex-amazon-223005217.html)（Benzinga，2026-11-18T22:30:05+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[GPN Q3 Earnings Beat Estimates on Genius Growth, Margins Rise](https://finance.yahoo.com/markets/stocks/articles/gpn-q3-earnings-beat-estimates-180300069.html)（Zacks，2026-11-05T18:03:00+00:00）
-  - 条目分析：规则化识别到正面标签：earnings_beat；仅作为事件证据，不代表价格必然上涨。
-  - 条目预期影响：短期可能改善盈利预期、估值或资金偏好，实际影响取决于市场定价。
-- 资料：[Will a ‘blue wave’ push the CCCA?](https://finance.yahoo.com/economy/policy/articles/blue-wave-push-ccca-161900106.html)（Payments Dive，2026-11-05T16:19:00+00:00）
+- 资料：[A $2.6 Billion Fund Dumps These 3 Stocks](https://finance.yahoo.com/markets/stocks/articles/2-6-billion-fund-dumps-164608731.html)（TIKR，2026-11-18T16:46:08+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[Mastercard Stock Rose 22% in a Month. Here’s What Its Price Now Assumes](https://finance.yahoo.com/markets/stocks/articles/mastercard-stock-rose-22-month-144445238.html)（TIKR，2026-11-05T14:44:45+00:00）
+- 资料：[Temu and Mastercard Expand Collaboration on Digital Payments and Local Business Support](https://finance.yahoo.com/small-business/articles/temu-mastercard-expand-collaboration-digital-130000055.html)（PR Newswire，2026-11-18T13:00:00+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[Visa's Solid Q4 Masks Rising Incentives: Is V Still Worth Buying?](https://finance.yahoo.com/markets/stocks/articles/visas-solid-q4-masks-rising-140600930.html)（Zacks，2026-11-05T14:06:00+00:00）
+- 资料：[Why Is Global Payments Stock Falling?](https://finance.yahoo.com/markets/stocks/articles/why-global-payments-stock-falling-122450695.html)（Trefis，2026-11-18T12:24:50+00:00）
+  - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
+  - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
+- 资料：[What State Street Financial Select SPDR (XLF) Sold: Berkshire Leads on Monday](https://finance.yahoo.com/markets/stocks/articles/state-street-financial-select-spdr-110443770.html)（GuruFocus.com，2026-11-18T11:04:43+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
 
 #### PG
 
-- 汇总：近期待核验资料 23 条，财报/披露 4 条，研报/评级 14 条，资讯调整 +1.2 分。
+- 汇总：近期待核验资料 22 条，财报/披露 2 条，研报/评级 14 条，资讯调整 +0.6 分。
 - 分析：规则化分析：正面标签为analyst_upgrade；风险标签为未识别规则化负面标签；资料覆盖 analyst_research, company_news, earnings, filing。
 - 预期影响：资讯层偏正面，下一新周期最多提高排序分至 +4 分；不直接保证价格上涨。
 - 影响面：估值与资金偏好；期限：medium_term
-- 资料：[Procter & Gamble vs. Colgate-Palmolive: Which Dividend Stock Is Safer?](https://finance.yahoo.com/markets/stocks/articles/procter-gamble-vs-colgate-palmolive-184753134.html)（24/7 Wall St.，2026-11-05T18:47:53+00:00）
+- 资料：[Ken Griffin Dumps SpaceX, Amazon; Buys ARKK and Bets Big on Marvell](https://finance.yahoo.com/markets/stocks/articles/ken-griffin-dumps-spacex-amazon-223005217.html)（Benzinga，2026-11-18T22:30:05+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[General Mills Just Gained 15% in a Month: Take Profits, or Buy More?](https://finance.yahoo.com/markets/stocks/articles/general-mills-just-gained-15-152444047.html)（TIKR，2026-11-05T15:24:44+00:00）
+- 资料：[Invest $25,000 in These 4 Dividend Stocks to Start Building Retirement Income](https://finance.yahoo.com/markets/stocks/articles/invest-25-000-4-dividend-163053821.html)（24/7 Wall St.，2026-11-18T16:30:53+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[P&G to Webcast Presentation From P&G Investor Day 2026, November 19](https://finance.yahoo.com/markets/stocks/articles/p-g-webcast-presentation-p-120000780.html)（Business Wire，2026-11-05T14:55:00+00:00）
+- 资料：[Here’s How Much Passive Income $50,000 Generates in These 4 Dividend Aristocrats](https://finance.yahoo.com/markets/stocks/articles/much-passive-income-50-000-140219489.html)（24/7 Wall St.，2026-11-18T14:02:19+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[3 Dependable Dividend Stocks for a $250,000 Passive Income Strategy](https://finance.yahoo.com/markets/stocks/articles/3-dependable-dividend-stocks-250-144328197.html)（24/7 Wall St.，2026-11-05T14:43:28+00:00）
+- 资料：[Own P&G Stock For Safety? Watch Bond Yields](https://finance.yahoo.com/markets/stocks/articles/own-p-g-stock-safety-134156249.html)（Trefis，2026-11-18T13:41:56+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[Coca-Cola Is Up 39% This Year. How Much of That Is Earnings and How Much Is Multiple?](https://finance.yahoo.com/markets/stocks/articles/coca-cola-39-much-earnings-123914398.html)（TIKR，2026-11-05T12:39:14+00:00）
+- 资料：[Wells Fargo Adjusts Price Target on Procter & Gamble to $188 From $180](https://finance.yahoo.com/markets/stocks/articles/wells-fargo-adjusts-price-target-103500411.html)（MT Newswires，2026-11-18T10:35:00+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
 
 #### COST
 
-- 汇总：近期待核验资料 6 条，财报/披露 2 条，研报/评级 4 条，资讯调整 +0.0 分。
-- 分析：规则化分析：正面标签为未识别规则化正面标签；风险标签为未识别规则化负面标签；资料覆盖 analyst_research, earnings, filing。
+- 汇总：近期待核验资料 8 条，财报/披露 2 条，研报/评级 3 条，资讯调整 +0.0 分。
+- 分析：规则化分析：正面标签为未识别规则化正面标签；风险标签为未识别规则化负面标签；资料覆盖 analyst_research, company_news, earnings, filing。
 - 预期影响：资讯层未形成净调整，候选仍主要由技术证据排序。
 - 影响面：待核验；期限：medium_term
-- 资料：JP Morgan main Overweight to Overweight（Yahoo Finance analyst actions，2026-11-05）
+- 资料：[Costco recalls food product that’s popular during the holidays](https://finance.yahoo.com/healthcare/articles/costco-recalls-food-product-popular-234500999.html)（TheStreet，2026-11-18T23:45:00+00:00）
+  - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
+  - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
+- 资料：[Costco generators sell out as tech outages spark panic buying](https://finance.yahoo.com/technology/articles/costco-generators-sell-tech-outages-232548429.html)（USA TODAY，2026-11-18T23:25:48+00:00）
+  - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
+  - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
+- 资料：[Food Processor Recovers $1.5M+ From Surplus MRO Inventory as Companies Reassess the Cost of Dead Stock, NRI Industrial Sales Analysis Finds](https://finance.yahoo.com/small-business/articles/food-processor-recovers-1-5m-222000521.html)（ACCESS Newswire，2026-11-18T22:20:00+00:00）
+  - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
+  - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
+- 资料：Bernstein main Outperform to Outperform（Yahoo Finance analyst actions，2026-11-11）
   - 原文摘要：公开分析师评级变更记录；具体观点以来源页面为准。
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：CICC initiated Outperform（Yahoo Finance analyst actions，2026-10-21）
-  - 原文摘要：公开分析师评级变更记录；具体观点以来源页面为准。
-  - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
-  - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[8-K: Corporate Changes & Voting Matters](https://finance.yahoo.com/sec-filing/COST/0000909832-26-000100_909832)（SEC EDGAR，2026-10-16）
-  - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
-  - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：Tigress Financial main Buy to Buy（Yahoo Finance analyst actions，2026-10-15）
-  - 原文摘要：公开分析师评级变更记录；具体观点以来源页面为准。
-  - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
-  - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：RBC Capital reit Sector Perform to Sector Perform（Yahoo Finance analyst actions，2026-10-09）
-  - 原文摘要：公开分析师评级变更记录；具体观点以来源页面为准。
+- 资料：[8-K: Corporate Changes & Voting Matters](https://finance.yahoo.com/sec-filing/COST/0000909832-26-000134_909832)（SEC EDGAR，2026-11-10）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
 
 #### WMT
 
-- 汇总：近期待核验资料 10 条，财报/披露 3 条，研报/评级 2 条，资讯调整 +0.6 分。
-- 分析：规则化分析：正面标签为analyst_upgrade；风险标签为未识别规则化负面标签；资料覆盖 analyst_research, company_news, earnings, filing。
-- 预期影响：资讯层偏正面，下一新周期最多提高排序分至 +4 分；不直接保证价格上涨。
-- 影响面：估值与资金偏好；期限：medium_term
-- 资料：[Krispy Kreme, Inc. Q3 2026 Earnings Call Summary](https://finance.yahoo.com/markets/stocks/articles/krispy-kreme-inc-q3-2026-232035999.html)（Moby，2026-11-05T23:20:35+00:00）
+- 汇总：近期待核验资料 11 条，财报/披露 3 条，研报/评级 5 条，资讯调整 +0.0 分。
+- 分析：规则化分析：正面标签为未识别规则化正面标签；风险标签为未识别规则化负面标签；资料覆盖 analyst_research, company_news, earnings, filing。
+- 预期影响：资讯层未形成净调整，候选仍主要由技术证据排序。
+- 影响面：待核验；期限：medium_term
+- 资料：[What Moved Coupang Stock Over 5% Lower?](https://finance.yahoo.com/markets/stocks/articles/moved-coupang-stock-over-5-234256391.html)（Trefis，2026-11-18T23:42:56+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[Stock Market Today, Nov. 5: Amazon Shares Slide as Technology Selloff Erases Early Gains](https://finance.yahoo.com/markets/stocks/articles/stock-market-today-nov-5-225937741.html)（Motley Fool，2026-11-05T22:59:37+00:00）
+- 资料：[Earnings Calendar and Analysis for This Week](https://finance.yahoo.com/markets/stocks/articles/earnings-calendar-analysis-week-june-162434561.html)（Kiplinger，2026-11-18T21:17:46+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[Affirm delivers quarterly results and guidance beat, raises full-year GMV outlook](https://finance.yahoo.com/markets/stocks/articles/affirm-delivers-quarterly-results-guidance-215510525.html)（Investing.com，2026-11-05T21:55:10+00:00）
+- 资料：[Walmart Earnings Could Add to Its Winning Streak](https://finance.yahoo.com/m/e1b03594-d419-34dc-b0da-f74ff752b7cc/walmart-earnings-could-add-to.html)（Barrons.com，2026-11-18T21:15:00+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[Walmart (WMT) Stock Moves -1.12%: What You Should Know](https://finance.yahoo.com/markets/stocks/articles/walmart-wmt-stock-moves-1-214503535.html)（Zacks，2026-11-05T21:45:03+00:00）
+- 资料：[Pricey Walmart Stock Falls More Often, Not Harder](https://finance.yahoo.com/markets/stocks/articles/pricey-walmart-stock-falls-more-195556369.html)（Trefis，2026-11-18T19:55:56+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
-- 资料：[Apple and Home Depot join list of objectors to tokenized stock plan pushed by NYSE owner](https://finance.yahoo.com/markets/crypto/articles/apple-home-depot-join-list-183416535.html)（Fortune，2026-11-05T18:34:16+00:00）
+- 资料：[In 2008, The “Walmart Recession Signal” Neared A Record As The Market Collapsed. One Economist Says It Is Starting To Rise Again](https://finance.yahoo.com/economy/policy/articles/2008-walmart-recession-signal-neared-195247774.html)（24/7 Wall St.，2026-11-18T19:52:47+00:00）
   - 条目分析：标题未命中预设正负面词表，未对事实作额外推断。
   - 条目预期影响：暂不改变排序分，等待原文、后续披露和价格反应。
 
@@ -343,6 +351,18 @@
 | 2026-10-15 | 卖出 | XOM | 178.63 | 60.5108 | grid_take_profit | Yahoo Finance daily open gap |
 | 2026-10-22 | 卖出 | AAPL | 348.22 | 30.6239 | time_exit | Yahoo Finance daily close |
 | 2026-10-22 | 卖出 | MSFT | 521.08 | 19.2298 | time_exit | Yahoo Finance daily close |
+| 2026-11-06 | 买入 | COST | 1045.25 | 19.7271 | cycle_entry | US daily open simulation |
+| 2026-11-06 | 买入 | MA | 642.25 | 32.1055 | cycle_entry | US daily open simulation |
+| 2026-11-06 | 买入 | PG | 162.36 | 127.0002 | cycle_entry | US daily open simulation |
+| 2026-11-06 | 买入 | V | 413.71 | 49.8406 | cycle_entry | US daily open simulation |
+| 2026-11-06 | 买入 | WMT | 124.00 | 166.2884 | cycle_entry | US daily open simulation |
+| 2026-11-09 | 卖出 | PG | 167.23 | 63.5001 | grid_take_profit | Yahoo Finance daily OHLC |
+| 2026-11-10 | 卖出 | MA | 661.52 | 16.0528 | grid_take_profit | Yahoo Finance daily OHLC |
+| 2026-11-11 | 卖出 | COST | 1080.51 | 9.8636 | grid_take_profit | Yahoo Finance daily open gap |
+| 2026-11-12 | 卖出 | V | 429.34 | 24.9203 | grid_take_profit | Yahoo Finance daily open gap |
+| 2026-11-13 | 卖出 | COST | 1107.96 | 9.8636 | grid_take_profit | Yahoo Finance daily OHLC |
+| 2026-11-13 | 卖出 | WMT | 127.72 | 83.1442 | grid_take_profit | Yahoo Finance daily OHLC |
+| 2026-11-16 | 卖出 | PG | 172.16 | 63.5001 | grid_take_profit | Yahoo Finance daily open gap |
 
 ### diversified_60
 
@@ -409,6 +429,18 @@
 | 2026-10-15 | 卖出 | XOM | 178.63 | 56.4236 | grid_take_profit | Yahoo Finance daily open gap |
 | 2026-10-22 | 卖出 | AAPL | 348.22 | 28.5554 | time_exit | Yahoo Finance daily close |
 | 2026-10-22 | 卖出 | MSFT | 521.08 | 17.9309 | time_exit | Yahoo Finance daily close |
+| 2026-11-06 | 买入 | COST | 1045.25 | 18.3946 | cycle_entry | US daily open simulation |
+| 2026-11-06 | 买入 | MA | 642.25 | 29.9369 | cycle_entry | US daily open simulation |
+| 2026-11-06 | 买入 | PG | 162.36 | 118.4218 | cycle_entry | US daily open simulation |
+| 2026-11-06 | 买入 | V | 413.71 | 46.4740 | cycle_entry | US daily open simulation |
+| 2026-11-06 | 买入 | WMT | 124.00 | 155.0562 | cycle_entry | US daily open simulation |
+| 2026-11-09 | 卖出 | PG | 167.23 | 59.2109 | grid_take_profit | Yahoo Finance daily OHLC |
+| 2026-11-10 | 卖出 | MA | 661.52 | 14.9684 | grid_take_profit | Yahoo Finance daily OHLC |
+| 2026-11-11 | 卖出 | COST | 1080.51 | 9.1973 | grid_take_profit | Yahoo Finance daily open gap |
+| 2026-11-12 | 卖出 | V | 429.34 | 23.2370 | grid_take_profit | Yahoo Finance daily open gap |
+| 2026-11-13 | 卖出 | COST | 1107.96 | 9.1973 | grid_take_profit | Yahoo Finance daily OHLC |
+| 2026-11-13 | 卖出 | WMT | 127.72 | 77.5281 | grid_take_profit | Yahoo Finance daily OHLC |
+| 2026-11-16 | 卖出 | PG | 172.16 | 59.2109 | grid_take_profit | Yahoo Finance daily open gap |
 
 ## 多基准比较
 
@@ -416,13 +448,13 @@
 
 | 基准 | 基准累计收益 | 策略超额 |
 | --- | ---: | ---: |
-| SPY | -2.16% | +5.26pp |
-| QQQ | -4.02% | +7.12pp |
-| IWM | -7.74% | +10.84pp |
-| DIA | -2.53% | +5.63pp |
-| RSP | -0.94% | +4.04pp |
+| SPY | -2.97% | +9.10pp |
+| QQQ | -4.05% | +10.17pp |
+| IWM | -8.56% | +14.69pp |
+| DIA | -4.06% | +10.19pp |
+| RSP | -1.05% | +7.18pp |
 
-当前周期：`pending`，信号日 `2026-11-05`。
+当前周期：`open`，信号日 `2026-11-05`。
 周期策略版本：`2.1`；评分卡：`us_evidence_news_v3`。
 候选：V (87.7)、MA (81.9)、COST (81.5)、PG (80.1)、WMT (79.1)
 
@@ -430,13 +462,13 @@
 
 | 基准 | 基准累计收益 | 策略超额 |
 | --- | ---: | ---: |
-| SPY | -2.16% | -1.71pp |
-| QQQ | -4.02% | +0.16pp |
-| IWM | -7.74% | +3.88pp |
-| DIA | -2.53% | -1.34pp |
-| RSP | -0.94% | -2.93pp |
+| SPY | -2.97% | +1.93pp |
+| QQQ | -4.05% | +3.00pp |
+| IWM | -8.56% | +7.52pp |
+| DIA | -4.06% | +3.02pp |
+| RSP | -1.05% | +0.01pp |
 
-当前周期：`pending`，信号日 `2026-11-05`。
+当前周期：`open`，信号日 `2026-11-05`。
 周期策略版本：`2.1`；评分卡：`us_evidence_news_v3`。
 候选：V (90.0)、MA (87.5)、PG (87.2)、COST (86.8)、WMT (84.3)
 
@@ -444,7 +476,7 @@
 
 ### large_cap_22
 
-信号日 `2026-11-05`，当前周期 `pending`。
+信号日 `2026-11-05`，当前周期 `open`。
 
 #### 1. V - 87.7 分
 
@@ -513,7 +545,7 @@
 
 ### diversified_60
 
-信号日 `2026-11-05`，当前周期 `pending`。
+信号日 `2026-11-05`，当前周期 `open`。
 
 #### 1. V - 90.0 分
 
