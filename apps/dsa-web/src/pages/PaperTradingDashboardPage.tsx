@@ -176,6 +176,8 @@ type ActiveCycle = {
 };
 
 type Portfolio = {
+  scan_error?: string;
+  pricing_error?: string;
   universe: string[];
   active_cycle?: ActiveCycle | null;
   closed_cycles: unknown[];
@@ -244,6 +246,7 @@ const REPOSITORY_URL = 'https://github.com/limerenc33/daily_stock_analysis';
 const PORTFOLIO_LABELS: Record<string, string> = {
   large_cap_22: '大盘股 22',
   diversified_60: '跨行业 60',
+  us_full_market: '全市场普通股',
 };
 const FACTOR_LABELS: Record<string, string> = {
   trend_confirmation: '趋势确认',
@@ -472,6 +475,8 @@ const PaperTradingDashboardPage = () => {
     );
   }
 
+  const fullMarket = state.portfolios.us_full_market;
+  const comparisonStart = fullMarket?.snapshots[0]?.date;
   const returnTone = latest.strategy_total_return_pct > 0
     ? 'positive'
     : latest.strategy_total_return_pct < 0 ? 'negative' : 'neutral';
@@ -549,8 +554,33 @@ const PaperTradingDashboardPage = () => {
           </a>
         </section>
 
+        <section aria-label="组合同期收益" className="border-b border-border py-5">
+          <h2 className="font-semibold">组合同期收益</h2>
+          {comparisonStart ? (
+            <>
+              <p className="mt-1 text-xs text-muted-text">收盘净值比较 · {comparisonStart} 至 {state.latest_market_date}</p>
+              <dl className="mt-3 grid grid-cols-3 gap-2 sm:gap-3">
+                {portfolioEntries.map(([name, account]) => {
+                  const start = account.snapshots.find(s => s.date === comparisonStart);
+                  const end = account.snapshots.at(-1);
+                  const value = start && start.strategy_equity > 0 && end?.date === state.latest_market_date
+                    ? (end.strategy_equity / start.strategy_equity - 1) * 100 : null;
+                  return (
+                    <div key={name} className="border-l border-border pl-3">
+                      <dt className="text-xs text-muted-text">{PORTFOLIO_LABELS[name] || name}</dt>
+                      <dd className="mt-1 font-semibold tabular-nums">{value === null ? '缺少同期净值' : formatPercent(value)}</dd>
+                    </div>
+                  );
+                })}
+              </dl>
+              {fullMarket.pricing_error && <p className="mt-2 text-sm text-amber-500">全市场净值截至 {fullMarket.snapshots.at(-1)?.date}，等待补齐持仓行情。</p>}
+              {fullMarket.scan_error && <p className="mt-2 text-sm text-amber-500">全市场暂缓选股 · {fullMarket.scan_error}</p>}
+            </>
+          ) : <p className="mt-1 text-sm text-secondary-text">全市场组合等待大盘股 22 的下一轮选股信号。</p>}
+        </section>
+
         <section className="paper-tabs py-5">
-          <div className="inline-flex max-w-full border border-border bg-card p-1" role="tablist" aria-label="股票池">
+          <div className="inline-flex max-w-full flex-wrap border border-border bg-card p-1" role="tablist" aria-label="股票池">
             {portfolioEntries.map(([name]) => (
               <button
                 key={name}
@@ -988,7 +1018,8 @@ const PaperTradingDashboardPage = () => {
               ['持有周期', `${state.config.holding_days} 个交易日`],
               ['网格步长', `${(state.config.grid_step_pct || 3).toFixed(1)}%`],
               ['单边成本', `${state.config.per_side_cost_bps} bps`],
-              ['行情覆盖', `${((cycle?.coverage?.ratio || 0) * 100).toFixed(0)}%`],
+              ['本轮候选范围', cycle?.coverage ? `${portfolio.universe.length.toLocaleString()} 只` : '待选股'],
+              ['行情覆盖', cycle?.coverage ? `${(cycle.coverage.ratio * 100).toFixed(1)}%` : '待选股'],
             ].map(([label, value]) => (
               <div key={label} className="border-l-2 border-border px-3 py-1">
                 <div className="text-xs text-muted-text">{label}</div>

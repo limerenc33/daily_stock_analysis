@@ -9,6 +9,7 @@ import json
 import os
 from pathlib import Path
 import sys
+from time import monotonic
 
 import pandas as pd
 
@@ -17,11 +18,16 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from scripts.run_us_strategy_validation_suite import BENCHMARKS, STOCK_UNIVERSES, UNIVERSES
+from scripts.us_listed_stocks import current_symbols
+from src.core.trading_calendar import get_effective_trading_date
 from src.services.screening.us_backtest import normalize_price_history
 from src.services.screening.us_paper_trading import (
+    FULL_MARKET,
+    MarketScanUnavailable,
     USPaperTradingConfig,
     advance_paper_trading_state,
     create_paper_trading_state,
+    rank_candidates_on_date,
     render_paper_trading_report,
 )
 from src.services.screening.strategy import load_all_strategies
@@ -66,25 +72,36 @@ def download_yahoo_histories(
     start: date,
     end: date,
     batch_size: int = 25,
+    broad_scan: bool = False,
 ) -> dict[str, pd.DataFrame]:
-    """Download adjusted daily bars in bounded batches with individual retries."""
+    """Download adjusted daily bars; reserve individual retries for the small daily ledger."""
     import yfinance as yf
 
     histories: dict[str, pd.DataFrame] = {}
+    started = monotonic()
     for offset in range(0, len(tickers), batch_size):
+        if broad_scan and monotonic() - started > 1800:
+            raise MarketScanUnavailable("全市场行情下载超时")
         batch = tickers[offset: offset + batch_size]
         print(f"Yahoo batch {offset // batch_size + 1}: {len(batch)} tickers", flush=True)
-        raw = yf.download(
-            batch,
-            start=start.isoformat(),
-            end=(end + timedelta(days=1)).isoformat(),
-            auto_adjust=True,
-            actions=False,
-            progress=False,
-            threads=False,
-            group_by="column",
-        )
+        try:
+            raw = yf.download(
+                batch,
+                start=start.isoformat(),
+                end=(end + timedelta(days=1)).isoformat(),
+                auto_adjust=True,
+                actions=False,
+                progress=False,
+                threads=8 if broad_scan else False,
+                group_by="column",
+            )
+        except Exception as exc:
+            if not broad_scan:
+                raise
+            raise MarketScanUnavailable(f"Yahoo 全市场行情请求失败：{exc}") from exc
         histories.update(split_yfinance_download(raw, batch))
+    if broad_scan:
+        return histories
     missing = [ticker for ticker in tickers if ticker not in histories]
     for ticker in missing:
         print(f"Yahoo individual retry: {ticker}", flush=True)
@@ -101,6 +118,27 @@ def download_yahoo_histories(
         if not normalized.empty:
             histories[ticker] = normalized
     return histories
+
+
+def rank_full_market(
+    session: date, existing: dict[str, pd.DataFrame], config: USPaperTradingConfig,
+    history_days: int, batch_size: int,
+) -> tuple[list[str], dict]:
+    try:
+        symbols = current_symbols(session)
+        missing = [symbol for symbol in symbols if symbol not in existing]
+        downloaded = download_yahoo_histories(
+            missing, start=session - timedelta(days=history_days), end=session,
+            batch_size=batch_size, broad_scan=True,
+        )
+        bars = {symbol: existing.get(symbol, downloaded.get(symbol)) for symbol in symbols}
+        ranked = rank_candidates_on_date(
+            config.strategy_name, bars, session, top_k=config.top_k * 3,
+            lookback_days=config.lookback_days, minimum_universe_coverage=config.minimum_universe_coverage,
+        )
+    except (ValueError, KeyError, OSError) as exc:
+        raise MarketScanUnavailable(f"全市场目录或行情不可用：{exc}") from exc
+    return symbols, ranked
 
 
 def _load_or_create_state(
@@ -241,12 +279,17 @@ def main() -> int:
     previous_market_date = str(state.get("latest_market_date") or "").strip()
     if config_overrides:
         state.setdefault("config", {}).update(config_overrides)
-    requested_end = args.as_of or date.today()
+    last_session = get_effective_trading_date("us")
+    requested_end = min(args.as_of or last_session, last_session)
+    full_market = state.get("portfolios", {}).get(FULL_MARKET, {})
+    previous_errors = {key for key in ("scan_error", "pricing_error") if full_market.get(key)}
+    active = full_market.get("active_cycle") or {}
     tickers = list(dict.fromkeys(
         ticker
         for name in STOCK_UNIVERSES
         for ticker in UNIVERSES[name]
     ))
+    tickers.extend(item["code"] for item in active.get("selected", []))
     tickers = list(dict.fromkeys([*tickers, *BENCHMARKS]))
     histories = download_yahoo_histories(
         tickers,
@@ -273,14 +316,21 @@ def main() -> int:
     advance_paper_trading_state(
         state,
         histories,
-        as_of=args.as_of,
+        as_of=requested_end,
         news_provider=news_provider,
+        market_ranker=lambda session: rank_full_market(
+            session, histories, USPaperTradingConfig(**state["config"]), args.history_days, args.batch_size,
+        ),
     )
     current_market_date = str(state.get("latest_market_date") or "").strip()
+    recovered = current_market_date == previous_market_date and any(
+        not full_market.get(key) for key in previous_errors
+    )
     if (
         args.skip_unchanged_session
         and previous_market_date
         and current_market_date <= previous_market_date
+        and not recovered
     ):
         print(
             "no newer completed market session; "

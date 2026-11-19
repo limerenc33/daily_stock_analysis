@@ -216,6 +216,28 @@ describe('PaperTradingDashboardPage', () => {
     await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
   });
 
+  it('compares from the full-market start and opens its ledger', async () => {
+    const fixed = state.portfolios.large_cap_22;
+    const first = fixed.snapshots[0];
+    const end = { ...first, date: '2026-08-11', strategy_equity: 109450 };
+    const full = { ...fixed, snapshots: [
+      { ...first, strategy_equity: 100000 }, { ...end, strategy_equity: 98000 },
+    ] };
+    vi.mocked(fetch).mockResolvedValue({ ok: true, json: async () => ({
+      ...state, latest_market_date: end.date, portfolios: {
+        large_cap_22: { ...fixed, snapshots: [first, end] },
+        diversified_60: { ...fixed, snapshots: [end] }, us_full_market: full,
+      },
+    }) } as Response);
+    render(<PaperTradingDashboardPage />);
+    expect(await screen.findByText('+10.00%')).toBeInTheDocument();
+    expect(screen.getByText('-2.00%')).toBeInTheDocument();
+    expect(screen.getByText('缺少同期净值')).toBeInTheDocument();
+    const tab = screen.getByRole('tab', { name: '全市场普通股' });
+    fireEvent.click(tab);
+    expect(tab).toHaveAttribute('aria-selected', 'true');
+  });
+
   it('falls back to the deployed snapshot when the live state branch is unavailable', async () => {
     vi.mocked(fetch)
       .mockReset()

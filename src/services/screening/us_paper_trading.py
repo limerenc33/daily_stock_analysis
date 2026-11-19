@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
 from dataclasses import asdict, dataclass
 from datetime import date, datetime, timezone
 from pathlib import Path
-from typing import Mapping, Sequence
+from typing import Callable, Mapping, Sequence
 
 import pandas as pd
 
@@ -28,6 +29,18 @@ from src.services.screening.us_backtest import (
 MARKET_TIMEZONE = "America/New_York"
 DISPLAY_TIMEZONE = "Asia/Shanghai"
 UTC_TIMEZONE = "UTC"
+
+
+FULL_MARKET = "us_full_market"
+MarketRanker = Callable[[date], tuple[list[str], dict]]
+
+
+class MarketScanUnavailable(RuntimeError):
+    """No auditable signal can be produced from the current market feed."""
+
+
+class MissingExecutionBar(ValueError):
+    """A position cannot be entered or marked through the requested session."""
 
 
 @dataclass(frozen=True)
@@ -190,6 +203,7 @@ def advance_paper_trading_state(
     as_of: date | None = None,
     strategies_dir: Path | None = None,
     news_provider: YahooUSNewsIntelligenceProvider | None = None,
+    market_ranker: MarketRanker | None = None,
 ) -> dict[str, object]:
     """Advance every portfolio through the latest completed market session."""
     upgrade_paper_trading_state(state)
@@ -219,7 +233,18 @@ def advance_paper_trading_state(
         market_digest = news_provider.market_digest(as_of=effective_date)
         state.setdefault("news_intelligence", {})["market_digest"] = market_digest
         state["news_intelligence"]["status"] = str(market_digest.get("status") or "unavailable")
-    for name, portfolio in dict(state["portfolios"]).items():
+    portfolios = state["portfolios"]
+    names = list(portfolios)
+    if market_ranker and FULL_MARKET not in portfolios:
+        names.append(FULL_MARKET)
+    for name in names:
+        if name not in portfolios:
+            if not any(e["type"] == "signal" for e in events.get("large_cap_22", [])):
+                continue
+            portfolios[name] = create_paper_trading_state(
+                {name: []}, benchmarks=benchmarks, config=config,
+            )["portfolios"][name]
+        portfolio = portfolios[name]
         migration_event = _ensure_active_cycle_evidence(
             portfolio,
             normalized,
@@ -228,15 +253,28 @@ def advance_paper_trading_state(
         )
         if news_provider is not None and config.news_intelligence_enabled:
             _refresh_active_cycle_news(portfolio, effective_date, news_provider)
-        events[name] = _advance_portfolio(
-            portfolio,
-            normalized,
-            benchmarks,
-            effective_date,
-            config,
-            strategies_dir=strategies_dir,
-            news_provider=news_provider if config.news_intelligence_enabled else None,
-        )
+        working = deepcopy(portfolio) if name == FULL_MARKET else portfolio
+        try:
+            events[name] = _advance_portfolio(
+                working,
+                normalized,
+                benchmarks,
+                effective_date,
+                config,
+                strategies_dir=strategies_dir,
+                news_provider=news_provider if config.news_intelligence_enabled else None,
+                dynamic_universe=name == FULL_MARKET, market_ranker=market_ranker,
+            )
+        except MissingExecutionBar as exc:
+            if name != FULL_MARKET:
+                raise
+            portfolio["pricing_error"] = str(exc)
+            events[name] = [{"type": "pricing_unavailable", "market_date": effective_date.isoformat()}]
+            continue
+        if name == FULL_MARKET:
+            working.pop("pricing_error", None)
+            portfolio.clear()
+            portfolio.update(working)
         if migration_event is not None:
             events[name].insert(0, migration_event)
         _ensure_trade_log(portfolio)
@@ -532,8 +570,10 @@ def _advance_portfolio(
     *,
     strategies_dir: Path | None,
     news_provider: YahooUSNewsIntelligenceProvider | None = None,
+    dynamic_universe: bool = False,
+    market_ranker: MarketRanker | None = None,
 ) -> list[dict[str, object]]:
-    if portfolio.get("last_processed_date") == as_of.isoformat():
+    if portfolio.get("last_processed_date") == as_of.isoformat() and not portfolio.get("scan_error"):
         return [{"type": "no_change", "market_date": as_of.isoformat()}]
     benchmark_calendar = histories[benchmarks[0]]
     events: list[dict[str, object]] = []
@@ -555,12 +595,14 @@ def _advance_portfolio(
         if exit_date is None:
             for session_number, market_date in enumerate(holding_dates[: config.holding_days], start=1):
                 for position in cycle.get("positions", []):
+                    if position.get("status") == "closed":
+                        continue
                     last_evaluated = position.get("last_evaluated_date")
                     if last_evaluated and date.fromisoformat(str(last_evaluated)) >= market_date:
                         continue
                     bar = _bar_on_date(histories.get(str(position["code"])), market_date)
                     if bar is None:
-                        raise ValueError(f"missing grid bar for {position['code']} on {market_date}")
+                        raise MissingExecutionBar(f"missing grid bar for {position['code']} on {market_date}")
                     events.extend(
                         _process_position_daily(
                             position,
@@ -582,44 +624,60 @@ def _advance_portfolio(
             })
             portfolio["active_cycle"] = None
     if portfolio.get("active_cycle") is None:
-        universe = [str(item) for item in portfolio["universe"]]
-        ranked = rank_candidates_on_date(
-            config.strategy_name,
-            {code: histories.get(code, pd.DataFrame()) for code in universe},
-            as_of,
-            top_k=max(config.top_k * 3, config.top_k),
-            lookback_days=config.lookback_days,
-            minimum_universe_coverage=config.minimum_universe_coverage,
-            strategies_dir=strategies_dir,
-        )
-        if news_provider is not None and ranked["selected"]:
-            selected, news_status = _apply_news_to_candidates(
-                list(ranked["selected"]),
-                as_of=as_of,
-                top_k=config.top_k,
-                provider=news_provider,
-            )
-            ranked["selected"] = selected
-            portfolio["latest_news_intelligence"] = news_status
+        if dynamic_universe:
+            try:
+                if market_ranker is None:
+                    raise MarketScanUnavailable("未配置当前上市目录数据源")
+                portfolio["universe"], ranked = market_ranker(as_of)
+                portfolio.pop("scan_error", None)
+            except MarketScanUnavailable as exc:
+                portfolio["scan_error"] = str(exc)
+                ranked = None
         else:
-            ranked["selected"] = list(ranked["selected"])[: config.top_k]
-        portfolio["active_cycle"] = {
-            "status": "pending",
-            "signal_date": as_of.isoformat(),
-            "strategy_version": (
-                INTELLIGENCE_STRATEGY_VERSION if news_provider is not None else "2.0"
-            ),
-            "scorecard_version": (
-                INTELLIGENCE_SCORECARD_VERSION if news_provider is not None else "us_evidence_v2"
-            ),
-            "selected": ranked["selected"],
-            "coverage": {
-                "expected_count": ranked["universe_expected_count"],
-                "covered_count": ranked["universe_feature_covered_count"],
-                "ratio": ranked["universe_coverage_ratio"],
-            },
-        }
-        events.append({"type": "signal", "signal_date": as_of.isoformat(), "codes": [item["code"] for item in ranked["selected"]]})
+            universe = [str(item) for item in portfolio["universe"]]
+            ranked = rank_candidates_on_date(
+                config.strategy_name,
+                {code: histories.get(code, pd.DataFrame()) for code in universe},
+                as_of,
+                top_k=max(config.top_k * 3, config.top_k),
+                lookback_days=config.lookback_days,
+                minimum_universe_coverage=config.minimum_universe_coverage,
+                strategies_dir=strategies_dir,
+            )
+        if ranked is not None:
+            if news_provider is not None and ranked["selected"]:
+                selected, news_status = _apply_news_to_candidates(
+                    list(ranked["selected"]),
+                    as_of=as_of,
+                    top_k=config.top_k,
+                    provider=news_provider,
+                )
+                ranked["selected"] = selected
+                portfolio["latest_news_intelligence"] = news_status
+            else:
+                ranked["selected"] = list(ranked["selected"])[: config.top_k]
+        if ranked is not None and (ranked["selected"] or not dynamic_universe):
+            portfolio["active_cycle"] = {
+                "status": "pending",
+                "signal_date": as_of.isoformat(),
+                "strategy_version": (
+                    INTELLIGENCE_STRATEGY_VERSION if news_provider is not None else "2.0"
+                ),
+                "scorecard_version": (
+                    INTELLIGENCE_SCORECARD_VERSION if news_provider is not None else "us_evidence_v2"
+                ),
+                "selected": ranked["selected"],
+                "coverage": {
+                    "expected_count": ranked["universe_expected_count"],
+                    "covered_count": ranked["universe_feature_covered_count"],
+                    "ratio": ranked["universe_coverage_ratio"],
+                },
+            }
+            events.append({"type": "signal", "signal_date": as_of.isoformat(), "codes": [item["code"] for item in ranked["selected"]]})
+            if dynamic_universe:
+                portfolio["active_cycle"]["universe"] = portfolio["universe"]
+        elif dynamic_universe and ranked is not None:
+            events.append({"type": "no_candidates", "market_date": as_of.isoformat()})
     snapshot = _portfolio_snapshot(portfolio, histories, benchmarks, as_of, config)
     snapshots = list(portfolio.get("snapshots", []))
     if snapshots and snapshots[-1].get("date") == as_of.isoformat():
@@ -744,7 +802,7 @@ def _open_cycle(
         code = str(item["code"])
         bar = _bar_on_date(histories.get(code), entry_date)
         if bar is None:
-            raise ValueError(f"missing entry bar for {code} on {entry_date}")
+            raise MissingExecutionBar(f"missing entry bar for {code} on {entry_date}")
         entry_open = float(bar["open"])
         position = {
             **item,
@@ -992,6 +1050,8 @@ def _finalize_cycle(
         "coverage": cycle.get("coverage", {}),
         "exit_model": "grid_v1",
     }
+    if "universe" in cycle:
+        closed["universe"] = cycle["universe"]
     portfolio.setdefault("closed_cycles", []).append(closed)
     return closed
 
@@ -1023,7 +1083,7 @@ def _portfolio_snapshot(
             if bar is not None:
                 value = _net_return(float(bar["close"]) / float(cycle["benchmark_entries"][benchmark]) - 1.0, config.per_side_cost_bps)
                 benchmark_equity[benchmark] = float(cycle["benchmark_starting_equity"][benchmark]) * (1.0 + value)
-    previous = list(portfolio.get("snapshots", []))
+    previous = [s for s in portfolio.get("snapshots", []) if s["date"] < as_of.isoformat()]
     previous_equity = float(previous[-1]["strategy_equity"]) if previous else config.initial_capital
     historical_equity = [float(item["strategy_equity"]) for item in previous] + [strategy_equity]
     peak = max([config.initial_capital, *historical_equity])
@@ -1076,6 +1136,7 @@ def evaluate_live_validation(state: Mapping[str, object]) -> dict[str, object]:
             completed >= config.minimum_completed_cycles
             and strategy_return > 0.0
             and positive_excess >= 3
+            and not (portfolio.get("pricing_error") or portfolio.get("scan_error"))
         )
         checks.append(universe_pass)
         diagnostics[name] = {
@@ -1127,6 +1188,11 @@ def render_paper_trading_report(state: Mapping[str, object]) -> str:
             f"{float(latest.get('strategy_drawdown_pct') or 0.0):.2f}% | "
             f"{len(portfolio.get('closed_cycles', []))} | {active.get('status', 'idle')} |"
         )
+    market = state["portfolios"].get(FULL_MARKET, {})
+    if market.get("pricing_error"):
+        lines.extend(["", f"全市场净值截至 {market.get('last_processed_date')}，等待补齐行情：{market['pricing_error']}"])
+    if market.get("scan_error"):
+        lines.extend(["", f"全市场选股暂缓：{market['scan_error']}"])
     lines.extend(["", "## 网格风控与成交", ""])
     for name, portfolio in dict(state["portfolios"]).items():
         active = portfolio.get("active_cycle") or {}

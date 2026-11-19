@@ -754,3 +754,79 @@ def test_realtime_grid_monitor_is_serialized_with_daily_state_updates():
     assert "FINNHUB_API_KEY" in rendered
     assert "git diff --cached --quiet" in rendered
     assert "gh workflow run deploy-paper-trading-pages.yml --ref main" in rendered
+
+
+def test_full_market_waits_for_next_cycle_and_retries_without_duplicate_fills(monkeypatch):
+    from scripts.us_listed_stocks import ordinary_symbols
+
+    header = "Nasdaq Traded|Symbol|Security Name|ETF|Test Issue"
+    directory = "\n".join([header, "Y|NEW.A|New Class A Common Stock|N|N",
+                           "Y|ETF|Fund Common Shares|Y|N", "Y|WAR|Warrants on Common Stock|N|N",
+                           "Y|TEST|Test Common Shares|N|Y", "File Creation Time: test"])
+    assert ordinary_symbols(directory) == ["NEW-A"]
+    with pytest.raises(ValueError, match="不完整"):
+        ordinary_symbols(header)
+
+    full = paper_trading_runner.FULL_MARKET
+    config = USPaperTradingConfig(top_k=1, holding_days=2)
+    old_bars = {"AAA": _history(), "SPY": _history(step=0.3)}
+    added_bars = {"NEW-A": _history(step=0.2)}
+    dates = [t.date() for t in old_bars["SPY"]["date"]]
+    state = create_paper_trading_state({"large_cap_22": ["AAA"]}, benchmarks=["SPY"], config=config)
+    advance_paper_trading_state(state, old_bars, as_of=dates[100])
+
+    def rank(session):
+        return paper_trading_runner.rank_full_market(session, old_bars, config, 420, 25)
+
+    monkeypatch.setattr(paper_trading_runner, "current_symbols", lambda session: ordinary_symbols(directory))
+    monkeypatch.setattr(paper_trading_runner, "download_yahoo_histories", lambda *args, **kwargs: {})
+    advance_paper_trading_state(state, old_bars, as_of=dates[101], market_ranker=rank)
+    assert full not in state["portfolios"]
+    advance_paper_trading_state(state, old_bars, as_of=dates[102], market_ranker=rank)
+    market = state["portfolios"][full]
+    assert market["scan_error"] and market["active_cycle"] is None
+    assert len(state["portfolios"]["large_cap_22"]["closed_cycles"]) == 1
+
+    monkeypatch.setattr(paper_trading_runner, "download_yahoo_histories", lambda *args, **kwargs: added_bars)
+    advance_paper_trading_state(state, old_bars, as_of=dates[102], market_ranker=rank)
+    assert "scan_error" not in market
+    assert market["active_cycle"]["selected"][0]["code"] == "NEW-A"
+    assert len(market["snapshots"]) == 1
+    assert market["snapshots"][0]["strategy_equity"] == config.initial_capital
+    advance_paper_trading_state(state, old_bars, as_of=dates[103], market_ranker=rank)
+    assert market["pricing_error"] and market["trade_log"] == []
+    assert market["last_processed_date"] == dates[102].isoformat()
+    for index in (103, 103, 104):
+        advance_paper_trading_state(state, {**old_bars, **added_bars}, as_of=dates[index], market_ranker=rank)
+    assert len(market["closed_cycles"]) == 1
+    assert "pricing_error" not in market
+    assert market["closed_cycles"][0]["universe"] == ["NEW-A"]
+    assert [t["side"] for t in market["trade_log"]] == ["buy", "sell"]
+    assert market["active_cycle"]["signal_date"] == dates[104].isoformat()
+
+
+def test_full_market_historical_directory_and_empty_selection(monkeypatch):
+    from scripts.us_listed_stocks import current_symbols
+
+    with pytest.raises(ValueError, match="不适用于该信号日"):
+        current_symbols(date(2025, 1, 6))
+
+    histories = {"AAA": _history(), "SPY": _history()}
+    dates = [t.date() for t in histories["SPY"]["date"]]
+    state = create_paper_trading_state({"large_cap_22": ["AAA"]}, benchmarks=["SPY"])
+    illiquid = _history()
+    illiquid["volume"] = 1
+    monkeypatch.setattr(paper_trading_runner, "current_symbols", lambda _: ["NEW"])
+    monkeypatch.setattr(paper_trading_runner, "download_yahoo_histories", lambda *a, **kw: {"NEW": illiquid})
+
+    def rank(session):
+        return paper_trading_runner.rank_full_market(session, {}, USPaperTradingConfig(), 420, 25)
+
+    advance_paper_trading_state(state, histories, as_of=dates[100], market_ranker=rank)
+    market = state["portfolios"][paper_trading_runner.FULL_MARKET]
+    assert market["active_cycle"] is None
+    assert state["last_events"][paper_trading_runner.FULL_MARKET][0]["type"] == "no_candidates"
+    monkeypatch.setattr(paper_trading_runner, "download_yahoo_histories", lambda *a, **kw: {"NEW": _history()})
+    advance_paper_trading_state(state, histories, as_of=dates[101], market_ranker=rank)
+    assert market["active_cycle"]["selected"][0]["code"] == "NEW"
+    assert market["snapshots"][-1]["strategy_equity"] == 100000
